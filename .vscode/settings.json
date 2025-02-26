@@ -1,0 +1,4 @@
+{
+    "dotnet.defaultSolution": "build/windows/x64/plugins/sqlite3_flutter_libs/sqlite3_flutter_libs.sln",
+    "markdown.validate.enabled": true
+}
