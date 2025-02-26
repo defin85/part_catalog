@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:part_catalog/models/group.dart';
-import 'package:part_catalog/models/schema_model.dart';
+import 'package:part_catalog/features/parts_catalog/models/group.dart';
+import 'package:part_catalog/features/parts_catalog/models/schema_model.dart';
 
 part 'schemas_response.freezed.dart';
 part 'schemas_response.g.dart';

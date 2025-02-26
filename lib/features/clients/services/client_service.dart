@@ -1,8 +1,9 @@
-import 'package:part_catalog/models/client.dart' as client_model;
-import 'package:part_catalog/database/database.dart';
+import 'package:part_catalog/features/clients/models/client.dart'
+    as client_model;
+import 'package:part_catalog/core/database/database.dart';
 import 'package:get_it/get_it.dart';
 import 'package:drift/drift.dart' show Value;
-import 'package:part_catalog/models/client_type.dart';
+import 'package:part_catalog/features/clients/models/client_type.dart';
 // Import the Clients table
 
 /// {@template client_service}

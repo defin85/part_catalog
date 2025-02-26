@@ -47,8 +47,6 @@ abstract class $SchemasResponseCopyWith<$Res> {
   $Res call(
       {@JsonKey(name: 'group') Group? group,
       @JsonKey(name: 'list') List<SchemaModel>? list});
-
-  $GroupCopyWith<$Res>? get group;
 }
 
 /// @nodoc
@@ -80,20 +78,6 @@ class _$SchemasResponseCopyWithImpl<$Res, $Val extends SchemasResponse>
               as List<SchemaModel>?,
     ) as $Val);
   }
-
-  /// Create a copy of SchemasResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $GroupCopyWith<$Res>? get group {
-    if (_value.group == null) {
-      return null;
-    }
-
-    return $GroupCopyWith<$Res>(_value.group!, (value) {
-      return _then(_value.copyWith(group: value) as $Val);
-    });
-  }
 }
 
 /// @nodoc
@@ -107,9 +91,6 @@ abstract class _$$SchemasResponseImplCopyWith<$Res>
   $Res call(
       {@JsonKey(name: 'group') Group? group,
       @JsonKey(name: 'list') List<SchemaModel>? list});
-
-  @override
-  $GroupCopyWith<$Res>? get group;
 }
 
 /// @nodoc
@@ -181,14 +162,16 @@ class _$SchemasResponseImpl implements _SchemasResponse {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SchemasResponseImpl &&
-            (identical(other.group, group) || other.group == group) &&
+            const DeepCollectionEquality().equals(other.group, group) &&
             const DeepCollectionEquality().equals(other._list, _list));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, group, const DeepCollectionEquality().hash(_list));
+      runtimeType,
+      const DeepCollectionEquality().hash(group),
+      const DeepCollectionEquality().hash(_list));
 
   /// Create a copy of SchemasResponse
   /// with the given fields replaced by the non-null parameter values.

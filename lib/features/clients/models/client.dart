@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:part_catalog/models/client_type.dart';
+import 'package:part_catalog/features/clients/models/client_type.dart';
 
 part 'client.g.dart';
 

@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:part_catalog/models/order_item.dart';
+import 'package:part_catalog/features/orders/models/order_item.dart';
 
 part 'order.g.dart';
 

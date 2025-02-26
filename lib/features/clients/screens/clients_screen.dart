@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/models/client.dart';
-import 'package:part_catalog/models/client_type.dart';
-import 'package:part_catalog/services/client_service.dart';
+import 'package:part_catalog/features/clients/models/client.dart';
+import 'package:part_catalog/features/clients/models/client_type.dart';
+import 'package:part_catalog/features/clients/services/client_service.dart';
 import 'package:get_it/get_it.dart';
 
 /// {@template clients_screen}

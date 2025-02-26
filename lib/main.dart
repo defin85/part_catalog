@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:part_catalog/api/api_client_parts_catalogs.dart';
-import 'package:part_catalog/models/catalog.dart';
+import 'package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart';
+import 'package:part_catalog/features/parts_catalog/models/catalog.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
-import 'package:part_catalog/widgets/car_info_widget.dart';
-import 'package:part_catalog/service_locator.dart';
-import 'package:part_catalog/screens/clients_screen.dart';
+import 'package:part_catalog/features/parts_catalog/widgets/car_info_widget.dart';
+import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/features/clients/screens/clients_screen.dart';
 
 /// {@template main_app}
 /// Главное приложение.
