@@ -1,84 +1,131 @@
-import 'package:flutter/material.dart';
-import 'package:part_catalog/api/api_client.dart';
-import 'package:part_catalog/models/catalog.dart';
 import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:flutter/material.dart';
+import 'package:part_catalog/api/api_client_parts_catalogs.dart';
+import 'package:part_catalog/models/catalog.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
-import 'package:part_catalog/widgets/car_info_widget.dart'; // Import CarInfoWidget
+import 'package:part_catalog/widgets/car_info_widget.dart';
+import 'package:part_catalog/service_locator.dart';
+import 'package:part_catalog/screens/clients_screen.dart';
 
 /// {@template main_app}
 /// Главное приложение.
 /// {@endtemplate}
 void main() async {
   await dotenv.load();
+  setupLocator();
   runApp(const MainApp());
 }
 
 /// {@template main_app}
 /// Главный виджет приложения.
 /// {@endtemplate}
-class MainApp extends StatefulWidget {
+class MainApp extends StatelessWidget {
   /// {@macro main_app}
   const MainApp({super.key});
 
   @override
-  State<MainApp> createState() => _MainAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Part Catalog',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(),
+    );
+  }
 }
 
-class _MainAppState extends State<MainApp> {
-  late ApiClient apiClient;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  late ApiClientPartsCatalogs apiClient;
   List<Catalog> catalogs = [];
   String apiKey = dotenv.env['API_KEY'] ?? 'YOUR_API_KEY';
   final String language = 'en';
-  final logger = Logger();
-  String vinOrFrame = ''; // Add a field for VIN or Frame input
+  final Logger logger = Logger();
+  String vinOrFrame = '';
 
   @override
   void initState() {
     super.initState();
-    final dio = Dio();
-    dio.interceptors.add(PrettyDioLogger());
-    apiClient = ApiClient(dio, baseUrl: '/v1');
+    apiClient = locator<ApiClientPartsCatalogs>();
     fetchData();
   }
 
-  /// Получает данные из API.
   Future<void> fetchData() async {
     try {
       catalogs = await apiClient.getCatalogs(apiKey, language);
       setState(() {});
-    } catch (e) {
-      logger.e('Error fetching data: $e');
+    } on DioException catch (e) {
+      logger.e('Error fetching data: ${e.message}');
+      if (e.response != null) {
+        logger.e('Status code: ${e.response?.statusCode}');
+        logger.e('Response data: ${e.response?.data}');
+      } else {
+        logger.e('Request failed without a response.');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Part Catalog'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Text field for VIN or Frame input
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Enter VIN or Frame',
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Part Catalog'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Part Catalog Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
                 ),
-                onChanged: (value) {
-                  vinOrFrame = value;
-                },
               ),
-              // Display CarInfoWidget
-              Expanded(
-                child: CarInfoWidget(vinOrFrame: vinOrFrame),
+            ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Clients'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const ClientsScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+        // Добавьте другие пункты меню здесь
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Enter VIN or Frame',
               ),
-            ],
-          ),
+              onChanged: (value) {
+                vinOrFrame = value;
+              },
+            ),
+            Expanded(
+              child: CarInfoWidget(vinOrFrame: vinOrFrame),
+            ),
+          ],
         ),
       ),
     );

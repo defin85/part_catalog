@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/api/api_client.dart';
+import 'package:part_catalog/api/api_client_parts_catalogs.dart'; // Import ApiClientPartsCatalogs
 import 'package:part_catalog/models/schemas_response.dart';
-import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
+import 'package:get_it/get_it.dart'; // Import get_it
 
-/// {@template schema_list}
+/// {@template schema_list_widget}
 /// Виджет для отображения списка схем.
 /// {@endtemplate}
-class SchemaList extends StatefulWidget {
-  /// {@macro schema_list}
-  const SchemaList({
+class SchemaListWidget extends StatefulWidget {
+  /// {@macro schema_list_widget}
+  const SchemaListWidget({
     super.key,
     required this.catalogId,
     required this.carId,
@@ -24,11 +23,11 @@ class SchemaList extends StatefulWidget {
   final String carId;
 
   @override
-  State<SchemaList> createState() => _SchemaListState();
+  State<SchemaListWidget> createState() => _SchemaListWidgetState();
 }
 
-class _SchemaListState extends State<SchemaList> {
-  late ApiClient apiClient;
+class _SchemaListWidgetState extends State<SchemaListWidget> {
+  //late ApiClientPartsCatalogs apiClient; // Больше не нужно объявлять здесь
   SchemasResponse? schemasResponse;
   String apiKey = dotenv.env['API_KEY'] ?? 'YOUR_API_KEY';
   final String language = 'en';
@@ -38,15 +37,14 @@ class _SchemaListState extends State<SchemaList> {
   @override
   void initState() {
     super.initState();
-    final dio = Dio();
-    dio.interceptors.add(PrettyDioLogger());
-    apiClient = ApiClient(dio, baseUrl: '/v1');
     _schemasFuture = fetchSchemas(); // Initialize the future
   }
 
   /// Получает схемы из API.
   Future<SchemasResponse?> fetchSchemas() async {
     try {
+      final apiClient = GetIt.instance<
+          ApiClientPartsCatalogs>(); // Get ApiClientPartsCatalogs from get_it
       return await apiClient.getSchemas(
         widget.catalogId,
         widget.carId,

@@ -1,0 +1,262 @@
+{
+    "definitions": {
+        "Client": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Уникальный идентификатор клиента"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Тип клиента (физическое или юридическое лицо)",
+                    "enum": [
+                        "physical",
+                        "legal"
+                    ]
+                },
+                "name": {
+                    "type": "string",
+                    "description": "ФИО для физического лица или название организации для юридического лица"
+                },
+                "contactInfo": {
+                    "type": "string",
+                    "description": "Контактная информация (телефон, email, адрес)"
+                },
+                "additionalInfo": {
+                    "type": "string",
+                    "description": "Дополнительная информация"
+                }
+            },
+            "required": [
+                "id",
+                "type",
+                "name",
+                "contactInfo"
+            ]
+        },
+        "Car": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Уникальный идентификатор автомобиля"
+                },
+                "clientId": {
+                    "type": "string",
+                    "description": "Идентификатор клиента-владельца"
+                },
+                "vin": {
+                    "type": "string",
+                    "description": "VIN-код"
+                },
+                "make": {
+                    "type": "string",
+                    "description": "Марка автомобиля"
+                },
+                "model": {
+                    "type": "string",
+                    "description": "Модель автомобиля"
+                },
+                "year": {
+                    "type": "integer",
+                    "description": "Год выпуска"
+                },
+                "licensePlate": {
+                    "type": "string",
+                    "description": "Номерной знак"
+                },
+                "additionalInfo": {
+                    "type": "string",
+                    "description": "Дополнительная информация"
+                }
+            },
+            "required": [
+                "id",
+                "clientId",
+                "vin",
+                "make",
+                "model",
+                "year"
+            ]
+        },
+        "Order": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Уникальный идентификатор заказ-наряда"
+                },
+                "clientId": {
+                    "type": "string",
+                    "description": "Идентификатор клиента"
+                },
+                "carId": {
+                    "type": "string",
+                    "description": "Идентификатор автомобиля"
+                },
+                "date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Дата создания заказ-наряда"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Описание проблемы"
+                },
+                "workItems": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "description": {
+                                "type": "string",
+                                "description": "Описание работы"
+                            },
+                            "cost": {
+                                "type": "number",
+                                "format": "float",
+                                "description": "Стоимость работы"
+                            }
+                        },
+                        "required": [
+                            "description",
+                            "cost"
+                        ]
+                    },
+                    "description": "Список работ (описание и стоимость)"
+                },
+                "orderItems": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OrderItem"
+                    },
+                    "description": "Список запчастей (с ценами и сроками поставки)"
+                },
+                "totalCost": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Общая стоимость"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "Статус заказ-наряда",
+                    "enum": [
+                        "created",
+                        "inProgress",
+                        "completed"
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "clientId",
+                "carId",
+                "date",
+                "description",
+                "workItems",
+                "orderItems",
+                "totalCost",
+                "status"
+            ]
+        },
+        "OrderItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Уникальный идентификатор позиции"
+                },
+                "orderId": {
+                    "type": "string",
+                    "description": "Идентификатор заказ-наряда"
+                },
+                "partNumber": {
+                    "type": "string",
+                    "description": "Артикул запчасти"
+                },
+                "partName": {
+                    "type": "string",
+                    "description": "Название запчасти"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "description": "Количество"
+                },
+                "price": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Цена за единицу"
+                },
+                "supplier": {
+                    "type": "string",
+                    "description": "Поставщик"
+                },
+                "deliveryTime": {
+                    "type": "string",
+                    "description": "Срок поставки"
+                }
+            },
+            "required": [
+                "id",
+                "orderId",
+                "partNumber",
+                "partName",
+                "quantity",
+                "price",
+                "supplier",
+                "deliveryTime"
+            ]
+        },
+        "Supplier": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Уникальный идентификатор поставщика"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Название поставщика"
+                },
+                "contactInfo": {
+                    "type": "string",
+                    "description": "Контактная информация"
+                }
+            },
+            "required": [
+                "id",
+                "name",
+                "contactInfo"
+            ]
+        },
+        "PriceOffer": {
+            "type": "object",
+            "properties": {
+                "partNumber": {
+                    "type": "string",
+                    "description": "Артикул запчасти"
+                },
+                "price": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Цена"
+                },
+                "deliveryTime": {
+                    "type": "string",
+                    "description": "Срок поставки"
+                },
+                "supplierId": {
+                    "type": "string",
+                    "description": "Идентификатор поставщика"
+                }
+            },
+            "required": [
+                "partNumber",
+                "price",
+                "deliveryTime",
+                "supplierId"
+            ]
+        }
+    }
+}

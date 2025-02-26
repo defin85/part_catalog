@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/api/api_client.dart';
+import 'package:part_catalog/api/api_client_parts_catalogs.dart'; // Import ApiClientPartsCatalogs
 import 'package:part_catalog/models/car_info.dart';
-import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
+import 'package:get_it/get_it.dart'; // Import get_it
 
 /// {@template car_info_widget}
 /// Виджет для отображения информации об автомобиле по VIN или FRAME.
@@ -21,7 +20,7 @@ class CarInfoWidget extends StatefulWidget {
 }
 
 class _CarInfoWidgetState extends State<CarInfoWidget> {
-  late ApiClient apiClient;
+  //late ApiClientPartsCatalogs apiClient; // No need to declare here
   List<CarInfo> carInfos = [];
   String apiKey = dotenv.env['API_KEY'] ?? 'YOUR_API_KEY';
   final String language = 'en';
@@ -31,15 +30,14 @@ class _CarInfoWidgetState extends State<CarInfoWidget> {
   @override
   void initState() {
     super.initState();
-    final dio = Dio();
-    dio.interceptors.add(PrettyDioLogger());
-    apiClient = ApiClient(dio, baseUrl: '/v1');
     _carInfoFuture = fetchCarInfo();
   }
 
   /// Получает информацию об автомобиле из API.
   Future<List<CarInfo>> fetchCarInfo() async {
     try {
+      final apiClient = GetIt.instance<
+          ApiClientPartsCatalogs>(); // Get ApiClientPartsCatalogs from get_it
       return await apiClient.getCarInfo(
           widget.vinOrFrame, null, apiKey, language);
     } catch (e) {

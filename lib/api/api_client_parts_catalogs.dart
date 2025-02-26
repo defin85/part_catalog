@@ -12,15 +12,15 @@ import 'package:part_catalog/models/example_prices_response.dart';
 import 'package:part_catalog/models/groups_tree_response.dart';
 import 'package:part_catalog/models/schemas_response.dart';
 
-part 'api_client.g.dart';
+part 'api_client_parts_catalogs.g.dart';
 
-/// {@template api_client}
+/// {@template api_client_parts_catalogs}
 /// Клиент для взаимодействия с API каталогов.
 /// {@endtemplate}
-@RestApi(baseUrl: "/v1")
-abstract class ApiClient {
-  /// {@macro api_client}
-  factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
+@RestApi(baseUrl: "https://api.parts-catalogs.com/v1")
+abstract class ApiClientPartsCatalogs {
+  /// {@macro api_client_parts_catalogs}
+  factory ApiClientPartsCatalogs(Dio dio) = _ApiClientPartsCatalogs;
 
   /// Получает список доступных каталогов.
   ///
@@ -86,7 +86,7 @@ abstract class ApiClient {
   Future<List<CarInfo>> getCarInfo(
     @Query("q") String q,
     @Query("catalogs") String? catalogs,
-    @Header("Authorization") String apiKey,
+    @Header("Authorization") String apiKey, // Added Authorization header
     @Header("Accept-Language") String language,
   );
 
