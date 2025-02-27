@@ -9,7 +9,7 @@ part 'car.g.dart';
 class Car {
   /// {@macro car}
   Car({
-    required this.id,
+    required this.id, //test
     required this.clientId,
     required this.vin,
     required this.make,
