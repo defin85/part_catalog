@@ -113,32 +113,21 @@
 ## 5. Примерная структура проекта:
 
 lib/
-  api/
-    api_client_parts_catalogs.dart
-    supplier_api_client.dart  // Новый API-клиент для поставщика
-  models/
-    catalog.dart
-    car_info.dart
-    ...
-    client.dart          // Модель данных для клиента
-    car.dart             // Модель данных для автомобиля
-    order.dart           // Модель данных для заказ-наряда
-    order_item.dart      // Модель данных для позиции в заказ-наряде
-    supplier.dart        // Модель данных для поставщика
-    price_offer.dart     // Модель данных для предложения цены от поставщика
-  screens/
-    clients_screen.dart
-    cars_screen.dart
-    orders_screen.dart
-    parts_selection_screen.dart
-  widgets/
-    car_info_widget.dart
-    ...
-  services/
-    client_service.dart   // Сервис для управления клиентами
-    car_service.dart      // Сервис для управления автомобилями
-    order_service.dart    // Сервис для управления заказ-нарядами
+  features/
+    parts_catalog/
+      api/
+      models/
+      screens/
+      widgets/
+    clients/
+      models/
+      screens/
+      services/
+    vehicles/
+    orders/
+    suppliers/
   core/
     service_locator.dart
+    database/
     utils/
   main.dart
