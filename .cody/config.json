@@ -1,0 +1,15 @@
+{
+    "contextBudget": 30000,
+    "includePaths": [
+        "lib/**/*",
+        "android/**/*",
+        "ios/**/*",
+        "windows/**/*",
+        "linux/**/*",
+        "web/**/*"
+    ],
+    "excludePaths": [
+        "build/**/*",
+        ".dart_tool/**/*"
+    ]
+}
