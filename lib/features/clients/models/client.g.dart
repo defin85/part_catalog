@@ -7,7 +7,7 @@ part of 'client.dart';
 // **************************************************************************
 
 Client _$ClientFromJson(Map<String, dynamic> json) => Client(
-      id: json['id'] as String,
+      id: (json['id'] as num).toInt(),
       type: const ClientTypeConverter().fromJson(json['type'] as String),
       name: json['name'] as String,
       contactInfo: json['contactInfo'] as String,

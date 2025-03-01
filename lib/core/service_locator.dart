@@ -14,13 +14,12 @@ void setupLocator() {
   // Регистрируем ApiClientPartsCatalogs
   locator.registerLazySingleton(() => ApiClientPartsCatalogs(locator<Dio>()));
 
-  // Регистрируем AppDatabase
-  locator.registerLazySingleton(() => AppDatabase());
+  // Регистрация базы данных как синглтона
+  locator.registerLazySingleton<AppDatabase>(() => AppDatabase());
 
-  // Регистрируем ClientService
-  locator
-      .registerLazySingleton(() => ClientService()); // Register ClientService
-
-  // Регистрация сервиса автомобилей
-  locator.registerLazySingleton(() => CarService(locator<AppDatabase>()));
+  // Регистрация сервисов
+  locator.registerLazySingleton<ClientService>(
+      () => ClientService(locator<AppDatabase>()));
+  locator.registerLazySingleton<CarService>(
+      () => CarService(locator<AppDatabase>()));
 }

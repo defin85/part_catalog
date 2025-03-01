@@ -19,7 +19,7 @@ class Client {
 
   /// Уникальный идентификатор клиента.
   @JsonKey(name: 'id')
-  final String id;
+  final int id; // Изменено с String на int
 
   /// Тип клиента (physical, legal, individualEntrepreneur, other).
   @JsonKey(name: 'type')

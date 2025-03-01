@@ -3,16 +3,21 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
+class $ClientsItemsTable extends ClientsItems
+    with TableInfo<$ClientsItemsTable, ClientsItem> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ClientsTable(this.attachedDatabase, [this._alias]);
+  $ClientsItemsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
       'id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
@@ -35,23 +40,27 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
   late final GeneratedColumn<String> additionalInfo = GeneratedColumn<String>(
       'additional_info', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, type, name, contactInfo, additionalInfo];
+      [id, type, name, contactInfo, additionalInfo, deletedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'clients';
+  static const String $name = 'clients_items';
   @override
-  VerificationContext validateIntegrity(Insertable<Client> instance,
+  VerificationContext validateIntegrity(Insertable<ClientsItem> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
     }
     if (data.containsKey('type')) {
       context.handle(
@@ -79,17 +88,21 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
           additionalInfo.isAcceptableOrUnknown(
               data['additional_info']!, _additionalInfoMeta));
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Client map(Map<String, dynamic> data, {String? tablePrefix}) {
+  ClientsItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Client(
+    return ClientsItem(
       id: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       type: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       name: attachedDatabase.typeMapping
@@ -98,42 +111,49 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, Client> {
           .read(DriftSqlType.string, data['${effectivePrefix}contact_info'])!,
       additionalInfo: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}additional_info']),
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
   }
 
   @override
-  $ClientsTable createAlias(String alias) {
-    return $ClientsTable(attachedDatabase, alias);
+  $ClientsItemsTable createAlias(String alias) {
+    return $ClientsItemsTable(attachedDatabase, alias);
   }
 }
 
-class Client extends DataClass implements Insertable<Client> {
-  final String id;
+class ClientsItem extends DataClass implements Insertable<ClientsItem> {
+  final int id;
   final String type;
   final String name;
   final String contactInfo;
   final String? additionalInfo;
-  const Client(
+  final DateTime? deletedAt;
+  const ClientsItem(
       {required this.id,
       required this.type,
       required this.name,
       required this.contactInfo,
-      this.additionalInfo});
+      this.additionalInfo,
+      this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
+    map['id'] = Variable<int>(id);
     map['type'] = Variable<String>(type);
     map['name'] = Variable<String>(name);
     map['contact_info'] = Variable<String>(contactInfo);
     if (!nullToAbsent || additionalInfo != null) {
       map['additional_info'] = Variable<String>(additionalInfo);
     }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
-  ClientsCompanion toCompanion(bool nullToAbsent) {
-    return ClientsCompanion(
+  ClientsItemsCompanion toCompanion(bool nullToAbsent) {
+    return ClientsItemsCompanion(
       id: Value(id),
       type: Value(type),
       name: Value(name),
@@ -141,48 +161,55 @@ class Client extends DataClass implements Insertable<Client> {
       additionalInfo: additionalInfo == null && nullToAbsent
           ? const Value.absent()
           : Value(additionalInfo),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
     );
   }
 
-  factory Client.fromJson(Map<String, dynamic> json,
+  factory ClientsItem.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Client(
-      id: serializer.fromJson<String>(json['id']),
+    return ClientsItem(
+      id: serializer.fromJson<int>(json['id']),
       type: serializer.fromJson<String>(json['type']),
       name: serializer.fromJson<String>(json['name']),
       contactInfo: serializer.fromJson<String>(json['contactInfo']),
       additionalInfo: serializer.fromJson<String?>(json['additionalInfo']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
+      'id': serializer.toJson<int>(id),
       'type': serializer.toJson<String>(type),
       'name': serializer.toJson<String>(name),
       'contactInfo': serializer.toJson<String>(contactInfo),
       'additionalInfo': serializer.toJson<String?>(additionalInfo),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
-  Client copyWith(
-          {String? id,
+  ClientsItem copyWith(
+          {int? id,
           String? type,
           String? name,
           String? contactInfo,
-          Value<String?> additionalInfo = const Value.absent()}) =>
-      Client(
+          Value<String?> additionalInfo = const Value.absent(),
+          Value<DateTime?> deletedAt = const Value.absent()}) =>
+      ClientsItem(
         id: id ?? this.id,
         type: type ?? this.type,
         name: name ?? this.name,
         contactInfo: contactInfo ?? this.contactInfo,
         additionalInfo:
             additionalInfo.present ? additionalInfo.value : this.additionalInfo,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
-  Client copyWithCompanion(ClientsCompanion data) {
-    return Client(
+  ClientsItem copyWithCompanion(ClientsItemsCompanion data) {
+    return ClientsItem(
       id: data.id.present ? data.id.value : this.id,
       type: data.type.present ? data.type.value : this.type,
       name: data.name.present ? data.name.value : this.name,
@@ -191,67 +218,70 @@ class Client extends DataClass implements Insertable<Client> {
       additionalInfo: data.additionalInfo.present
           ? data.additionalInfo.value
           : this.additionalInfo,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Client(')
+    return (StringBuffer('ClientsItem(')
           ..write('id: $id, ')
           ..write('type: $type, ')
           ..write('name: $name, ')
           ..write('contactInfo: $contactInfo, ')
-          ..write('additionalInfo: $additionalInfo')
+          ..write('additionalInfo: $additionalInfo, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, type, name, contactInfo, additionalInfo);
+  int get hashCode =>
+      Object.hash(id, type, name, contactInfo, additionalInfo, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Client &&
+      (other is ClientsItem &&
           other.id == this.id &&
           other.type == this.type &&
           other.name == this.name &&
           other.contactInfo == this.contactInfo &&
-          other.additionalInfo == this.additionalInfo);
+          other.additionalInfo == this.additionalInfo &&
+          other.deletedAt == this.deletedAt);
 }
 
-class ClientsCompanion extends UpdateCompanion<Client> {
-  final Value<String> id;
+class ClientsItemsCompanion extends UpdateCompanion<ClientsItem> {
+  final Value<int> id;
   final Value<String> type;
   final Value<String> name;
   final Value<String> contactInfo;
   final Value<String?> additionalInfo;
-  final Value<int> rowid;
-  const ClientsCompanion({
+  final Value<DateTime?> deletedAt;
+  const ClientsItemsCompanion({
     this.id = const Value.absent(),
     this.type = const Value.absent(),
     this.name = const Value.absent(),
     this.contactInfo = const Value.absent(),
     this.additionalInfo = const Value.absent(),
-    this.rowid = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
-  ClientsCompanion.insert({
-    required String id,
+  ClientsItemsCompanion.insert({
+    this.id = const Value.absent(),
     required String type,
     required String name,
     required String contactInfo,
     this.additionalInfo = const Value.absent(),
-    this.rowid = const Value.absent(),
-  })  : id = Value(id),
-        type = Value(type),
+    this.deletedAt = const Value.absent(),
+  })  : type = Value(type),
         name = Value(name),
         contactInfo = Value(contactInfo);
-  static Insertable<Client> custom({
-    Expression<String>? id,
+  static Insertable<ClientsItem> custom({
+    Expression<int>? id,
     Expression<String>? type,
     Expression<String>? name,
     Expression<String>? contactInfo,
     Expression<String>? additionalInfo,
-    Expression<int>? rowid,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -259,24 +289,24 @@ class ClientsCompanion extends UpdateCompanion<Client> {
       if (name != null) 'name': name,
       if (contactInfo != null) 'contact_info': contactInfo,
       if (additionalInfo != null) 'additional_info': additionalInfo,
-      if (rowid != null) 'rowid': rowid,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
-  ClientsCompanion copyWith(
-      {Value<String>? id,
+  ClientsItemsCompanion copyWith(
+      {Value<int>? id,
       Value<String>? type,
       Value<String>? name,
       Value<String>? contactInfo,
       Value<String?>? additionalInfo,
-      Value<int>? rowid}) {
-    return ClientsCompanion(
+      Value<DateTime?>? deletedAt}) {
+    return ClientsItemsCompanion(
       id: id ?? this.id,
       type: type ?? this.type,
       name: name ?? this.name,
       contactInfo: contactInfo ?? this.contactInfo,
       additionalInfo: additionalInfo ?? this.additionalInfo,
-      rowid: rowid ?? this.rowid,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -284,7 +314,7 @@ class ClientsCompanion extends UpdateCompanion<Client> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     if (id.present) {
-      map['id'] = Variable<String>(id.value);
+      map['id'] = Variable<int>(id.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
@@ -298,31 +328,32 @@ class ClientsCompanion extends UpdateCompanion<Client> {
     if (additionalInfo.present) {
       map['additional_info'] = Variable<String>(additionalInfo.value);
     }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('ClientsCompanion(')
+    return (StringBuffer('ClientsItemsCompanion(')
           ..write('id: $id, ')
           ..write('type: $type, ')
           ..write('name: $name, ')
           ..write('contactInfo: $contactInfo, ')
           ..write('additionalInfo: $additionalInfo, ')
-          ..write('rowid: $rowid')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 }
 
-class $CarsTable extends Cars with TableInfo<$CarsTable, Car> {
+class $CarsItemsTable extends CarsItems
+    with TableInfo<$CarsItemsTable, CarsItem> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CarsTable(this.attachedDatabase, [this._alias]);
+  $CarsItemsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -340,7 +371,7 @@ class $CarsTable extends Cars with TableInfo<$CarsTable, Car> {
       type: DriftSqlType.int,
       requiredDuringInsert: true,
       defaultConstraints:
-          GeneratedColumn.constraintIsAlways('REFERENCES clients (id)'));
+          GeneratedColumn.constraintIsAlways('REFERENCES clients_items (id)'));
   static const VerificationMeta _vinMeta = const VerificationMeta('vin');
   @override
   late final GeneratedColumn<String> vin = GeneratedColumn<String>(
@@ -373,16 +404,31 @@ class $CarsTable extends Cars with TableInfo<$CarsTable, Car> {
   late final GeneratedColumn<String> additionalInfo = GeneratedColumn<String>(
       'additional_info', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, clientId, vin, make, model, year, licensePlate, additionalInfo];
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        clientId,
+        vin,
+        make,
+        model,
+        year,
+        licensePlate,
+        additionalInfo,
+        deletedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'cars';
+  static const String $name = 'cars_items';
   @override
-  VerificationContext validateIntegrity(Insertable<Car> instance,
+  VerificationContext validateIntegrity(Insertable<CarsItem> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -427,15 +473,19 @@ class $CarsTable extends Cars with TableInfo<$CarsTable, Car> {
           additionalInfo.isAcceptableOrUnknown(
               data['additional_info']!, _additionalInfoMeta));
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Car map(Map<String, dynamic> data, {String? tablePrefix}) {
+  CarsItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Car(
+    return CarsItem(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       clientId: attachedDatabase.typeMapping
@@ -452,16 +502,18 @@ class $CarsTable extends Cars with TableInfo<$CarsTable, Car> {
           .read(DriftSqlType.string, data['${effectivePrefix}license_plate']),
       additionalInfo: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}additional_info']),
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
     );
   }
 
   @override
-  $CarsTable createAlias(String alias) {
-    return $CarsTable(attachedDatabase, alias);
+  $CarsItemsTable createAlias(String alias) {
+    return $CarsItemsTable(attachedDatabase, alias);
   }
 }
 
-class Car extends DataClass implements Insertable<Car> {
+class CarsItem extends DataClass implements Insertable<CarsItem> {
   final int id;
   final int clientId;
   final String? vin;
@@ -470,7 +522,8 @@ class Car extends DataClass implements Insertable<Car> {
   final int? year;
   final String? licensePlate;
   final String? additionalInfo;
-  const Car(
+  final DateTime? deletedAt;
+  const CarsItem(
       {required this.id,
       required this.clientId,
       this.vin,
@@ -478,7 +531,8 @@ class Car extends DataClass implements Insertable<Car> {
       required this.model,
       this.year,
       this.licensePlate,
-      this.additionalInfo});
+      this.additionalInfo,
+      this.deletedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -498,11 +552,14 @@ class Car extends DataClass implements Insertable<Car> {
     if (!nullToAbsent || additionalInfo != null) {
       map['additional_info'] = Variable<String>(additionalInfo);
     }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
-  CarsCompanion toCompanion(bool nullToAbsent) {
-    return CarsCompanion(
+  CarsItemsCompanion toCompanion(bool nullToAbsent) {
+    return CarsItemsCompanion(
       id: Value(id),
       clientId: Value(clientId),
       vin: vin == null && nullToAbsent ? const Value.absent() : Value(vin),
@@ -515,13 +572,16 @@ class Car extends DataClass implements Insertable<Car> {
       additionalInfo: additionalInfo == null && nullToAbsent
           ? const Value.absent()
           : Value(additionalInfo),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
     );
   }
 
-  factory Car.fromJson(Map<String, dynamic> json,
+  factory CarsItem.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Car(
+    return CarsItem(
       id: serializer.fromJson<int>(json['id']),
       clientId: serializer.fromJson<int>(json['clientId']),
       vin: serializer.fromJson<String?>(json['vin']),
@@ -530,6 +590,7 @@ class Car extends DataClass implements Insertable<Car> {
       year: serializer.fromJson<int?>(json['year']),
       licensePlate: serializer.fromJson<String?>(json['licensePlate']),
       additionalInfo: serializer.fromJson<String?>(json['additionalInfo']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -544,10 +605,11 @@ class Car extends DataClass implements Insertable<Car> {
       'year': serializer.toJson<int?>(year),
       'licensePlate': serializer.toJson<String?>(licensePlate),
       'additionalInfo': serializer.toJson<String?>(additionalInfo),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
-  Car copyWith(
+  CarsItem copyWith(
           {int? id,
           int? clientId,
           Value<String?> vin = const Value.absent(),
@@ -555,8 +617,9 @@ class Car extends DataClass implements Insertable<Car> {
           String? model,
           Value<int?> year = const Value.absent(),
           Value<String?> licensePlate = const Value.absent(),
-          Value<String?> additionalInfo = const Value.absent()}) =>
-      Car(
+          Value<String?> additionalInfo = const Value.absent(),
+          Value<DateTime?> deletedAt = const Value.absent()}) =>
+      CarsItem(
         id: id ?? this.id,
         clientId: clientId ?? this.clientId,
         vin: vin.present ? vin.value : this.vin,
@@ -567,9 +630,10 @@ class Car extends DataClass implements Insertable<Car> {
             licensePlate.present ? licensePlate.value : this.licensePlate,
         additionalInfo:
             additionalInfo.present ? additionalInfo.value : this.additionalInfo,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
       );
-  Car copyWithCompanion(CarsCompanion data) {
-    return Car(
+  CarsItem copyWithCompanion(CarsItemsCompanion data) {
+    return CarsItem(
       id: data.id.present ? data.id.value : this.id,
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
       vin: data.vin.present ? data.vin.value : this.vin,
@@ -582,12 +646,13 @@ class Car extends DataClass implements Insertable<Car> {
       additionalInfo: data.additionalInfo.present
           ? data.additionalInfo.value
           : this.additionalInfo,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Car(')
+    return (StringBuffer('CarsItem(')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
           ..write('vin: $vin, ')
@@ -595,18 +660,19 @@ class Car extends DataClass implements Insertable<Car> {
           ..write('model: $model, ')
           ..write('year: $year, ')
           ..write('licensePlate: $licensePlate, ')
-          ..write('additionalInfo: $additionalInfo')
+          ..write('additionalInfo: $additionalInfo, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id, clientId, vin, make, model, year, licensePlate, additionalInfo);
+  int get hashCode => Object.hash(id, clientId, vin, make, model, year,
+      licensePlate, additionalInfo, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Car &&
+      (other is CarsItem &&
           other.id == this.id &&
           other.clientId == this.clientId &&
           other.vin == this.vin &&
@@ -614,10 +680,11 @@ class Car extends DataClass implements Insertable<Car> {
           other.model == this.model &&
           other.year == this.year &&
           other.licensePlate == this.licensePlate &&
-          other.additionalInfo == this.additionalInfo);
+          other.additionalInfo == this.additionalInfo &&
+          other.deletedAt == this.deletedAt);
 }
 
-class CarsCompanion extends UpdateCompanion<Car> {
+class CarsItemsCompanion extends UpdateCompanion<CarsItem> {
   final Value<int> id;
   final Value<int> clientId;
   final Value<String?> vin;
@@ -626,7 +693,8 @@ class CarsCompanion extends UpdateCompanion<Car> {
   final Value<int?> year;
   final Value<String?> licensePlate;
   final Value<String?> additionalInfo;
-  const CarsCompanion({
+  final Value<DateTime?> deletedAt;
+  const CarsItemsCompanion({
     this.id = const Value.absent(),
     this.clientId = const Value.absent(),
     this.vin = const Value.absent(),
@@ -635,8 +703,9 @@ class CarsCompanion extends UpdateCompanion<Car> {
     this.year = const Value.absent(),
     this.licensePlate = const Value.absent(),
     this.additionalInfo = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   });
-  CarsCompanion.insert({
+  CarsItemsCompanion.insert({
     this.id = const Value.absent(),
     required int clientId,
     this.vin = const Value.absent(),
@@ -645,10 +714,11 @@ class CarsCompanion extends UpdateCompanion<Car> {
     this.year = const Value.absent(),
     this.licensePlate = const Value.absent(),
     this.additionalInfo = const Value.absent(),
+    this.deletedAt = const Value.absent(),
   })  : clientId = Value(clientId),
         make = Value(make),
         model = Value(model);
-  static Insertable<Car> custom({
+  static Insertable<CarsItem> custom({
     Expression<int>? id,
     Expression<int>? clientId,
     Expression<String>? vin,
@@ -657,6 +727,7 @@ class CarsCompanion extends UpdateCompanion<Car> {
     Expression<int>? year,
     Expression<String>? licensePlate,
     Expression<String>? additionalInfo,
+    Expression<DateTime>? deletedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -667,10 +738,11 @@ class CarsCompanion extends UpdateCompanion<Car> {
       if (year != null) 'year': year,
       if (licensePlate != null) 'license_plate': licensePlate,
       if (additionalInfo != null) 'additional_info': additionalInfo,
+      if (deletedAt != null) 'deleted_at': deletedAt,
     });
   }
 
-  CarsCompanion copyWith(
+  CarsItemsCompanion copyWith(
       {Value<int>? id,
       Value<int>? clientId,
       Value<String?>? vin,
@@ -678,8 +750,9 @@ class CarsCompanion extends UpdateCompanion<Car> {
       Value<String>? model,
       Value<int?>? year,
       Value<String?>? licensePlate,
-      Value<String?>? additionalInfo}) {
-    return CarsCompanion(
+      Value<String?>? additionalInfo,
+      Value<DateTime?>? deletedAt}) {
+    return CarsItemsCompanion(
       id: id ?? this.id,
       clientId: clientId ?? this.clientId,
       vin: vin ?? this.vin,
@@ -688,6 +761,7 @@ class CarsCompanion extends UpdateCompanion<Car> {
       year: year ?? this.year,
       licensePlate: licensePlate ?? this.licensePlate,
       additionalInfo: additionalInfo ?? this.additionalInfo,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -718,12 +792,15 @@ class CarsCompanion extends UpdateCompanion<Car> {
     if (additionalInfo.present) {
       map['additional_info'] = Variable<String>(additionalInfo.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('CarsCompanion(')
+    return (StringBuffer('CarsItemsCompanion(')
           ..write('id: $id, ')
           ..write('clientId: $clientId, ')
           ..write('vin: $vin, ')
@@ -731,7 +808,198 @@ class CarsCompanion extends UpdateCompanion<Car> {
           ..write('model: $model, ')
           ..write('year: $year, ')
           ..write('licensePlate: $licensePlate, ')
-          ..write('additionalInfo: $additionalInfo')
+          ..write('additionalInfo: $additionalInfo, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AppInfoItemsTable extends AppInfoItems
+    with TableInfo<$AppInfoItemsTable, AppInfoItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppInfoItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+      'key', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+      'value', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_info_items';
+  @override
+  VerificationContext validateIntegrity(Insertable<AppInfoItem> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+          _keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+          _valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
+    } else if (isInserting) {
+      context.missing(_valueMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  AppInfoItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppInfoItem(
+      key: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}key'])!,
+      value: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}value'])!,
+    );
+  }
+
+  @override
+  $AppInfoItemsTable createAlias(String alias) {
+    return $AppInfoItemsTable(attachedDatabase, alias);
+  }
+}
+
+class AppInfoItem extends DataClass implements Insertable<AppInfoItem> {
+  final String key;
+  final String value;
+  const AppInfoItem({required this.key, required this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    map['value'] = Variable<String>(value);
+    return map;
+  }
+
+  AppInfoItemsCompanion toCompanion(bool nullToAbsent) {
+    return AppInfoItemsCompanion(
+      key: Value(key),
+      value: Value(value),
+    );
+  }
+
+  factory AppInfoItem.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppInfoItem(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String>(value),
+    };
+  }
+
+  AppInfoItem copyWith({String? key, String? value}) => AppInfoItem(
+        key: key ?? this.key,
+        value: value ?? this.value,
+      );
+  AppInfoItem copyWithCompanion(AppInfoItemsCompanion data) {
+    return AppInfoItem(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppInfoItem(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppInfoItem &&
+          other.key == this.key &&
+          other.value == this.value);
+}
+
+class AppInfoItemsCompanion extends UpdateCompanion<AppInfoItem> {
+  final Value<String> key;
+  final Value<String> value;
+  final Value<int> rowid;
+  const AppInfoItemsCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppInfoItemsCompanion.insert({
+    required String key,
+    required String value,
+    this.rowid = const Value.absent(),
+  })  : key = Value(key),
+        value = Value(value);
+  static Insertable<AppInfoItem> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppInfoItemsCompanion copyWith(
+      {Value<String>? key, Value<String>? value, Value<int>? rowid}) {
+    return AppInfoItemsCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppInfoItemsCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -740,42 +1008,68 @@ class CarsCompanion extends UpdateCompanion<Car> {
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $ClientsTable clients = $ClientsTable(this);
-  late final $CarsTable cars = $CarsTable(this);
+  late final $ClientsItemsTable clientsItems = $ClientsItemsTable(this);
+  late final $CarsItemsTable carsItems = $CarsItemsTable(this);
+  late final $AppInfoItemsTable appInfoItems = $AppInfoItemsTable(this);
+  late final ClientsDao clientsDao = ClientsDao(this as AppDatabase);
+  late final CarsDao carsDao = CarsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [clients, cars];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [clientsItems, carsItems, appInfoItems];
 }
 
-typedef $$ClientsTableCreateCompanionBuilder = ClientsCompanion Function({
-  required String id,
+typedef $$ClientsItemsTableCreateCompanionBuilder = ClientsItemsCompanion
+    Function({
+  Value<int> id,
   required String type,
   required String name,
   required String contactInfo,
   Value<String?> additionalInfo,
-  Value<int> rowid,
+  Value<DateTime?> deletedAt,
 });
-typedef $$ClientsTableUpdateCompanionBuilder = ClientsCompanion Function({
-  Value<String> id,
+typedef $$ClientsItemsTableUpdateCompanionBuilder = ClientsItemsCompanion
+    Function({
+  Value<int> id,
   Value<String> type,
   Value<String> name,
   Value<String> contactInfo,
   Value<String?> additionalInfo,
-  Value<int> rowid,
+  Value<DateTime?> deletedAt,
 });
 
-class $$ClientsTableFilterComposer
-    extends Composer<_$AppDatabase, $ClientsTable> {
-  $$ClientsTableFilterComposer({
+final class $$ClientsItemsTableReferences
+    extends BaseReferences<_$AppDatabase, $ClientsItemsTable, ClientsItem> {
+  $$ClientsItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$CarsItemsTable, List<CarsItem>>
+      _carsItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+          db.carsItems,
+          aliasName:
+              $_aliasNameGenerator(db.clientsItems.id, db.carsItems.clientId));
+
+  $$CarsItemsTableProcessedTableManager get carsItemsRefs {
+    final manager = $$CarsItemsTableTableManager($_db, $_db.carsItems)
+        .filter((f) => f.clientId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_carsItemsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
+}
+
+class $$ClientsItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $ClientsItemsTable> {
+  $$ClientsItemsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
+  ColumnFilters<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get type => $composableBuilder(
@@ -790,18 +1084,42 @@ class $$ClientsTableFilterComposer
   ColumnFilters<String> get additionalInfo => $composableBuilder(
       column: $table.additionalInfo,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  Expression<bool> carsItemsRefs(
+      Expression<bool> Function($$CarsItemsTableFilterComposer f) f) {
+    final $$CarsItemsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.carsItems,
+        getReferencedColumn: (t) => t.clientId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CarsItemsTableFilterComposer(
+              $db: $db,
+              $table: $db.carsItems,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
-class $$ClientsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ClientsTable> {
-  $$ClientsTableOrderingComposer({
+class $$ClientsItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClientsItemsTable> {
+  $$ClientsItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
+  ColumnOrderings<int> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get type => $composableBuilder(
@@ -816,18 +1134,21 @@ class $$ClientsTableOrderingComposer
   ColumnOrderings<String> get additionalInfo => $composableBuilder(
       column: $table.additionalInfo,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 }
 
-class $$ClientsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ClientsTable> {
-  $$ClientsTableAnnotationComposer({
+class $$ClientsItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClientsItemsTable> {
+  $$ClientsItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<String> get id =>
+  GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
   GeneratedColumn<String> get type =>
@@ -841,82 +1162,132 @@ class $$ClientsTableAnnotationComposer
 
   GeneratedColumn<String> get additionalInfo => $composableBuilder(
       column: $table.additionalInfo, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  Expression<T> carsItemsRefs<T extends Object>(
+      Expression<T> Function($$CarsItemsTableAnnotationComposer a) f) {
+    final $$CarsItemsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.carsItems,
+        getReferencedColumn: (t) => t.clientId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$CarsItemsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.carsItems,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
-class $$ClientsTableTableManager extends RootTableManager<
+class $$ClientsItemsTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $ClientsTable,
-    Client,
-    $$ClientsTableFilterComposer,
-    $$ClientsTableOrderingComposer,
-    $$ClientsTableAnnotationComposer,
-    $$ClientsTableCreateCompanionBuilder,
-    $$ClientsTableUpdateCompanionBuilder,
-    (Client, BaseReferences<_$AppDatabase, $ClientsTable, Client>),
-    Client,
-    PrefetchHooks Function()> {
-  $$ClientsTableTableManager(_$AppDatabase db, $ClientsTable table)
+    $ClientsItemsTable,
+    ClientsItem,
+    $$ClientsItemsTableFilterComposer,
+    $$ClientsItemsTableOrderingComposer,
+    $$ClientsItemsTableAnnotationComposer,
+    $$ClientsItemsTableCreateCompanionBuilder,
+    $$ClientsItemsTableUpdateCompanionBuilder,
+    (ClientsItem, $$ClientsItemsTableReferences),
+    ClientsItem,
+    PrefetchHooks Function({bool carsItemsRefs})> {
+  $$ClientsItemsTableTableManager(_$AppDatabase db, $ClientsItemsTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$ClientsTableFilterComposer($db: db, $table: table),
+              $$ClientsItemsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$ClientsTableOrderingComposer($db: db, $table: table),
+              $$ClientsItemsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$ClientsTableAnnotationComposer($db: db, $table: table),
+              $$ClientsItemsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
-            Value<String> id = const Value.absent(),
+            Value<int> id = const Value.absent(),
             Value<String> type = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> contactInfo = const Value.absent(),
             Value<String?> additionalInfo = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
           }) =>
-              ClientsCompanion(
+              ClientsItemsCompanion(
             id: id,
             type: type,
             name: name,
             contactInfo: contactInfo,
             additionalInfo: additionalInfo,
-            rowid: rowid,
+            deletedAt: deletedAt,
           ),
           createCompanionCallback: ({
-            required String id,
+            Value<int> id = const Value.absent(),
             required String type,
             required String name,
             required String contactInfo,
             Value<String?> additionalInfo = const Value.absent(),
-            Value<int> rowid = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
           }) =>
-              ClientsCompanion.insert(
+              ClientsItemsCompanion.insert(
             id: id,
             type: type,
             name: name,
             contactInfo: contactInfo,
             additionalInfo: additionalInfo,
-            rowid: rowid,
+            deletedAt: deletedAt,
           ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map((e) => (
+                    e.readTable(table),
+                    $$ClientsItemsTableReferences(db, table, e)
+                  ))
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({carsItemsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (carsItemsRefs) db.carsItems],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (carsItemsRefs)
+                    await $_getPrefetchedData<ClientsItem, $ClientsItemsTable,
+                            CarsItem>(
+                        currentTable: table,
+                        referencedTable: $$ClientsItemsTableReferences
+                            ._carsItemsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ClientsItemsTableReferences(db, table, p0)
+                                .carsItemsRefs,
+                        referencedItemsForCurrentItem: (item,
+                                referencedItems) =>
+                            referencedItems.where((e) => e.clientId == item.id),
+                        typedResults: items)
+                ];
+              },
+            );
+          },
         ));
 }
 
-typedef $$ClientsTableProcessedTableManager = ProcessedTableManager<
+typedef $$ClientsItemsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
-    $ClientsTable,
-    Client,
-    $$ClientsTableFilterComposer,
-    $$ClientsTableOrderingComposer,
-    $$ClientsTableAnnotationComposer,
-    $$ClientsTableCreateCompanionBuilder,
-    $$ClientsTableUpdateCompanionBuilder,
-    (Client, BaseReferences<_$AppDatabase, $ClientsTable, Client>),
-    Client,
-    PrefetchHooks Function()>;
-typedef $$CarsTableCreateCompanionBuilder = CarsCompanion Function({
+    $ClientsItemsTable,
+    ClientsItem,
+    $$ClientsItemsTableFilterComposer,
+    $$ClientsItemsTableOrderingComposer,
+    $$ClientsItemsTableAnnotationComposer,
+    $$ClientsItemsTableCreateCompanionBuilder,
+    $$ClientsItemsTableUpdateCompanionBuilder,
+    (ClientsItem, $$ClientsItemsTableReferences),
+    ClientsItem,
+    PrefetchHooks Function({bool carsItemsRefs})>;
+typedef $$CarsItemsTableCreateCompanionBuilder = CarsItemsCompanion Function({
   Value<int> id,
   required int clientId,
   Value<String?> vin,
@@ -925,8 +1296,9 @@ typedef $$CarsTableCreateCompanionBuilder = CarsCompanion Function({
   Value<int?> year,
   Value<String?> licensePlate,
   Value<String?> additionalInfo,
+  Value<DateTime?> deletedAt,
 });
-typedef $$CarsTableUpdateCompanionBuilder = CarsCompanion Function({
+typedef $$CarsItemsTableUpdateCompanionBuilder = CarsItemsCompanion Function({
   Value<int> id,
   Value<int> clientId,
   Value<String?> vin,
@@ -935,10 +1307,32 @@ typedef $$CarsTableUpdateCompanionBuilder = CarsCompanion Function({
   Value<int?> year,
   Value<String?> licensePlate,
   Value<String?> additionalInfo,
+  Value<DateTime?> deletedAt,
 });
 
-class $$CarsTableFilterComposer extends Composer<_$AppDatabase, $CarsTable> {
-  $$CarsTableFilterComposer({
+final class $$CarsItemsTableReferences
+    extends BaseReferences<_$AppDatabase, $CarsItemsTable, CarsItem> {
+  $$CarsItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $ClientsItemsTable _clientIdTable(_$AppDatabase db) =>
+      db.clientsItems.createAlias(
+          $_aliasNameGenerator(db.carsItems.clientId, db.clientsItems.id));
+
+  $$ClientsItemsTableProcessedTableManager get clientId {
+    final $_column = $_itemColumn<int>('client_id')!;
+
+    final manager = $$ClientsItemsTableTableManager($_db, $_db.clientsItems)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clientIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$CarsItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $CarsItemsTable> {
+  $$CarsItemsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -966,10 +1360,34 @@ class $$CarsTableFilterComposer extends Composer<_$AppDatabase, $CarsTable> {
   ColumnFilters<String> get additionalInfo => $composableBuilder(
       column: $table.additionalInfo,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  $$ClientsItemsTableFilterComposer get clientId {
+    final $$ClientsItemsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.clientId,
+        referencedTable: $db.clientsItems,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ClientsItemsTableFilterComposer(
+              $db: $db,
+              $table: $db.clientsItems,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
-class $$CarsTableOrderingComposer extends Composer<_$AppDatabase, $CarsTable> {
-  $$CarsTableOrderingComposer({
+class $$CarsItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CarsItemsTable> {
+  $$CarsItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -998,11 +1416,34 @@ class $$CarsTableOrderingComposer extends Composer<_$AppDatabase, $CarsTable> {
   ColumnOrderings<String> get additionalInfo => $composableBuilder(
       column: $table.additionalInfo,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  $$ClientsItemsTableOrderingComposer get clientId {
+    final $$ClientsItemsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.clientId,
+        referencedTable: $db.clientsItems,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ClientsItemsTableOrderingComposer(
+              $db: $db,
+              $table: $db.clientsItems,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
-class $$CarsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CarsTable> {
-  $$CarsTableAnnotationComposer({
+class $$CarsItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CarsItemsTable> {
+  $$CarsItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -1029,30 +1470,53 @@ class $$CarsTableAnnotationComposer
 
   GeneratedColumn<String> get additionalInfo => $composableBuilder(
       column: $table.additionalInfo, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  $$ClientsItemsTableAnnotationComposer get clientId {
+    final $$ClientsItemsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.clientId,
+        referencedTable: $db.clientsItems,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ClientsItemsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.clientsItems,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
 }
 
-class $$CarsTableTableManager extends RootTableManager<
+class $$CarsItemsTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $CarsTable,
-    Car,
-    $$CarsTableFilterComposer,
-    $$CarsTableOrderingComposer,
-    $$CarsTableAnnotationComposer,
-    $$CarsTableCreateCompanionBuilder,
-    $$CarsTableUpdateCompanionBuilder,
-    (Car, BaseReferences<_$AppDatabase, $CarsTable, Car>),
-    Car,
-    PrefetchHooks Function()> {
-  $$CarsTableTableManager(_$AppDatabase db, $CarsTable table)
+    $CarsItemsTable,
+    CarsItem,
+    $$CarsItemsTableFilterComposer,
+    $$CarsItemsTableOrderingComposer,
+    $$CarsItemsTableAnnotationComposer,
+    $$CarsItemsTableCreateCompanionBuilder,
+    $$CarsItemsTableUpdateCompanionBuilder,
+    (CarsItem, $$CarsItemsTableReferences),
+    CarsItem,
+    PrefetchHooks Function({bool clientId})> {
+  $$CarsItemsTableTableManager(_$AppDatabase db, $CarsItemsTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$CarsTableFilterComposer($db: db, $table: table),
+              $$CarsItemsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$CarsTableOrderingComposer($db: db, $table: table),
+              $$CarsItemsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$CarsTableAnnotationComposer($db: db, $table: table),
+              $$CarsItemsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<int> clientId = const Value.absent(),
@@ -1062,8 +1526,9 @@ class $$CarsTableTableManager extends RootTableManager<
             Value<int?> year = const Value.absent(),
             Value<String?> licensePlate = const Value.absent(),
             Value<String?> additionalInfo = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
           }) =>
-              CarsCompanion(
+              CarsItemsCompanion(
             id: id,
             clientId: clientId,
             vin: vin,
@@ -1072,6 +1537,7 @@ class $$CarsTableTableManager extends RootTableManager<
             year: year,
             licensePlate: licensePlate,
             additionalInfo: additionalInfo,
+            deletedAt: deletedAt,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -1082,8 +1548,9 @@ class $$CarsTableTableManager extends RootTableManager<
             Value<int?> year = const Value.absent(),
             Value<String?> licensePlate = const Value.absent(),
             Value<String?> additionalInfo = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
           }) =>
-              CarsCompanion.insert(
+              CarsItemsCompanion.insert(
             id: id,
             clientId: clientId,
             vin: vin,
@@ -1092,6 +1559,169 @@ class $$CarsTableTableManager extends RootTableManager<
             year: year,
             licensePlate: licensePlate,
             additionalInfo: additionalInfo,
+            deletedAt: deletedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$CarsItemsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({clientId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (clientId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.clientId,
+                    referencedTable:
+                        $$CarsItemsTableReferences._clientIdTable(db),
+                    referencedColumn:
+                        $$CarsItemsTableReferences._clientIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$CarsItemsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CarsItemsTable,
+    CarsItem,
+    $$CarsItemsTableFilterComposer,
+    $$CarsItemsTableOrderingComposer,
+    $$CarsItemsTableAnnotationComposer,
+    $$CarsItemsTableCreateCompanionBuilder,
+    $$CarsItemsTableUpdateCompanionBuilder,
+    (CarsItem, $$CarsItemsTableReferences),
+    CarsItem,
+    PrefetchHooks Function({bool clientId})>;
+typedef $$AppInfoItemsTableCreateCompanionBuilder = AppInfoItemsCompanion
+    Function({
+  required String key,
+  required String value,
+  Value<int> rowid,
+});
+typedef $$AppInfoItemsTableUpdateCompanionBuilder = AppInfoItemsCompanion
+    Function({
+  Value<String> key,
+  Value<String> value,
+  Value<int> rowid,
+});
+
+class $$AppInfoItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $AppInfoItemsTable> {
+  $$AppInfoItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnFilters(column));
+}
+
+class $$AppInfoItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppInfoItemsTable> {
+  $$AppInfoItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+      column: $table.key, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get value => $composableBuilder(
+      column: $table.value, builder: (column) => ColumnOrderings(column));
+}
+
+class $$AppInfoItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppInfoItemsTable> {
+  $$AppInfoItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$AppInfoItemsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $AppInfoItemsTable,
+    AppInfoItem,
+    $$AppInfoItemsTableFilterComposer,
+    $$AppInfoItemsTableOrderingComposer,
+    $$AppInfoItemsTableAnnotationComposer,
+    $$AppInfoItemsTableCreateCompanionBuilder,
+    $$AppInfoItemsTableUpdateCompanionBuilder,
+    (
+      AppInfoItem,
+      BaseReferences<_$AppDatabase, $AppInfoItemsTable, AppInfoItem>
+    ),
+    AppInfoItem,
+    PrefetchHooks Function()> {
+  $$AppInfoItemsTableTableManager(_$AppDatabase db, $AppInfoItemsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppInfoItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppInfoItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppInfoItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> key = const Value.absent(),
+            Value<String> value = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AppInfoItemsCompanion(
+            key: key,
+            value: value,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String key,
+            required String value,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              AppInfoItemsCompanion.insert(
+            key: key,
+            value: value,
+            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -1100,23 +1730,29 @@ class $$CarsTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$CarsTableProcessedTableManager = ProcessedTableManager<
+typedef $$AppInfoItemsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
-    $CarsTable,
-    Car,
-    $$CarsTableFilterComposer,
-    $$CarsTableOrderingComposer,
-    $$CarsTableAnnotationComposer,
-    $$CarsTableCreateCompanionBuilder,
-    $$CarsTableUpdateCompanionBuilder,
-    (Car, BaseReferences<_$AppDatabase, $CarsTable, Car>),
-    Car,
+    $AppInfoItemsTable,
+    AppInfoItem,
+    $$AppInfoItemsTableFilterComposer,
+    $$AppInfoItemsTableOrderingComposer,
+    $$AppInfoItemsTableAnnotationComposer,
+    $$AppInfoItemsTableCreateCompanionBuilder,
+    $$AppInfoItemsTableUpdateCompanionBuilder,
+    (
+      AppInfoItem,
+      BaseReferences<_$AppDatabase, $AppInfoItemsTable, AppInfoItem>
+    ),
+    AppInfoItem,
     PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$ClientsTableTableManager get clients =>
-      $$ClientsTableTableManager(_db, _db.clients);
-  $$CarsTableTableManager get cars => $$CarsTableTableManager(_db, _db.cars);
+  $$ClientsItemsTableTableManager get clientsItems =>
+      $$ClientsItemsTableTableManager(_db, _db.clientsItems);
+  $$CarsItemsTableTableManager get carsItems =>
+      $$CarsItemsTableTableManager(_db, _db.carsItems);
+  $$AppInfoItemsTableTableManager get appInfoItems =>
+      $$AppInfoItemsTableTableManager(_db, _db.appInfoItems);
 }

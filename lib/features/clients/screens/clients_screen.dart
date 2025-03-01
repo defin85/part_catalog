@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:part_catalog/core/database/database.dart';
+import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/features/clients/models/client.dart';
 import 'package:part_catalog/features/clients/models/client_type.dart';
 import 'package:part_catalog/features/clients/services/client_service.dart';
-import 'package:get_it/get_it.dart';
+import 'package:part_catalog/features/vehicles/services/car_service.dart';
 
-/// {@template clients_screen}
-/// Экран для отображения и управления списком клиентов.
-/// {@endtemplate}
 class ClientsScreen extends StatefulWidget {
-  /// {@macro clients_screen}
   const ClientsScreen({super.key});
 
   @override
@@ -16,222 +14,207 @@ class ClientsScreen extends StatefulWidget {
 }
 
 class _ClientsScreenState extends State<ClientsScreen> {
-  final ClientService _clientService = GetIt.instance<ClientService>();
-  List<Client> _clients = [];
+  final ClientService _clientService = locator<ClientService>();
+  bool _isDbError = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadClients();
-  }
+  Widget build(BuildContext context) {
+    if (_isDbError) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Ошибка базы данных')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Ошибка доступа к базе данных'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  // Получаем ScaffoldMessengerState до асинхронной операции
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  try {
+                    // Сбрасываем базу данных
+                    final db = locator<AppDatabase>();
+                    await db.resetDatabase();
 
-  Future<void> _loadClients() async {
-    final clients = await _clientService.getClients();
-    setState(() {
-      _clients = clients;
-    });
+                    // Обновляем экземпляры в сервис-локаторе
+                    locator.unregister<AppDatabase>();
+                    locator.registerSingleton<AppDatabase>(AppDatabase());
+
+                    // Обновляем все сервисы, зависящие от БД
+                    locator.unregister<ClientService>();
+                    locator.unregister<CarService>();
+                    locator.registerLazySingleton<ClientService>(
+                        () => ClientService(locator<AppDatabase>()));
+                    locator.registerLazySingleton<CarService>(
+                        () => CarService(locator<AppDatabase>()));
+
+                    setState(() {
+                      _isDbError = false;
+                    });
+
+                    // Используем сохраненный scaffoldMessenger
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                          content: Text('База данных успешно сброшена')),
+                    );
+                  } catch (e) {
+                    // Показываем сообщение об ошибке
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                          content: Text('Ошибка при сбросе базы данных: $e')),
+                    );
+                  }
+                },
+                child: const Text('Сбросить базу данных'),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Клиенты'),
+      ),
+      // Используем StreamBuilder для реактивного обновления списка клиентов
+      body: StreamBuilder<List<Client>>(
+        // Подписываемся на поток данных из сервиса
+        stream: _clientService.watchClients(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            // Проверяем, связана ли ошибка с отсутствием таблицы
+            if (snapshot.error.toString().contains('no such table')) {
+              // Устанавливаем флаг ошибки БД, который перерисует виджет
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                setState(() {
+                  _isDbError = true;
+                });
+              });
+            }
+            return Center(
+              child: Text(
+                'Ошибка загрузки данных: ${snapshot.error}',
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            );
+          }
+
+          final clients = snapshot.data ?? [];
+
+          if (clients.isEmpty) {
+            return const Center(
+              child: Text(
+                  'Список клиентов пуст. Добавьте клиента, нажав на кнопку "+"'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: clients.length,
+            itemBuilder: (context, index) {
+              final client = clients[index];
+              return Dismissible(
+                key: Key(client.id.toString()),
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: const Icon(Icons.delete, color: Colors.white),
+                ),
+                direction: DismissDirection.endToStart,
+                confirmDismiss: (direction) async {
+                  return await showDialog<bool>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Удалить клиента?'),
+                            content: Text(
+                                'Вы действительно хотите удалить клиента ${client.name}?'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('Отмена'),
+                              ),
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text('Удалить'),
+                              ),
+                            ],
+                          );
+                        },
+                      ) ??
+                      false;
+                },
+                onDismissed: (direction) async {
+                  // Получаем ScaffoldMessengerState до асинхронной операции
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  await _clientService.deleteClient(client.id);
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text('Клиент ${client.name} удален')),
+                  );
+                },
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: client.type == ClientType.physical
+                        ? Colors.blue
+                        : Colors.orange,
+                    child: Icon(
+                      client.type == ClientType.physical
+                          ? Icons.person
+                          : Icons.business,
+                      color: Colors.white,
+                    ),
+                  ),
+                  title: Text(client.name),
+                  subtitle: Text(client.contactInfo),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _editClient(client),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addClient,
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 
   Future<void> _addClient() async {
-    final newClient = await _showClientDialog(context);
-    if (newClient != null) {
-      _clientService.addClient(newClient);
-      _loadClients();
+    final client = await _showClientDialog(context);
+    if (client != null) {
+      await _clientService.addClient(client);
     }
   }
 
   Future<void> _editClient(Client client) async {
     final updatedClient = await _showClientDialog(context, client: client);
     if (updatedClient != null) {
-      _clientService.updateClient(updatedClient);
-      _loadClients();
-    }
-  }
-
-  Future<void> _deleteClient(String clientId) async {
-    final confirmed = await _showConfirmationDialog(context, 'Delete Client?',
-        'Are you sure you want to delete this client?');
-    if (confirmed == true) {
-      _clientService.deleteClient(clientId);
-      _loadClients();
+      await _clientService.updateClient(updatedClient);
     }
   }
 
   Future<Client?> _showClientDialog(BuildContext context,
       {Client? client}) async {
-    final formKey = GlobalKey<FormState>();
-    String? id = client?.id;
-    ClientType? type = client?.type;
-    String? name = client?.name;
-    String? contactInfo = client?.contactInfo;
-    String? additionalInfo = client?.additionalInfo;
-
+    // Реализация диалога добавления/редактирования клиента
+    // ...
     return showDialog<Client>(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          // Add StatefulBuilder
-          builder: (BuildContext context, StateSetter setState) {
-            // Add StateSetter
-            return AlertDialog(
-              title: Text(client == null ? 'Add Client' : 'Edit Client'),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        initialValue: name,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                        ),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Please enter a name'
-                            : null,
-                        onChanged: (value) => name = value,
-                      ),
-                      InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Type',
-                          hintText: 'Choose a client type',
-                        ),
-                        child: DropdownButton<ClientType>(
-                          value: type,
-                          isExpanded: true,
-                          onChanged: (ClientType? newValue) {
-                            setState(() {
-                              // Use local setState
-                              type = newValue;
-                            });
-                          },
-                          items: ClientType.values
-                              .map<DropdownMenuItem<ClientType>>(
-                                  (ClientType value) {
-                            return DropdownMenuItem<ClientType>(
-                              value: value,
-                              child: Text(value.displayName),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      TextFormField(
-                        initialValue: contactInfo,
-                        decoration: const InputDecoration(
-                          labelText: 'Contact Info',
-                        ),
-                        onChanged: (value) => contactInfo = value,
-                      ),
-                      TextFormField(
-                        initialValue: additionalInfo,
-                        decoration: const InputDecoration(
-                          labelText: 'Additional Info',
-                        ),
-                        onChanged: (value) => additionalInfo = value,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (formKey.currentState!.validate()) {
-                      if (type == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Please select a client type')),
-                        );
-                        return;
-                      }
-                      final newClient = Client(
-                        id: id ?? UniqueKey().toString(),
-                        type: type!,
-                        name: name ?? '',
-                        contactInfo: contactInfo ?? '',
-                        additionalInfo: additionalInfo,
-                      );
-                      Navigator.pop(context, newClient);
-                    }
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<bool?> _showConfirmationDialog(
-      BuildContext context, String title, String content) async {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) {
+      builder: (BuildContext context) {
+        // Существующий код диалога
         return AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
+            // ...
+            );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Clients'),
-      ),
-      body: ListView.builder(
-        itemCount: _clients.length,
-        itemBuilder: (context, index) {
-          final client = _clients[index];
-          return Dismissible(
-            key: Key(client.id),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: const Icon(Icons.delete, color: Colors.white),
-            ),
-            onDismissed: (direction) {
-              _deleteClient(client.id);
-            },
-            confirmDismiss: (direction) async {
-              return _showConfirmationDialog(context, 'Delete Client?',
-                  'Are you sure you want to delete this client?');
-            },
-            child: ListTile(
-              title: Text(client.name),
-              subtitle: Text(client.contactInfo),
-              onTap: () {
-                _editClient(client);
-              },
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _addClient();
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

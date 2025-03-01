@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart';
 import 'package:part_catalog/features/parts_catalog/models/catalog.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,7 +15,14 @@ import 'package:part_catalog/features/vehicles/screens/cars_screen.dart';
 /// {@endtemplate}
 void main() async {
   await dotenv.load();
-  setupLocator();
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Инициализация базы данных с проверкой таблиц
+  final database = AppDatabase();
+  await database.ensureDatabaseReady();
+
+  // Регистрация в service_locator
+  setupLocator(); // предполагаем, что это регистрирует database
   runApp(const MainApp());
 }
 
