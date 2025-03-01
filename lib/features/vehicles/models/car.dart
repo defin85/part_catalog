@@ -6,9 +6,9 @@ part 'car.g.dart';
 /// Модель данных для представления автомобиля.
 /// {@endtemplate}
 @JsonSerializable()
-class Car {
+class CarModel {
   /// {@macro car}
-  Car({
+  CarModel({
     required this.id, //test
     required this.clientId,
     required this.vin,
@@ -52,8 +52,9 @@ class Car {
   final String? additionalInfo;
 
   /// Преобразование JSON в объект `Car`.
-  factory Car.fromJson(Map<String, dynamic> json) => _$CarFromJson(json);
+  factory CarModel.fromJson(Map<String, dynamic> json) =>
+      _$CarModelFromJson(json);
 
   /// Преобразование объекта `Car` в JSON.
-  Map<String, dynamic> toJson() => _$CarToJson(this);
+  Map<String, dynamic> toJson() => _$CarModelToJson(this);
 }

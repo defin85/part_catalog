@@ -6,7 +6,7 @@ part of 'car.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Car _$CarFromJson(Map<String, dynamic> json) => Car(
+CarModel _$CarModelFromJson(Map<String, dynamic> json) => CarModel(
       id: json['id'] as String,
       clientId: json['clientId'] as String,
       vin: json['vin'] as String,
@@ -17,7 +17,7 @@ Car _$CarFromJson(Map<String, dynamic> json) => Car(
       additionalInfo: json['additionalInfo'] as String?,
     );
 
-Map<String, dynamic> _$CarToJson(Car instance) => <String, dynamic>{
+Map<String, dynamic> _$CarModelToJson(CarModel instance) => <String, dynamic>{
       'id': instance.id,
       'clientId': instance.clientId,
       'vin': instance.vin,

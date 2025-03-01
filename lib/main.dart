@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:part_catalog/features/parts_catalog/widgets/car_info_widget.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/features/clients/screens/clients_screen.dart';
+import 'package:part_catalog/features/vehicles/screens/cars_screen.dart';
 
 /// {@template main_app}
 /// Главное приложение.
@@ -103,6 +104,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => const ClientsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.directions_car),
+              title: const Text('Автомобили'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CarsScreen()),
                 );
               },
             ),
