@@ -203,17 +203,192 @@ class _ClientsScreenState extends State<ClientsScreen> {
     }
   }
 
+  /// Показывает диалог для добавления/редактирования клиента.
+  ///
+  /// [client] - существующий клиент для редактирования, null для нового клиента.
+  ///
+  /// Возвращает новый или обновленный объект [Client] или null, если отменено.
   Future<Client?> _showClientDialog(BuildContext context,
       {Client? client}) async {
-    // Реализация диалога добавления/редактирования клиента
-    // ...
+    // Создаём контроллеры для полей ввода с начальными значениями из клиента (если есть)
+    final nameController = TextEditingController(text: client?.name);
+    final contactInfoController =
+        TextEditingController(text: client?.contactInfo);
+    final additionalInfoController =
+        TextEditingController(text: client?.additionalInfo);
+
+    // Начальное значение типа клиента
+    ClientType selectedType = client?.type ?? ClientType.physical;
+
+    // Состояние валидации формы
+    bool isValid =
+        client != null; // для новых клиентов изначально невалидная форма
+
+    // Создаём ключ для формы (для валидации)
+    final formKey = GlobalKey<FormState>();
+
     return showDialog<Client>(
       context: context,
       builder: (BuildContext context) {
-        // Существующий код диалога
-        return AlertDialog(
-            // ...
-            );
+        return StatefulBuilder(builder: (context, setState) {
+          // Функция валидации формы
+          void validateForm() {
+            setState(() {
+              isValid = formKey.currentState?.validate() ?? false;
+            });
+          }
+
+          return AlertDialog(
+            title: Text(
+                client == null ? 'Добавить клиента' : 'Редактировать клиента'),
+            content: Form(
+              key: formKey,
+              onChanged: validateForm,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Выпадающий список для типа клиента
+                    DropdownButtonFormField<ClientType>(
+                      value: selectedType,
+                      decoration: const InputDecoration(
+                        labelText: 'Тип клиента',
+                        prefixIcon: Icon(Icons.category),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ClientType.values.map((type) {
+                        IconData iconData;
+                        Color iconColor;
+
+                        switch (type) {
+                          case ClientType.physical:
+                            iconData = Icons.person;
+                            iconColor = Colors.blue;
+                            break;
+                          case ClientType.legal:
+                            iconData = Icons.business;
+                            iconColor = Colors.orange;
+                            break;
+                          case ClientType.individualEntrepreneur:
+                            iconData = Icons.business_center;
+                            iconColor = Colors.green;
+                            break;
+                          case ClientType.other:
+                            iconData = Icons.help_outline;
+                            iconColor = Colors.grey;
+                            break;
+                        }
+
+                        return DropdownMenuItem<ClientType>(
+                          value: type,
+                          child: Row(
+                            children: [
+                              Icon(iconData, color: iconColor, size: 18),
+                              const SizedBox(width: 8),
+                              Text(type.displayName),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (ClientType? value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedType = value;
+                          });
+                        }
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Поле ввода имени/наименования клиента
+                    TextFormField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        labelText: selectedType == ClientType.physical
+                            ? 'ФИО клиента'
+                            : 'Наименование организации',
+                        prefixIcon: Icon(
+                          selectedType == ClientType.physical
+                              ? Icons.person
+                              : Icons.business,
+                        ),
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Поле обязательно для заполнения';
+                        }
+                        return null;
+                      },
+                      textInputAction: TextInputAction.next,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Поле ввода контактной информации
+                    TextFormField(
+                      controller: contactInfoController,
+                      decoration: const InputDecoration(
+                        labelText: 'Контактная информация',
+                        prefixIcon: Icon(Icons.contact_phone),
+                        hintText: 'Телефон, email, адрес',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Поле обязательно для заполнения';
+                        }
+                        return null;
+                      },
+                      textInputAction: TextInputAction.next,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Поле ввода дополнительной информации (опционально)
+                    TextFormField(
+                      controller: additionalInfoController,
+                      decoration: const InputDecoration(
+                        labelText: 'Дополнительная информация',
+                        prefixIcon: Icon(Icons.info_outline),
+                        hintText: 'Примечания, особые условия и т.д.',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Отмена'),
+              ),
+              TextButton(
+                onPressed: isValid
+                    ? () {
+                        // Создаем объект клиента из введенных данных
+                        final result = Client(
+                          id: client?.id ??
+                              0, // 0 для новых клиентов (ID присвоит БД)
+                          type: selectedType,
+                          name: nameController.text.trim(),
+                          contactInfo: contactInfoController.text.trim(),
+                          additionalInfo:
+                              additionalInfoController.text.trim().isNotEmpty
+                                  ? additionalInfoController.text.trim()
+                                  : null,
+                        );
+                        Navigator.of(context).pop(result);
+                      }
+                    : null, // Если форма невалидна, кнопка будет неактивна
+                child: Text(client == null ? 'Добавить' : 'Сохранить'),
+              ),
+            ],
+          );
+        });
       },
     );
   }
