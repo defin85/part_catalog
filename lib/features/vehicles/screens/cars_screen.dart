@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/features/clients/models/client.dart';
 import 'package:part_catalog/features/vehicles/models/car.dart';
 import 'package:part_catalog/features/vehicles/services/car_service.dart';
 import 'package:part_catalog/features/clients/services/client_service.dart';
@@ -228,10 +229,334 @@ class _CarsScreenState extends State<CarsScreen> {
     }
   }
 
+  /// Показывает диалог для добавления/редактирования автомобиля.
+  ///
+  /// [car] - существующий автомобиль для редактирования, null для нового автомобиля.
+  ///
+  /// Возвращает новый или обновленный объект [CarModel] или null, если отменено.
   Future<CarModel?> _showCarDialog(BuildContext context,
       {CarModel? car}) async {
-    // Реализация диалога добавления/редактирования автомобиля
-    // ...
-    return null;
+    // Создаём контроллеры для полей ввода с начальными значениями из автомобиля (если есть)
+    final makeController = TextEditingController(text: car?.make);
+    final modelController = TextEditingController(text: car?.model);
+    final yearController = TextEditingController(
+      text: car?.year != null && car!.year > 0 ? car.year.toString() : '',
+    );
+    final vinController = TextEditingController(text: car?.vin);
+    final licensePlateController =
+        TextEditingController(text: car?.licensePlate);
+    final additionalInfoController =
+        TextEditingController(text: car?.additionalInfo);
+
+    // Выбранный клиент (владелец автомобиля)
+    Client? selectedClient;
+    String? selectedClientId = car?.clientId;
+
+    // Список всех клиентов для выбора
+    List<Client> clients = [];
+
+    // Состояние валидации формы
+    bool isValid =
+        car != null; // для новых автомобилей изначально невалидная форма
+    bool isLoading = true; // состояние загрузки списка клиентов
+
+    // Создаём ключ для формы (для валидации)
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<CarModel>(
+      context: context,
+      builder: (BuildContext context) {
+        // Используем StatefulBuilder для обновления состояния диалога
+        return StatefulBuilder(
+          builder: (context, setState) {
+            // Загружаем список клиентов, если еще не загружен
+            if (isLoading) {
+              // Запускаем асинхронную загрузку клиентов
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                // Сохраняем ссылку на ScaffoldMessengerState до выполнения асинхронных операций
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                // Сохраняем ссылку на Navigator до вызова pop()
+                final navigator = Navigator.of(context);
+
+                try {
+                  final loadedClients = await _clientService.getAllClients();
+
+                  // Проверяем, что виджет все еще в дереве виджетов
+                  if (mounted) {
+                    setState(() {
+                      clients = loadedClients;
+                      isLoading = false;
+
+                      // Если редактируем существующую машину, выбираем текущего владельца
+                      if (selectedClientId != null) {
+                        selectedClient = clients
+                            .where((c) => c.id.toString() == selectedClientId)
+                            .firstOrNull;
+                      }
+
+                      // Если клиент не выбран или не найден, и список не пуст, выбираем первого
+                      if ((selectedClient == null) && clients.isNotEmpty) {
+                        selectedClient = clients.first;
+                        selectedClientId = clients.first.id.toString();
+                      }
+                    });
+                  }
+                } catch (error) {
+                  // Проверяем, что виджет все еще в дереве виджетов
+                  if (mounted) {
+                    // Используем сохраненную ссылку вместо получения новой
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                          content: Text('Ошибка загрузки клиентов: $error')),
+                    );
+                    navigator.pop(); // закрываем диалог при ошибке
+                  }
+                }
+              });
+            }
+
+            // Функция валидации формы
+            void validateForm() {
+              setState(() {
+                isValid = formKey.currentState?.validate() ?? false;
+                isValid = isValid && selectedClient != null;
+              });
+            }
+
+            return AlertDialog(
+              title: Text(car == null
+                  ? 'Добавить автомобиль'
+                  : 'Редактировать автомобиль'),
+              content: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Form(
+                      key: formKey,
+                      onChanged: validateForm,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Выпадающий список для выбора владельца
+                            DropdownButtonFormField<Client>(
+                              value: selectedClient,
+                              decoration: const InputDecoration(
+                                labelText: 'Владелец автомобиля',
+                                prefixIcon: Icon(Icons.person),
+                                border: OutlineInputBorder(),
+                              ),
+                              items: clients.map((client) {
+                                return DropdownMenuItem<Client>(
+                                  value: client,
+                                  child: Text(client.name),
+                                );
+                              }).toList(),
+                              onChanged: (Client? value) {
+                                setState(() {
+                                  selectedClient = value;
+                                  selectedClientId = value?.id.toString();
+                                  validateForm();
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Необходимо выбрать владельца';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Поле ввода марки автомобиля
+                            TextFormField(
+                              controller: makeController,
+                              decoration: const InputDecoration(
+                                labelText: 'Марка автомобиля',
+                                prefixIcon: Icon(Icons.directions_car),
+                                border: OutlineInputBorder(),
+                                hintText: 'Например: Toyota',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Поле обязательно для заполнения';
+                                }
+                                return null;
+                              },
+                              textInputAction: TextInputAction.next,
+                              textCapitalization: TextCapitalization.words,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Поле ввода модели автомобиля
+                            TextFormField(
+                              controller: modelController,
+                              decoration: const InputDecoration(
+                                labelText: 'Модель автомобиля',
+                                prefixIcon: Icon(Icons.directions_car_filled),
+                                border: OutlineInputBorder(),
+                                hintText: 'Например: Camry',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Поле обязательно для заполнения';
+                                }
+                                return null;
+                              },
+                              textInputAction: TextInputAction.next,
+                              textCapitalization: TextCapitalization.words,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Поля для года выпуска и VIN в одной строке
+                            Row(
+                              children: [
+                                // Год выпуска
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: yearController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Год выпуска',
+                                      prefixIcon: Icon(Icons.date_range),
+                                      border: OutlineInputBorder(),
+                                      hintText: 'Например: 2022',
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    validator: (value) {
+                                      if (value != null && value.isNotEmpty) {
+                                        final year = int.tryParse(value);
+                                        if (year == null) {
+                                          return 'Введите число';
+                                        }
+                                        if (year < 1900 ||
+                                            year > DateTime.now().year + 1) {
+                                          return 'Некорректный год';
+                                        }
+                                      }
+                                      return null; // год необязателен
+                                    },
+                                    textInputAction: TextInputAction.next,
+                                  ),
+                                ),
+
+                                const SizedBox(width: 16),
+
+                                // VIN-код
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: vinController,
+                                    decoration: const InputDecoration(
+                                      labelText: 'VIN-код',
+                                      prefixIcon: Icon(Icons.pin),
+                                      border: OutlineInputBorder(),
+                                      hintText: '17 символов',
+                                    ),
+                                    textCapitalization:
+                                        TextCapitalization.characters,
+                                    onChanged: (value) {
+                                      // Преобразуем VIN к верхнему регистру
+                                      final upperValue = value.toUpperCase();
+                                      if (value != upperValue) {
+                                        vinController.text = upperValue;
+                                        vinController.selection =
+                                            TextSelection.fromPosition(
+                                                TextPosition(
+                                                    offset: vinController
+                                                        .text.length));
+                                      }
+                                    },
+                                    validator: (value) {
+                                      if (value != null && value.isNotEmpty) {
+                                        if (value.length != 17) {
+                                          return 'VIN должен содержать 17 символов';
+                                        }
+                                      }
+                                      return null; // VIN необязателен
+                                    },
+                                    textInputAction: TextInputAction.next,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Поле для госномера
+                            TextFormField(
+                              controller: licensePlateController,
+                              decoration: const InputDecoration(
+                                labelText: 'Государственный номер',
+                                prefixIcon: Icon(Icons.app_registration),
+                                border: OutlineInputBorder(),
+                                hintText: 'Регистрационный номер авто',
+                              ),
+                              textCapitalization: TextCapitalization.characters,
+                              onChanged: (value) {
+                                // Преобразуем номер к верхнему регистру
+                                final upperValue = value.toUpperCase();
+                                if (value != upperValue) {
+                                  licensePlateController.text = upperValue;
+                                  licensePlateController.selection =
+                                      TextSelection.fromPosition(TextPosition(
+                                          offset: licensePlateController
+                                              .text.length));
+                                }
+                              },
+                              textInputAction: TextInputAction.next,
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Поле ввода дополнительной информации
+                            TextFormField(
+                              controller: additionalInfoController,
+                              decoration: const InputDecoration(
+                                labelText: 'Дополнительная информация',
+                                prefixIcon: Icon(Icons.info_outline),
+                                hintText: 'Комплектация, особенности и т.д.',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Отмена'),
+                ),
+                if (!isLoading)
+                  TextButton(
+                    onPressed: isValid
+                        ? () {
+                            // Создаем объект автомобиля из введенных данных
+                            final result = CarModel(
+                              id: car?.id ??
+                                  '0', // '0' для новых автомобилей (ID присвоит БД)
+                              clientId: selectedClient!.id.toString(),
+                              make: makeController.text.trim(),
+                              model: modelController.text.trim(),
+                              year: yearController.text.isNotEmpty
+                                  ? int.parse(yearController.text.trim())
+                                  : 0,
+                              vin: vinController.text.trim(),
+                              licensePlate: licensePlateController.text.trim(),
+                              additionalInfo:
+                                  additionalInfoController.text.trim(),
+                            );
+                            Navigator.of(context).pop(result);
+                          }
+                        : null, // Если форма невалидна, кнопка будет неактивна
+                    child: Text(car == null ? 'Добавить' : 'Сохранить'),
+                  ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }
