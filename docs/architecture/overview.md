@@ -29,6 +29,7 @@ Framework: Flutter
 Внедрение зависимостей: get_it
 Навигация: go_router
 Локализация: flutter_localizations + intl
+Кодогенерация: build_runner + drift + freezed
 
 ## Архитектурные слои
 

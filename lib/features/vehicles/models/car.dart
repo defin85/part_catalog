@@ -1,60 +1,41 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'car.freezed.dart';
 part 'car.g.dart';
 
 /// {@template car}
 /// Модель данных для представления автомобиля.
 /// {@endtemplate}
-@JsonSerializable()
-class CarModel {
+@freezed
+class CarModel with _$CarModel {
   /// {@macro car}
-  CarModel({
-    required this.id, //test
-    required this.clientId,
-    required this.vin,
-    required this.make,
-    required this.model,
-    required this.year,
-    this.licensePlate,
-    this.additionalInfo,
-  });
+  const factory CarModel({
+    /// Уникальный идентификатор автомобиля.
+    required String id,
 
-  /// Уникальный идентификатор автомобиля.
-  @JsonKey(name: 'id')
-  final String id;
+    /// Идентификатор клиента-владельца.
+    required String clientId,
 
-  /// Идентификатор клиента-владельца.
-  @JsonKey(name: 'clientId')
-  final String clientId;
+    /// VIN-код.
+    required String vin,
 
-  /// VIN-код.
-  @JsonKey(name: 'vin')
-  final String vin;
+    /// Марка автомобиля.
+    required String make,
 
-  /// Марка автомобиля.
-  @JsonKey(name: 'make')
-  final String make;
+    /// Модель автомобиля.
+    required String model,
 
-  /// Модель автомобиля.
-  @JsonKey(name: 'model')
-  final String model;
+    /// Год выпуска.
+    required int year,
 
-  /// Год выпуска.
-  @JsonKey(name: 'year')
-  final int year;
+    /// Номерной знак.
+    String? licensePlate,
 
-  /// Номерной знак.
-  @JsonKey(name: 'licensePlate')
-  final String? licensePlate;
+    /// Дополнительная информация.
+    String? additionalInfo,
+  }) = _CarModel;
 
-  /// Дополнительная информация.
-  @JsonKey(name: 'additionalInfo')
-  final String? additionalInfo;
-
-  /// Преобразование JSON в объект `Car`.
+  /// Преобразование JSON в объект `CarModel`.
   factory CarModel.fromJson(Map<String, dynamic> json) =>
       _$CarModelFromJson(json);
-
-  /// Преобразование объекта `Car` в JSON.
-  Map<String, dynamic> toJson() => _$CarModelToJson(this);
 }

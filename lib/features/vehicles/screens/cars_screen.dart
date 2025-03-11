@@ -21,6 +21,22 @@ class _CarsScreenState extends State<CarsScreen> {
   // Опционально: фильтр по клиенту
   int? _selectedClientId;
 
+  // Состояние для выбранного автомобиля в десктоп режиме
+  CarModel? _selectedCar;
+
+  // Определяем, является ли устройство десктопом
+  bool _isDesktop(BuildContext context) {
+    final platform = Theme.of(context).platform;
+    return platform == TargetPlatform.windows ||
+        platform == TargetPlatform.macOS ||
+        platform == TargetPlatform.linux;
+  }
+
+  // Определяем размер экрана
+  bool _isLargeScreen(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 900;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isDbError) {
@@ -78,57 +94,225 @@ class _CarsScreenState extends State<CarsScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Автомобили'),
-        actions: [
-          // Опционально: кнопка для сброса фильтра по клиенту
-          if (_selectedClientId != null)
-            IconButton(
-              icon: const Icon(Icons.filter_alt_off),
-              onPressed: () => setState(() => _selectedClientId = null),
-              tooltip: 'Сбросить фильтр',
-            ),
-        ],
-      ),
-      // Используем StreamBuilder для реактивного обновления списка автомобилей
-      body: StreamBuilder<List<CarModel>>(
-        // Выбираем источник данных в зависимости от наличия фильтра
-        stream: _selectedClientId != null
-            ? _carService.watchClientCars(_selectedClientId!)
-            : _carService.watchCars(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    // Используем разный макет для десктопа и мобильных устройств
+    final isDesktop = _isDesktop(context);
+    final isLargeScreen = _isLargeScreen(context);
 
-          if (snapshot.hasError) {
-            // Проверяем, связана ли ошибка с отсутствием таблицы
-            if (snapshot.error.toString().contains('no such table')) {
-              // Устанавливаем флаг ошибки БД, который перерисует виджет
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {
-                  _isDbError = true;
-                });
-              });
-            }
-            return Center(
-              child: Text(
-                'Ошибка загрузки данных: ${snapshot.error}',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+    // Если это десктоп и большой экран, используем разделенный макет
+    if (isDesktop && isLargeScreen) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Автомобили'),
+          actions: [
+            if (_selectedClientId != null)
+              IconButton(
+                icon: const Icon(Icons.filter_alt_off),
+                onPressed: () => setState(() => _selectedClientId = null),
+                tooltip: 'Сбросить фильтр',
               ),
-            );
+            // Кнопка добавления для десктопа
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: _addCar,
+              tooltip: 'Добавить автомобиль',
+            ),
+          ],
+        ),
+        body: Row(
+          children: [
+            // Левая панель с фильтрами и списком автомобилей
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  // Фильтр по клиентам
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: FutureBuilder<List<Client>>(
+                      future: _clientService.getAllClients(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final clients = snapshot.data!;
+                        return DropdownButton<int?>(
+                          hint: const Text('Фильтр по клиенту'),
+                          value: _selectedClientId,
+                          isExpanded: true,
+                          items: [
+                            const DropdownMenuItem<int?>(
+                              value: null,
+                              child: Text('Все клиенты'),
+                            ),
+                            ...clients
+                                .map((client) => DropdownMenuItem<int?>(
+                                      value: client.id,
+                                      child: Text(client.name),
+                                    ))
+                                .toList(),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedClientId = value;
+                              _selectedCar =
+                                  null; // Сбрасываем выбранный автомобиль
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Список автомобилей
+                  Expanded(
+                    child: _buildCarsList(
+                      onCarSelected: (car) {
+                        setState(() => _selectedCar = car);
+                      },
+                      selectedCarId: _selectedCar?.id,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Вертикальный разделитель
+            const VerticalDivider(width: 1),
+
+            // Правая панель с детальной информацией или сообщением о выборе
+            Expanded(
+              flex: 3,
+              child: _selectedCar == null
+                  ? const Center(child: Text('Выберите автомобиль слева'))
+                  : Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildCarDetails(_selectedCar!),
+                    ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Мобильный макет
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Автомобили'),
+          actions: [
+            if (_selectedClientId != null)
+              IconButton(
+                icon: const Icon(Icons.filter_alt_off),
+                onPressed: () => setState(() => _selectedClientId = null),
+                tooltip: 'Сбросить фильтр',
+              ),
+          ],
+        ),
+        body: _buildCarsList(
+          onCarSelected: (car) => _editCar(car),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _addCar,
+          child: const Icon(Icons.add),
+        ),
+      );
+    }
+  }
+
+  // Виджет для отображения списка автомобилей
+  Widget _buildCarsList({
+    required Function(CarModel) onCarSelected,
+    String? selectedCarId,
+  }) {
+    final isDesktop = _isDesktop(context);
+
+    return StreamBuilder<List<CarModel>>(
+      // Выбираем источник данных в зависимости от наличия фильтра
+      stream: _selectedClientId != null
+          ? _carService.watchClientCars(_selectedClientId!)
+          : _carService.watchCars(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          // Проверяем, связана ли ошибка с отсутствием таблицы
+          if (snapshot.error.toString().contains('no such table')) {
+            // Устанавливаем флаг ошибки БД, который перерисует виджет
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              setState(() {
+                _isDbError = true;
+              });
+            });
           }
+          return Center(
+            child: Text(
+              'Ошибка загрузки данных: ${snapshot.error}',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          );
+        }
 
-          final cars = snapshot.data ?? [];
+        final cars = snapshot.data ?? [];
 
-          if (cars.isEmpty) {
-            return const Center(
-              child: Text(
-                  'Список автомобилей пуст. Добавьте автомобиль, нажав на кнопку "+"'),
-            );
-          }
+        if (cars.isEmpty) {
+          return const Center(
+            child: Text(
+                'Список автомобилей пуст. Добавьте автомобиль, нажав на кнопку "+"'),
+          );
+        }
 
+        // Для десктопа используем DataTable
+        if (isDesktop) {
+          return SingleChildScrollView(
+            child: DataTable(
+              showCheckboxColumn: false,
+              columns: const [
+                DataColumn(label: Text('Марка/Модель')),
+                DataColumn(label: Text('Владелец')),
+                DataColumn(label: Text('Гос. номер')),
+                DataColumn(label: Text('Действия')),
+              ],
+              rows: cars.map((car) {
+                return DataRow(
+                  selected: car.id == selectedCarId,
+                  onSelectChanged: (_) => onCarSelected(car),
+                  cells: [
+                    DataCell(Text('${car.make} ${car.model}')),
+                    DataCell(
+                      FutureBuilder<Client?>(
+                        future: _clientService
+                            .getClientById(int.parse(car.clientId)),
+                        builder: (context, snapshot) {
+                          return Text(snapshot.data?.name ?? 'Загрузка...');
+                        },
+                      ),
+                    ),
+                    DataCell(Text(car.licensePlate?.isEmpty == true
+                        ? '-'
+                        : car.licensePlate ?? '-')),
+                    DataCell(Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          tooltip: 'Редактировать',
+                          onPressed: () => _editCar(car),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          tooltip: 'Удалить',
+                          onPressed: () => _confirmDelete(car),
+                        ),
+                      ],
+                    )),
+                  ],
+                );
+              }).toList(),
+            ),
+          );
+        } else {
+          // Для мобильных используем ListView
           return ListView.builder(
             itemCount: cars.length,
             itemBuilder: (context, index) {
@@ -144,29 +328,7 @@ class _CarsScreenState extends State<CarsScreen> {
                 ),
                 direction: DismissDirection.endToStart,
                 confirmDismiss: (direction) async {
-                  return await showDialog<bool>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Удалить автомобиль?'),
-                            content: Text(
-                                'Вы действительно хотите удалить автомобиль ${car.make} ${car.model}?'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: const Text('Отмена'),
-                              ),
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                                child: const Text('Удалить'),
-                              ),
-                            ],
-                          );
-                        },
-                      ) ??
-                      false;
+                  return await _confirmDelete(car);
                 },
                 onDismissed: (direction) {
                   _carService.deleteCar(int.parse(car.id));
@@ -176,45 +338,158 @@ class _CarsScreenState extends State<CarsScreen> {
                             Text('Автомобиль ${car.make} ${car.model} удален')),
                   );
                 },
-                child: FutureBuilder(
-                  // Получаем информацию о клиенте для отображения
-                  future: _clientService.getClientById(int.parse(car.clientId)),
-                  builder: (context, clientSnapshot) {
-                    final clientName =
-                        clientSnapshot.data?.name ?? 'Загрузка...';
-
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        child: const Icon(Icons.directions_car,
-                            color: Colors.white),
-                      ),
-                      title: Text('${car.make} ${car.model}'),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Клиент: $clientName'),
-                          if (car.vin.isNotEmpty == true)
-                            Text('VIN: ${car.vin}'),
-                        ],
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _editCar(car),
-                    );
-                  },
+                child: Card(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      child:
+                          const Icon(Icons.directions_car, color: Colors.white),
+                    ),
+                    title: Text('${car.make} ${car.model}'),
+                    subtitle: FutureBuilder<Client?>(
+                      future:
+                          _clientService.getClientById(int.parse(car.clientId)),
+                      builder: (context, clientSnapshot) {
+                        final clientName =
+                            clientSnapshot.data?.name ?? 'Загрузка...';
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Клиент: $clientName'),
+                            if (car.licensePlate?.isNotEmpty == true)
+                              Text('Гос. номер: ${car.licensePlate}'),
+                          ],
+                        );
+                      },
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => onCarSelected(car),
+                  ),
                 ),
               );
             },
           );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addCar,
-        child: const Icon(Icons.add),
-      ),
+        }
+      },
     );
   }
 
+  // Виджет для отображения детальной информации об автомобиле
+  Widget _buildCarDetails(CarModel car) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${car.make} ${car.model}',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Редактировать',
+                  onPressed: () => _editCar(car),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  tooltip: 'Удалить',
+                  onPressed: () async {
+                    if (await _confirmDelete(car)) {
+                      _carService.deleteCar(int.parse(car.id));
+                      setState(() => _selectedCar = null);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(
+                                'Автомобиль ${car.make} ${car.model} удален')),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        const Divider(),
+        FutureBuilder<Client?>(
+          future: _clientService.getClientById(int.parse(car.clientId)),
+          builder: (context, snapshot) {
+            final client = snapshot.data;
+            return ListTile(
+              title: const Text('Владелец'),
+              subtitle: Text(client?.name ?? 'Загрузка...'),
+              leading: const Icon(Icons.person),
+            );
+          },
+        ),
+        if (car.year > 0)
+          ListTile(
+            title: const Text('Год выпуска'),
+            subtitle: Text(car.year.toString()),
+            leading: const Icon(Icons.date_range),
+          ),
+        if (car.vin.isNotEmpty)
+          ListTile(
+            title: const Text('VIN-код'),
+            subtitle: Text(car.vin),
+            leading: const Icon(Icons.pin),
+          ),
+        if (car.vin.isNotEmpty == true)
+          ListTile(
+            title: const Text('Государственный номер'),
+            subtitle: Text(car.licensePlate ?? ''),
+            leading: const Icon(Icons.app_registration),
+          ),
+        if (car.additionalInfo?.isNotEmpty == true)
+          ListTile(
+            title: const Text('Дополнительная информация'),
+            subtitle: Text(car.additionalInfo ?? ''),
+            leading: const Icon(Icons.info_outline),
+          ),
+        const Divider(),
+        const Text('История заказ-нарядов',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        // Здесь будет интеграция со списком заказ-нарядов для этого автомобиля
+        const Expanded(
+          child: Center(
+            child: Text('История заказ-нарядов будет добавлена позже'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Метод для подтверждения удаления автомобиля
+  Future<bool> _confirmDelete(CarModel car) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Удалить автомобиль?'),
+              content: Text(
+                  'Вы действительно хотите удалить автомобиль ${car.make} ${car.model}?'),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Отмена'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Удалить'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
+  // Остальные методы остаются без изменений
   Future<void> _addCar() async {
     final newCar = await _showCarDialog(context);
     if (newCar != null) {
@@ -226,6 +501,9 @@ class _CarsScreenState extends State<CarsScreen> {
     final updatedCar = await _showCarDialog(context, car: car);
     if (updatedCar != null) {
       await _carService.updateCar(updatedCar);
+      if (_selectedCar != null && _selectedCar!.id == updatedCar.id) {
+        setState(() => _selectedCar = updatedCar);
+      }
     }
   }
 
@@ -237,16 +515,16 @@ class _CarsScreenState extends State<CarsScreen> {
   Future<CarModel?> _showCarDialog(BuildContext context,
       {CarModel? car}) async {
     // Создаём контроллеры для полей ввода с начальными значениями из автомобиля (если есть)
-    final makeController = TextEditingController(text: car?.make);
-    final modelController = TextEditingController(text: car?.model);
+    final makeController = TextEditingController(text: car?.make ?? '');
+    final modelController = TextEditingController(text: car?.model ?? '');
     final yearController = TextEditingController(
       text: car?.year != null && car!.year > 0 ? car.year.toString() : '',
     );
-    final vinController = TextEditingController(text: car?.vin);
+    final vinController = TextEditingController(text: car?.vin ?? '');
     final licensePlateController =
-        TextEditingController(text: car?.licensePlate);
+        TextEditingController(text: car?.licensePlate ?? '');
     final additionalInfoController =
-        TextEditingController(text: car?.additionalInfo);
+        TextEditingController(text: car?.additionalInfo ?? '');
 
     // Выбранный клиент (владелец автомобиля)
     Client? selectedClient;
