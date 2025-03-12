@@ -79,7 +79,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
         title: const Text('Клиенты'),
       ),
       // Используем StreamBuilder для реактивного обновления списка клиентов
-      body: StreamBuilder<List<Client>>(
+      body: StreamBuilder<List<ClientModel>>(
         // Подписываемся на поток данных из сервиса
         stream: _clientService.watchClients(),
         builder: (context, snapshot) {
@@ -196,7 +196,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     }
   }
 
-  Future<void> _editClient(Client client) async {
+  Future<void> _editClient(ClientModel client) async {
     final updatedClient = await _showClientDialog(context, client: client);
     if (updatedClient != null) {
       await _clientService.updateClient(updatedClient);
@@ -208,8 +208,8 @@ class _ClientsScreenState extends State<ClientsScreen> {
   /// [client] - существующий клиент для редактирования, null для нового клиента.
   ///
   /// Возвращает новый или обновленный объект [Client] или null, если отменено.
-  Future<Client?> _showClientDialog(BuildContext context,
-      {Client? client}) async {
+  Future<ClientModel?> _showClientDialog(BuildContext context,
+      {ClientModel? client}) async {
     // Создаём контроллеры для полей ввода с начальными значениями из клиента (если есть)
     final nameController = TextEditingController(text: client?.name);
     final contactInfoController =
@@ -227,7 +227,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
     // Создаём ключ для формы (для валидации)
     final formKey = GlobalKey<FormState>();
 
-    return showDialog<Client>(
+    return showDialog<ClientModel>(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
@@ -370,7 +370,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                 onPressed: isValid
                     ? () {
                         // Создаем объект клиента из введенных данных
-                        final result = Client(
+                        final result = ClientModel(
                           id: client?.id ??
                               0, // 0 для новых клиентов (ID присвоит БД)
                           type: selectedType,

@@ -15,7 +15,7 @@ class ClientService {
   final Logger _logger;
 
   /// Возвращает поток списка клиентов, обновляемый при изменениях в БД.
-  Stream<List<Client>> watchClients() {
+  Stream<List<ClientModel>> watchClients() {
     _logger.i('Запрос потока списка активных клиентов');
     return _db.clientsDao.watchActiveClients().map(
           (clients) => clients.map(_mapToModel).toList(),
@@ -23,7 +23,7 @@ class ClientService {
   }
 
   /// Получает клиента по идентификатору.
-  Future<Client?> getClientById(int id) async {
+  Future<ClientModel?> getClientById(int id) async {
     _logger.i('Запрос клиента с ID: $id');
     final clientItem = await _db.clientsDao.getClientById(id);
     if (clientItem == null) return null;
@@ -31,14 +31,14 @@ class ClientService {
   }
 
   /// Добавляет нового клиента.
-  Future<int> addClient(Client client) {
+  Future<int> addClient(ClientModel client) {
     _logger.i('Добавление нового клиента: ${client.name}');
     final companion = _mapToCompanion(client);
     return _db.clientsDao.insertClient(companion);
   }
 
   /// Обновляет существующего клиента.
-  Future<bool> updateClient(Client client) {
+  Future<bool> updateClient(ClientModel client) {
     _logger.i('Обновление клиента с ID: ${client.id}');
     final companion = _mapToCompanion(client, withId: true);
     return _db.clientsDao.updateClient(companion);
@@ -51,7 +51,7 @@ class ClientService {
   }
 
   /// Возвращает список всех клиентов, включая удалённых.
-  Future<List<Client>> getAllClients({bool includeDeleted = false}) async {
+  Future<List<ClientModel>> getAllClients({bool includeDeleted = false}) async {
     _logger
         .i('Запрос списка всех клиентов (включая удалённых: $includeDeleted)');
     final clientItems =
@@ -60,7 +60,7 @@ class ClientService {
   }
 
   /// Фильтрует клиентов по типу.
-  Future<List<Client>> getClientsByType(ClientType type) async {
+  Future<List<ClientModel>> getClientsByType(ClientType type) async {
     _logger.i('Фильтрация клиентов по типу: ${type.toString()}');
     final clientItems =
         await _db.clientsDao.getClientsByType(type.toShortString());
@@ -75,7 +75,7 @@ class ClientService {
 
   /// Создаёт нового клиента вместе с его автомобилями в одной транзакции.
   Future<int> createClientWithCars(
-      Client client, List<CarsItemsCompanion> cars) {
+      ClientModel client, List<CarsItemsCompanion> cars) {
     _logger.i(
         'Создание клиента с автомобилями: ${client.name}, количество автомобилей: ${cars.length}');
     final clientCompanion = _mapToCompanion(client);
@@ -94,15 +94,15 @@ class ClientService {
   }
 
   /// Поиск клиентов по имени или контактной информации.
-  Future<List<Client>> searchClients(String query) async {
+  Future<List<ClientModel>> searchClients(String query) async {
     _logger.i('Поиск клиентов по запросу: $query');
     final clientItems = await _db.clientsDao.searchClients(query);
     return clientItems.map(_mapToModel).toList();
   }
 
   /// Преобразует запись из базы данных в бизнес-модель клиента.
-  Client _mapToModel(ClientsItem item) {
-    return Client(
+  ClientModel _mapToModel(ClientsItem item) {
+    return ClientModel(
       id: item.id,
       type: ClientTypeExtension.fromString(item.type),
       name: item.name,
@@ -112,7 +112,8 @@ class ClientService {
   }
 
   /// Преобразует бизнес-модель в модель базы данных.
-  ClientsItemsCompanion _mapToCompanion(Client client, {bool withId = false}) {
+  ClientsItemsCompanion _mapToCompanion(ClientModel client,
+      {bool withId = false}) {
     var companion = ClientsItemsCompanion(
       type: Value(client.type.toShortString()),
       name: Value(client.name),

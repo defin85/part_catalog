@@ -128,7 +128,7 @@ class _CarsScreenState extends State<CarsScreen> {
                   // Фильтр по клиентам
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: FutureBuilder<List<Client>>(
+                    child: FutureBuilder<List<ClientModel>>(
                       future: _clientService.getAllClients(),
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
@@ -145,12 +145,10 @@ class _CarsScreenState extends State<CarsScreen> {
                               value: null,
                               child: Text('Все клиенты'),
                             ),
-                            ...clients
-                                .map((client) => DropdownMenuItem<int?>(
-                                      value: client.id,
-                                      child: Text(client.name),
-                                    ))
-                                .toList(),
+                            ...clients.map((client) => DropdownMenuItem<int?>(
+                                  value: client.id,
+                                  child: Text(client.name),
+                                )),
                           ],
                           onChanged: (value) {
                             setState(() {
@@ -280,7 +278,7 @@ class _CarsScreenState extends State<CarsScreen> {
                   cells: [
                     DataCell(Text('${car.make} ${car.model}')),
                     DataCell(
-                      FutureBuilder<Client?>(
+                      FutureBuilder<ClientModel?>(
                         future: _clientService
                             .getClientById(int.parse(car.clientId)),
                         builder: (context, snapshot) {
@@ -348,7 +346,7 @@ class _CarsScreenState extends State<CarsScreen> {
                           const Icon(Icons.directions_car, color: Colors.white),
                     ),
                     title: Text('${car.make} ${car.model}'),
-                    subtitle: FutureBuilder<Client?>(
+                    subtitle: FutureBuilder<ClientModel?>(
                       future:
                           _clientService.getClientById(int.parse(car.clientId)),
                       builder: (context, clientSnapshot) {
@@ -400,14 +398,23 @@ class _CarsScreenState extends State<CarsScreen> {
                   icon: const Icon(Icons.delete),
                   tooltip: 'Удалить',
                   onPressed: () async {
+                    // Сохраняем ссылку на ScaffoldMessengerState до асинхронной операции
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
                     if (await _confirmDelete(car)) {
                       _carService.deleteCar(int.parse(car.id));
-                      setState(() => _selectedCar = null);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'Автомобиль ${car.make} ${car.model} удален')),
-                      );
+
+                      // Проверяем флаг mounted перед обновлением состояния
+                      if (mounted) {
+                        setState(() => _selectedCar = null);
+
+                        // Используем сохраненную ссылку вместо ScaffoldMessenger.of(context)
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'Автомобиль ${car.make} ${car.model} удален')),
+                        );
+                      }
                     }
                   },
                 ),
@@ -416,7 +423,7 @@ class _CarsScreenState extends State<CarsScreen> {
           ],
         ),
         const Divider(),
-        FutureBuilder<Client?>(
+        FutureBuilder<ClientModel?>(
           future: _clientService.getClientById(int.parse(car.clientId)),
           builder: (context, snapshot) {
             final client = snapshot.data;
@@ -527,11 +534,11 @@ class _CarsScreenState extends State<CarsScreen> {
         TextEditingController(text: car?.additionalInfo ?? '');
 
     // Выбранный клиент (владелец автомобиля)
-    Client? selectedClient;
+    ClientModel? selectedClient;
     String? selectedClientId = car?.clientId;
 
     // Список всех клиентов для выбора
-    List<Client> clients = [];
+    List<ClientModel> clients = [];
 
     // Состояние валидации формы
     bool isValid =
@@ -615,7 +622,7 @@ class _CarsScreenState extends State<CarsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             // Выпадающий список для выбора владельца
-                            DropdownButtonFormField<Client>(
+                            DropdownButtonFormField<ClientModel>(
                               value: selectedClient,
                               decoration: const InputDecoration(
                                 labelText: 'Владелец автомобиля',
@@ -623,12 +630,12 @@ class _CarsScreenState extends State<CarsScreen> {
                                 border: OutlineInputBorder(),
                               ),
                               items: clients.map((client) {
-                                return DropdownMenuItem<Client>(
+                                return DropdownMenuItem<ClientModel>(
                                   value: client,
                                   child: Text(client.name),
                                 );
                               }).toList(),
-                              onChanged: (Client? value) {
+                              onChanged: (ClientModel? value) {
                                 setState(() {
                                   selectedClient = value;
                                   selectedClientId = value?.id.toString();

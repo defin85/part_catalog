@@ -1,47 +1,35 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:part_catalog/features/clients/models/client_type.dart';
 
+part 'client.freezed.dart';
 part 'client.g.dart';
 
-/// {@template client}
+/// {@template client_model}
 /// Модель данных для представления клиента.
 /// {@endtemplate}
-@JsonSerializable(converters: [ClientTypeConverter()]) // Add converter
-class Client {
-  /// {@macro client}
-  Client({
-    required this.id,
-    required this.type,
-    required this.name,
-    required this.contactInfo,
-    this.additionalInfo,
-  });
+@freezed
+class ClientModel with _$ClientModel {
+  /// {@macro client_model}
+  const factory ClientModel({
+    /// Уникальный идентификатор клиента.
+    required int id,
 
-  /// Уникальный идентификатор клиента.
-  @JsonKey(name: 'id')
-  final int id; // Изменено с String на int
+    /// Тип клиента (physical, legal, individualEntrepreneur, other).
+    required ClientType type,
 
-  /// Тип клиента (physical, legal, individualEntrepreneur, other).
-  @JsonKey(name: 'type')
-  final ClientType type;
+    /// ФИО для физического лица или название организации для юридического лица.
+    required String name,
 
-  /// ФИО для физического лица или название организации для юридического лица.
-  @JsonKey(name: 'name')
-  final String name;
+    /// Контактная информация (телефон, email, адрес).
+    required String contactInfo,
 
-  /// Контактная информация (телефон, email, адрес).
-  @JsonKey(name: 'contactInfo')
-  final String contactInfo;
+    /// Дополнительная информация.
+    String? additionalInfo,
+  }) = _ClientModel;
 
-  /// Дополнительная информация.
-  @JsonKey(name: 'additionalInfo')
-  final String? additionalInfo;
-
-  /// Преобразование JSON в объект `Client`.
-  factory Client.fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
-
-  /// Преобразование объекта `Client` в JSON.
-  Map<String, dynamic> toJson() => _$ClientToJson(this);
+  /// Преобразование JSON в объект `ClientModel`.
+  factory ClientModel.fromJson(Map<String, dynamic> json) =>
+      _$ClientModelFromJson(json);
 }
 
 /// {@template client_type_converter}

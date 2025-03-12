@@ -6,18 +6,27 @@ part of 'client.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Client _$ClientFromJson(Map<String, dynamic> json) => Client(
+_$ClientModelImpl _$$ClientModelImplFromJson(Map<String, dynamic> json) =>
+    _$ClientModelImpl(
       id: (json['id'] as num).toInt(),
-      type: const ClientTypeConverter().fromJson(json['type'] as String),
+      type: $enumDecode(_$ClientTypeEnumMap, json['type']),
       name: json['name'] as String,
       contactInfo: json['contactInfo'] as String,
       additionalInfo: json['additionalInfo'] as String?,
     );
 
-Map<String, dynamic> _$ClientToJson(Client instance) => <String, dynamic>{
+Map<String, dynamic> _$$ClientModelImplToJson(_$ClientModelImpl instance) =>
+    <String, dynamic>{
       'id': instance.id,
-      'type': const ClientTypeConverter().toJson(instance.type),
+      'type': _$ClientTypeEnumMap[instance.type]!,
       'name': instance.name,
       'contactInfo': instance.contactInfo,
       'additionalInfo': instance.additionalInfo,
     };
+
+const _$ClientTypeEnumMap = {
+  ClientType.physical: 'physical',
+  ClientType.legal: 'legal',
+  ClientType.individualEntrepreneur: 'individualEntrepreneur',
+  ClientType.other: 'other',
+};
