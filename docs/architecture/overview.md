@@ -30,6 +30,7 @@ Framework: Flutter
 Навигация: go_router
 Локализация: flutter_localizations + intl
 Кодогенерация: build_runner + drift + freezed
+Логгирование: logger
 
 ## Архитектурные слои
 
