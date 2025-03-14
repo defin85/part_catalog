@@ -309,7 +309,7 @@ void main() async {
   _setupLogger();
 
   final projectDir = Directory('lib');
-  final outputFile = 'project_ast.json';
+  final outputFile = '.github/project_ast.json';
 
   _logger.i('Начало анализа проекта...');
   try {

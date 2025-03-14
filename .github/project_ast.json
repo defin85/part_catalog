@@ -1,0 +1,2179 @@
+{
+  "path": "lib",
+  "files": [
+    {
+      "path": "lib\\main.dart",
+      "name": "main.dart",
+      "structure": {
+        "classes": [],
+        "functions": [],
+        "enums": [],
+        "extensions": []
+      },
+      "imports": [
+        {
+          "uri": "package:flutter/material.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:flutter_dotenv/flutter_dotenv.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:part_catalog/core/database/database.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:part_catalog/core/service_locator.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:part_catalog/core/utils/s.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:part_catalog/core/providers/locale_provider.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:part_catalog/features/home/screens/home_screen.dart",
+          "prefix": null,
+          "combinators": []
+        },
+        {
+          "uri": "package:provider/provider.dart",
+          "prefix": null,
+          "combinators": []
+        }
+      ]
+    }
+  ],
+  "directories": [
+    {
+      "path": "lib\\core",
+      "files": [
+        {
+          "path": "lib\\core\\service_locator.dart",
+          "name": "service_locator.dart",
+          "structure": {
+            "classes": [],
+            "functions": [],
+            "enums": [],
+            "extensions": []
+          },
+          "imports": [
+            {
+              "uri": "package:dio/dio.dart",
+              "prefix": null,
+              "combinators": []
+            },
+            {
+              "uri": "package:get_it/get_it.dart",
+              "prefix": null,
+              "combinators": []
+            },
+            {
+              "uri": "package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart",
+              "prefix": null,
+              "combinators": []
+            },
+            {
+              "uri": "package:part_catalog/features/clients/services/client_service.dart",
+              "prefix": null,
+              "combinators": []
+            },
+            {
+              "uri": "package:part_catalog/core/database/database.dart",
+              "prefix": null,
+              "combinators": []
+            },
+            {
+              "uri": "package:part_catalog/features/vehicles/services/car_service.dart",
+              "prefix": null,
+              "combinators": []
+            },
+            {
+              "uri": "package:part_catalog/core/providers/locale_provider.dart",
+              "prefix": null,
+              "combinators": []
+            }
+          ]
+        }
+      ],
+      "directories": [
+        {
+          "path": "lib\\core\\database",
+          "files": [
+            {
+              "path": "lib\\core\\database\\database.dart",
+              "name": "database.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:drift/drift.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:path/path.dart",
+                  "prefix": "p",
+                  "combinators": []
+                },
+                {
+                  "uri": "package:path_provider/path_provider.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:drift/native.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "dart:io",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:logger/logger.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "schema_synchronizer.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "items/clients_items.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "items/cars_items.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "items/app_info_items.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "daos/clients_dao.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "daos/cars_dao.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            },
+            {
+              "path": "lib\\core\\database\\database.g.dart",
+              "name": "database.g.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": []
+            },
+            {
+              "path": "lib\\core\\database\\database_logger.dart",
+              "name": "database_logger.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:drift/drift.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:logger/logger.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            },
+            {
+              "path": "lib\\core\\database\\schema_synchronizer.dart",
+              "name": "schema_synchronizer.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:drift/drift.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:logger/logger.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:part_catalog/core/database/database.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            }
+          ],
+          "directories": [
+            {
+              "path": "lib\\core\\database\\daos",
+              "files": [
+                {
+                  "path": "lib\\core\\database\\daos\\cars_dao.dart",
+                  "name": "cars_dao.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/database.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/items/cars_items.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/items/clients_items.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\core\\database\\daos\\cars_dao.g.dart",
+                  "name": "cars_dao.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\core\\database\\daos\\clients_dao.dart",
+                  "name": "clients_dao.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/database.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/items/clients_items.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\core\\database\\daos\\clients_dao.g.dart",
+                  "name": "clients_dao.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\core\\database\\items",
+              "files": [
+                {
+                  "path": "lib\\core\\database\\items\\app_info_items.dart",
+                  "name": "app_info_items.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\core\\database\\items\\cars_items.dart",
+                  "name": "cars_items.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "clients_items.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\core\\database\\items\\clients_items.dart",
+                  "name": "clients_items.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            }
+          ]
+        },
+        {
+          "path": "lib\\core\\l10n",
+          "files": [],
+          "directories": []
+        },
+        {
+          "path": "lib\\core\\providers",
+          "files": [
+            {
+              "path": "lib\\core\\providers\\locale_provider.dart",
+              "name": "locale_provider.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:flutter/material.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:shared_preferences/shared_preferences.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            }
+          ],
+          "directories": []
+        },
+        {
+          "path": "lib\\core\\schemas",
+          "files": [],
+          "directories": []
+        },
+        {
+          "path": "lib\\core\\utils",
+          "files": [
+            {
+              "path": "lib\\core\\utils\\json_converter.dart",
+              "name": "json_converter.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "dart:convert",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:drift/drift.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            },
+            {
+              "path": "lib\\core\\utils\\logger_config.dart",
+              "name": "logger_config.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:logger/logger.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            },
+            {
+              "path": "lib\\core\\utils\\s.dart",
+              "name": "s.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:flutter/material.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:flutter_localizations/flutter_localizations.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:flutter_gen/gen_l10n/app_localizations.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            }
+          ],
+          "directories": []
+        },
+        {
+          "path": "lib\\core\\widgets",
+          "files": [
+            {
+              "path": "lib\\core\\widgets\\language_switcher.dart",
+              "name": "language_switcher.dart",
+              "structure": {
+                "classes": [],
+                "functions": [],
+                "enums": [],
+                "extensions": []
+              },
+              "imports": [
+                {
+                  "uri": "package:flutter/material.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:part_catalog/core/utils/s.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:part_catalog/core/providers/locale_provider.dart",
+                  "prefix": null,
+                  "combinators": []
+                },
+                {
+                  "uri": "package:provider/provider.dart",
+                  "prefix": null,
+                  "combinators": []
+                }
+              ]
+            }
+          ],
+          "directories": []
+        }
+      ]
+    },
+    {
+      "path": "lib\\features",
+      "files": [],
+      "directories": [
+        {
+          "path": "lib\\features\\clients",
+          "files": [],
+          "directories": [
+            {
+              "path": "lib\\features\\clients\\models",
+              "files": [
+                {
+                  "path": "lib\\features\\clients\\models\\client.dart",
+                  "name": "client.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/models/client_type.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\clients\\models\\client.freezed.dart",
+                  "name": "client.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\clients\\models\\client.g.dart",
+                  "name": "client.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\clients\\models\\client_type.dart",
+                  "name": "client_type.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\clients\\screens",
+              "files": [
+                {
+                  "path": "lib\\features\\clients\\screens\\clients_screen.dart",
+                  "name": "clients_screen.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:flutter/material.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/database.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/service_locator.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/models/client.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/models/client_type.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/services/client_service.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/vehicles/services/car_service.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\clients\\services",
+              "files": [
+                {
+                  "path": "lib\\features\\clients\\services\\client_service.dart",
+                  "name": "client_service.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/database.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/models/client.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/models/client_type.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:logger/logger.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            }
+          ]
+        },
+        {
+          "path": "lib\\features\\home",
+          "files": [],
+          "directories": [
+            {
+              "path": "lib\\features\\home\\screens",
+              "files": [
+                {
+                  "path": "lib\\features\\home\\screens\\home_screen.dart",
+                  "name": "home_screen.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:flutter/material.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/utils/s.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/widgets/language_switcher.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/screens/clients_screen.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/vehicles/screens/cars_screen.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            }
+          ]
+        },
+        {
+          "path": "lib\\features\\orders",
+          "files": [],
+          "directories": [
+            {
+              "path": "lib\\features\\orders\\models",
+              "files": [
+                {
+                  "path": "lib\\features\\orders\\models\\order.dart",
+                  "name": "order.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:json_annotation/json_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/orders/models/order_item.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\orders\\models\\order.g.dart",
+                  "name": "order.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\orders\\models\\order_item.dart",
+                  "name": "order_item.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:json_annotation/json_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\orders\\models\\order_item.g.dart",
+                  "name": "order_item.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\orders\\screens",
+              "files": [],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\orders\\services",
+              "files": [],
+              "directories": []
+            }
+          ]
+        },
+        {
+          "path": "lib\\features\\parts_catalog",
+          "files": [],
+          "directories": [
+            {
+              "path": "lib\\features\\parts_catalog\\api",
+              "files": [
+                {
+                  "path": "lib\\features\\parts_catalog\\api\\api_client_parts_catalogs.dart",
+                  "name": "api_client_parts_catalogs.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:dio/dio.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:retrofit/retrofit.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/catalog.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/model.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/car2.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/car_parameter_info.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/group.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/car_info.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/parts.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/suggest.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/example_prices_response.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/groups_tree_response.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/schemas_response.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\api\\api_client_parts_catalogs.g.dart",
+                  "name": "api_client_parts_catalogs.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\parts_catalog\\models",
+              "files": [
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car2.dart",
+                  "name": "car2.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car2.freezed.dart",
+                  "name": "car2.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car2.g.dart",
+                  "name": "car2.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_info.dart",
+                  "name": "car_info.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/car_parameter.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/option_code.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_info.freezed.dart",
+                  "name": "car_info.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_info.g.dart",
+                  "name": "car_info.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter.dart",
+                  "name": "car_parameter.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter.freezed.dart",
+                  "name": "car_parameter.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter.g.dart",
+                  "name": "car_parameter.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter_idx.dart",
+                  "name": "car_parameter_idx.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter_idx.freezed.dart",
+                  "name": "car_parameter_idx.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter_idx.g.dart",
+                  "name": "car_parameter_idx.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter_info.dart",
+                  "name": "car_parameter_info.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter_info.freezed.dart",
+                  "name": "car_parameter_info.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\car_parameter_info.g.dart",
+                  "name": "car_parameter_info.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\catalog.dart",
+                  "name": "catalog.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\catalog.freezed.dart",
+                  "name": "catalog.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\catalog.g.dart",
+                  "name": "catalog.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\error.dart",
+                  "name": "error.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\error.freezed.dart",
+                  "name": "error.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\error.g.dart",
+                  "name": "error.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\example_prices_response.dart",
+                  "name": "example_prices_response.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\example_prices_response.freezed.dart",
+                  "name": "example_prices_response.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\example_prices_response.g.dart",
+                  "name": "example_prices_response.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\group.dart",
+                  "name": "group.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\group.freezed.dart",
+                  "name": "group.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\group.g.dart",
+                  "name": "group.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\groups_tree.dart",
+                  "name": "groups_tree.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\groups_tree.freezed.dart",
+                  "name": "groups_tree.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\groups_tree.g.dart",
+                  "name": "groups_tree.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\groups_tree_response.dart",
+                  "name": "groups_tree_response.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/groups_tree.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\groups_tree_response.freezed.dart",
+                  "name": "groups_tree_response.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\groups_tree_response.g.dart",
+                  "name": "groups_tree_response.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\ip.dart",
+                  "name": "ip.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\ip.freezed.dart",
+                  "name": "ip.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\ip.g.dart",
+                  "name": "ip.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\model.dart",
+                  "name": "model.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\model.freezed.dart",
+                  "name": "model.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\model.g.dart",
+                  "name": "model.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\option_code.dart",
+                  "name": "option_code.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\option_code.freezed.dart",
+                  "name": "option_code.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\option_code.g.dart",
+                  "name": "option_code.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\part.dart",
+                  "name": "part.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\part.freezed.dart",
+                  "name": "part.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\part.g.dart",
+                  "name": "part.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\parts.dart",
+                  "name": "parts.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/part.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\parts.freezed.dart",
+                  "name": "parts.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\parts.g.dart",
+                  "name": "parts.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\parts_group.dart",
+                  "name": "parts_group.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/part.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\parts_group.freezed.dart",
+                  "name": "parts_group.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\parts_group.g.dart",
+                  "name": "parts_group.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\part_name.dart",
+                  "name": "part_name.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\part_name.freezed.dart",
+                  "name": "part_name.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\part_name.g.dart",
+                  "name": "part_name.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\position.dart",
+                  "name": "position.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\position.freezed.dart",
+                  "name": "position.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\position.g.dart",
+                  "name": "position.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\schemas_response.dart",
+                  "name": "schemas_response.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/group.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/schema_model.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\schemas_response.freezed.dart",
+                  "name": "schemas_response.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\schemas_response.g.dart",
+                  "name": "schemas_response.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\schema_model.dart",
+                  "name": "schema_model.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/part_name.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\schema_model.freezed.dart",
+                  "name": "schema_model.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\schema_model.g.dart",
+                  "name": "schema_model.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\suggest.dart",
+                  "name": "suggest.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\suggest.freezed.dart",
+                  "name": "suggest.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\models\\suggest.g.dart",
+                  "name": "suggest.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\parts_catalog\\screens",
+              "files": [],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\parts_catalog\\widgets",
+              "files": [
+                {
+                  "path": "lib\\features\\parts_catalog\\widgets\\car_info_widget.dart",
+                  "name": "car_info_widget.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:flutter/material.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/car_info.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:flutter_dotenv/flutter_dotenv.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:logger/logger.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:get_it/get_it.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\parts_catalog\\widgets\\schema_list_widget.dart",
+                  "name": "schema_list_widget.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:flutter/material.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/parts_catalog/models/schemas_response.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:flutter_dotenv/flutter_dotenv.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:logger/logger.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:get_it/get_it.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            }
+          ]
+        },
+        {
+          "path": "lib\\features\\suppliers",
+          "files": [],
+          "directories": [
+            {
+              "path": "lib\\features\\suppliers\\api",
+              "files": [],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\suppliers\\models",
+              "files": [
+                {
+                  "path": "lib\\features\\suppliers\\models\\price_offer.dart",
+                  "name": "price_offer.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:json_annotation/json_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\suppliers\\models\\price_offer.g.dart",
+                  "name": "price_offer.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\suppliers\\models\\supplier.dart",
+                  "name": "supplier.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:json_annotation/json_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\suppliers\\models\\supplier.g.dart",
+                  "name": "supplier.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            }
+          ]
+        },
+        {
+          "path": "lib\\features\\vehicles",
+          "files": [],
+          "directories": [
+            {
+              "path": "lib\\features\\vehicles\\models",
+              "files": [
+                {
+                  "path": "lib\\features\\vehicles\\models\\car.dart",
+                  "name": "car.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:freezed_annotation/freezed_annotation.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                },
+                {
+                  "path": "lib\\features\\vehicles\\models\\car.freezed.dart",
+                  "name": "car.freezed.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                },
+                {
+                  "path": "lib\\features\\vehicles\\models\\car.g.dart",
+                  "name": "car.g.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": []
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\vehicles\\screens",
+              "files": [
+                {
+                  "path": "lib\\features\\vehicles\\screens\\cars_screen.dart",
+                  "name": "cars_screen.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:flutter/material.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/database.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/service_locator.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/models/client.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/vehicles/models/car.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/vehicles/services/car_service.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/clients/services/client_service.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            },
+            {
+              "path": "lib\\features\\vehicles\\services",
+              "files": [
+                {
+                  "path": "lib\\features\\vehicles\\services\\car_service.dart",
+                  "name": "car_service.dart",
+                  "structure": {
+                    "classes": [],
+                    "functions": [],
+                    "enums": [],
+                    "extensions": []
+                  },
+                  "imports": [
+                    {
+                      "uri": "package:drift/drift.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:logger/logger.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/database.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/core/database/daos/cars_dao.dart",
+                      "prefix": null,
+                      "combinators": []
+                    },
+                    {
+                      "uri": "package:part_catalog/features/vehicles/models/car.dart",
+                      "prefix": null,
+                      "combinators": []
+                    }
+                  ]
+                }
+              ],
+              "directories": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "lib\\models",
+      "files": [],
+      "directories": []
+    }
+  ]
+}
