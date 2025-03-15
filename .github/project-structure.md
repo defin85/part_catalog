@@ -134,3 +134,28 @@
 ├─main.dart
 └─models
 ```
+
+```
+scripts/
+  ├─ full_ast/
+  │   ├─ main.dart               # Точка входа в программу
+  │   ├─ collectors/            # Сборщики информации о коде
+  │   │   ├─ base_collector.dart # Базовый класс для всех коллекторов
+  │   │   ├─ class_collector.dart # Сбор информации о классах
+  │   │   ├─ function_collector.dart # Сбор информации о функциях
+  │   │   ├─ type_collector.dart # Сбор информации о типах
+  │   │   └─ ...
+  │   ├─ models/                # Модели для структурирования AST
+  │   │   ├─ ast_node.dart      # Базовая модель для узла AST
+  │   │   ├─ class_info.dart    # Модель для информации о классе
+  │   │   ├─ function_info.dart # Модель для информации о функции
+  │   │   └─ ...
+  │   ├─ utils/                 # Утилиты
+  │   │   ├─ logger.dart        # Настройка логгирования
+  │   │   ├─ file_utils.dart    # Утилиты для работы с файлами
+  │   │   └─ ast_utils.dart     # Утилиты для работы с AST
+  │   └─ analyzers/            # Анализаторы
+  │       ├─ code_analyzer.dart # Основной анализатор кода
+  │       ├─ metrics_analyzer.dart # Анализатор метрик кода
+  │       └─ dependency_analyzer.dart # Анализатор зависимостей
+```
