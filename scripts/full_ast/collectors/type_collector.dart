@@ -100,10 +100,8 @@ class TypeCollector extends BaseCollector {
     String typeDefinition;
     if (node.functionType != null) {
       typeDefinition = node.functionType.toString();
-    } else if (node.type != null) {
-      typeDefinition = node.type.toString();
     } else {
-      typeDefinition = 'dynamic';
+      typeDefinition = node.type.toString();
     }
 
     // Создаем объект для информации о типе-алиасе

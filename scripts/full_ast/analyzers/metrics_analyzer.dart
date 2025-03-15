@@ -209,13 +209,11 @@ class MetricsAnalyzer {
     int totalFields = 0;
 
     for (final classInfo in fileNode.classes) {
-      totalMethods += classInfo.methods?.length ?? 0;
-      totalFields += classInfo.fields?.length ?? 0;
+      totalMethods += classInfo.methods.length ?? 0;
+      totalFields += classInfo.fields.length ?? 0;
 
       // Сложность класса (LCOM - Lack of Cohesion of Methods)
-      if (classInfo.methods != null && classInfo.fields != null) {
-        _calculateLCOM(classInfo, fileNode.metrics.classMetrics);
-      }
+      _calculateLCOM(classInfo, fileNode.metrics.classMetrics);
     }
 
     fileNode.metrics.methodCount = totalMethods;

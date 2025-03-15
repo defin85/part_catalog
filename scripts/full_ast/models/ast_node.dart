@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:analyzer/dart/ast/ast.dart';
 
 import 'class_info.dart';
 import 'declaration_info.dart';

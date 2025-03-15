@@ -1,10 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/visitor.dart';
 
-import '../models/ast_node.dart';
 import '../models/class_info.dart';
 import '../models/declaration_info.dart';
-import '../models/function_info.dart';
 import 'base_collector.dart';
 
 /// Коллектор для сбора информации о классах в AST.

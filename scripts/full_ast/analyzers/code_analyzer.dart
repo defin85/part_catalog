@@ -274,8 +274,6 @@ class CodeAnalyzer {
         (int sum, cls) {
           // Для каждого класса суммируем сложность всех методов
           // Проверяем, является ли объект ClassInfo для доступа к методам
-          if (cls is! ClassInfo) return sum;
-
           final classMethods = cls.methods;
           if (classMethods.isEmpty) {
             return sum;
