@@ -1,0 +1,989 @@
+{
+  "nodes": [
+    {
+      "id": "core\\database\\daos\\cars_dao.dart",
+      "path": "lib\\core\\database\\daos\\cars_dao.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\daos\\cars_dao.g.dart",
+      "path": "lib\\core\\database\\daos\\cars_dao.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\daos\\clients_dao.dart",
+      "path": "lib\\core\\database\\daos\\clients_dao.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\daos\\clients_dao.g.dart",
+      "path": "lib\\core\\database\\daos\\clients_dao.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\database.dart",
+      "path": "lib\\core\\database\\database.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\database.g.dart",
+      "path": "lib\\core\\database\\database.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\database_logger.dart",
+      "path": "lib\\core\\database\\database_logger.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\items\\app_info_items.dart",
+      "path": "lib\\core\\database\\items\\app_info_items.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\items\\cars_items.dart",
+      "path": "lib\\core\\database\\items\\cars_items.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\items\\clients_items.dart",
+      "path": "lib\\core\\database\\items\\clients_items.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\database\\schema_synchronizer.dart",
+      "path": "lib\\core\\database\\schema_synchronizer.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\providers\\locale_provider.dart",
+      "path": "lib\\core\\providers\\locale_provider.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\service_locator.dart",
+      "path": "lib\\core\\service_locator.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\utils\\json_converter.dart",
+      "path": "lib\\core\\utils\\json_converter.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\utils\\logger_config.dart",
+      "path": "lib\\core\\utils\\logger_config.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\utils\\s.dart",
+      "path": "lib\\core\\utils\\s.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "core\\widgets\\language_switcher.dart",
+      "path": "lib\\core\\widgets\\language_switcher.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\clients\\models\\client.dart",
+      "path": "lib\\features\\clients\\models\\client.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\clients\\models\\client.freezed.dart",
+      "path": "lib\\features\\clients\\models\\client.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\clients\\models\\client.g.dart",
+      "path": "lib\\features\\clients\\models\\client.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\clients\\models\\client_type.dart",
+      "path": "lib\\features\\clients\\models\\client_type.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\clients\\screens\\clients_screen.dart",
+      "path": "lib\\features\\clients\\screens\\clients_screen.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\clients\\services\\client_service.dart",
+      "path": "lib\\features\\clients\\services\\client_service.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\home\\screens\\home_screen.dart",
+      "path": "lib\\features\\home\\screens\\home_screen.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\orders\\models\\order.dart",
+      "path": "lib\\features\\orders\\models\\order.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\orders\\models\\order.g.dart",
+      "path": "lib\\features\\orders\\models\\order.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\orders\\models\\order_item.dart",
+      "path": "lib\\features\\orders\\models\\order_item.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\orders\\models\\order_item.g.dart",
+      "path": "lib\\features\\orders\\models\\order_item.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\api\\api_client_parts_catalogs.dart",
+      "path": "lib\\features\\parts_catalog\\api\\api_client_parts_catalogs.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\api\\api_client_parts_catalogs.g.dart",
+      "path": "lib\\features\\parts_catalog\\api\\api_client_parts_catalogs.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car2.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car2.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car2.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car2.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car2.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car2.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_info.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_info.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_info.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter_idx.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter_idx.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter_idx.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter_idx.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter_idx.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter_idx.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter_info.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter_info.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\car_parameter_info.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\car_parameter_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\catalog.dart",
+      "path": "lib\\features\\parts_catalog\\models\\catalog.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\catalog.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\catalog.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\catalog.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\catalog.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\error.dart",
+      "path": "lib\\features\\parts_catalog\\models\\error.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\error.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\error.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\error.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\error.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\example_prices_response.dart",
+      "path": "lib\\features\\parts_catalog\\models\\example_prices_response.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\example_prices_response.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\example_prices_response.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\example_prices_response.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\example_prices_response.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\group.dart",
+      "path": "lib\\features\\parts_catalog\\models\\group.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\group.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\group.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\group.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\group.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\groups_tree.dart",
+      "path": "lib\\features\\parts_catalog\\models\\groups_tree.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\groups_tree.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\groups_tree.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\groups_tree.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\groups_tree.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\groups_tree_response.dart",
+      "path": "lib\\features\\parts_catalog\\models\\groups_tree_response.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\groups_tree_response.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\groups_tree_response.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\groups_tree_response.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\groups_tree_response.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\ip.dart",
+      "path": "lib\\features\\parts_catalog\\models\\ip.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\ip.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\ip.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\ip.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\ip.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\model.dart",
+      "path": "lib\\features\\parts_catalog\\models\\model.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\model.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\model.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\model.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\model.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\option_code.dart",
+      "path": "lib\\features\\parts_catalog\\models\\option_code.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\option_code.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\option_code.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\option_code.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\option_code.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\part.dart",
+      "path": "lib\\features\\parts_catalog\\models\\part.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\part.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\part.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\part.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\part.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\parts.dart",
+      "path": "lib\\features\\parts_catalog\\models\\parts.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\parts.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\parts.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\parts.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\parts.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\parts_group.dart",
+      "path": "lib\\features\\parts_catalog\\models\\parts_group.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\parts_group.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\parts_group.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\parts_group.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\parts_group.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\part_name.dart",
+      "path": "lib\\features\\parts_catalog\\models\\part_name.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\part_name.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\part_name.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\part_name.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\part_name.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\position.dart",
+      "path": "lib\\features\\parts_catalog\\models\\position.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\position.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\position.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\position.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\position.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\schemas_response.dart",
+      "path": "lib\\features\\parts_catalog\\models\\schemas_response.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\schemas_response.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\schemas_response.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\schemas_response.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\schemas_response.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\schema_model.dart",
+      "path": "lib\\features\\parts_catalog\\models\\schema_model.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\schema_model.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\schema_model.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\schema_model.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\schema_model.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\suggest.dart",
+      "path": "lib\\features\\parts_catalog\\models\\suggest.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\suggest.freezed.dart",
+      "path": "lib\\features\\parts_catalog\\models\\suggest.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\models\\suggest.g.dart",
+      "path": "lib\\features\\parts_catalog\\models\\suggest.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\widgets\\car_info_widget.dart",
+      "path": "lib\\features\\parts_catalog\\widgets\\car_info_widget.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\parts_catalog\\widgets\\schema_list_widget.dart",
+      "path": "lib\\features\\parts_catalog\\widgets\\schema_list_widget.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\suppliers\\models\\price_offer.dart",
+      "path": "lib\\features\\suppliers\\models\\price_offer.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\suppliers\\models\\price_offer.g.dart",
+      "path": "lib\\features\\suppliers\\models\\price_offer.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\suppliers\\models\\supplier.dart",
+      "path": "lib\\features\\suppliers\\models\\supplier.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\suppliers\\models\\supplier.g.dart",
+      "path": "lib\\features\\suppliers\\models\\supplier.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\vehicles\\models\\car.dart",
+      "path": "lib\\features\\vehicles\\models\\car.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\vehicles\\models\\car.freezed.dart",
+      "path": "lib\\features\\vehicles\\models\\car.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\vehicles\\models\\car.g.dart",
+      "path": "lib\\features\\vehicles\\models\\car.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\vehicles\\screens\\cars_screen.dart",
+      "path": "lib\\features\\vehicles\\screens\\cars_screen.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "features\\vehicles\\services\\car_service.dart",
+      "path": "lib\\features\\vehicles\\services\\car_service.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "main.dart",
+      "path": "lib\\main.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\ast_generator.dart",
+      "path": "lib\\scripts\\ast_generator.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\compile_copilot_docs.dart",
+      "path": "lib\\scripts\\compile_copilot_docs.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\dependency_analyzer.dart",
+      "path": "lib\\scripts\\dependency_analyzer.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\analyzers\\code_analyzer.dart",
+      "path": "lib\\scripts\\full_ast\\analyzers\\code_analyzer.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\analyzers\\dependency_analyzer.dart",
+      "path": "lib\\scripts\\full_ast\\analyzers\\dependency_analyzer.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\analyzers\\metrics_analyzer.dart",
+      "path": "lib\\scripts\\full_ast\\analyzers\\metrics_analyzer.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\ast_generator_full.dart",
+      "path": "lib\\scripts\\full_ast\\ast_generator_full.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\collectors\\base_collector.dart",
+      "path": "lib\\scripts\\full_ast\\collectors\\base_collector.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\collectors\\class_collector.dart",
+      "path": "lib\\scripts\\full_ast\\collectors\\class_collector.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\collectors\\function_collector.dart",
+      "path": "lib\\scripts\\full_ast\\collectors\\function_collector.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\collectors\\type_collector.dart",
+      "path": "lib\\scripts\\full_ast\\collectors\\type_collector.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\annotation_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\annotation_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\annotation_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\annotation_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\annotation_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\annotation_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\ast_node.dart",
+      "path": "lib\\scripts\\full_ast\\models\\ast_node.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\ast_node.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\ast_node.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\ast_node.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\ast_node.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\class_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\class_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\class_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\class_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\class_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\class_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\combinator_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\combinator_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\combinator_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\combinator_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\combinator_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\combinator_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\component_dependency_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\component_dependency_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\component_dependency_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\component_dependency_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\component_dependency_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\component_dependency_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\declaration_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\declaration_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\declaration_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\declaration_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\declaration_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\declaration_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\enum_constant_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\enum_constant_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\enum_constant_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\enum_constant_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\enum_constant_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\enum_constant_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\file_dependency_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\file_dependency_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\file_dependency_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\file_dependency_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\file_dependency_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\file_dependency_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\function_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\function_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\function_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\function_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\function_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\function_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\metrics_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\metrics_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\metrics_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\metrics_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\metrics_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\metrics_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\part_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\part_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\part_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\part_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\part_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\part_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\source_location.dart",
+      "path": "lib\\scripts\\full_ast\\models\\source_location.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\source_location.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\source_location.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\source_location.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\source_location.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\type_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\type_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\type_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\type_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\type_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\type_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\variable_info.dart",
+      "path": "lib\\scripts\\full_ast\\models\\variable_info.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\variable_info.freezed.dart",
+      "path": "lib\\scripts\\full_ast\\models\\variable_info.freezed.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\models\\variable_info.g.dart",
+      "path": "lib\\scripts\\full_ast\\models\\variable_info.g.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\utils\\ast_utils.dart",
+      "path": "lib\\scripts\\full_ast\\utils\\ast_utils.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\utils\\file_utils.dart",
+      "path": "lib\\scripts\\full_ast\\utils\\file_utils.dart",
+      "types": 0,
+      "hasErrors": false
+    },
+    {
+      "id": "scripts\\full_ast\\utils\\logger.dart",
+      "path": "lib\\scripts\\full_ast\\utils\\logger.dart",
+      "types": 0,
+      "hasErrors": false
+    }
+  ],
+  "links": []
+}
