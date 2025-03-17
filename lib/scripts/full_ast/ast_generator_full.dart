@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:collection/collection.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
 import 'dart:convert';
@@ -13,14 +14,21 @@ import 'models/ast_node.dart';
 import 'utils/file_utils.dart';
 import 'utils/logger.dart';
 
-/// Логгер для основного модуля
-final _logger = setupLogger('MainAnalyzer');
+// Объявление логгера как глобальной переменной
+late Logger _logger;
 
 /// Точка входа в программу анализа AST
 void main(List<String> args) async {
   try {
     // Обработка аргументов командной строки
     final config = _parseArguments(args);
+
+    // Настройка логгера
+    _logger = setupLogger(
+      'MainAnalyzer',
+      level: config.logLevel,
+      logFilePath: config.logFilePath,
+    );
 
     _logger.i('Начало анализа проекта: ${config.targetPath}');
 
@@ -101,11 +109,15 @@ class AnalyzerConfig {
   /// Уровень логирования
   final Level logLevel;
 
+  /// Путь к файлу логов (null - если логи только в консоль)
+  final String? logFilePath;
+
   const AnalyzerConfig({
     required this.targetPath,
     required this.outputPath,
     this.generateReports = true,
     this.logLevel = Level.info,
+    this.logFilePath,
   });
 }
 
@@ -115,6 +127,7 @@ AnalyzerConfig _parseArguments(List<String> args) {
   String outputPath = '.github/detailed_project_ast.json';
   bool generateReports = true;
   Level logLevel = Level.info;
+  String? logFilePath;
 
   for (int i = 0; i < args.length; i++) {
     switch (args[i]) {
@@ -139,6 +152,12 @@ AnalyzerConfig _parseArguments(List<String> args) {
       case '--quiet':
         logLevel = Level.warning;
         break;
+      case '--log-file':
+      case '-l':
+        if (i + 1 < args.length) {
+          logFilePath = args[++i];
+        }
+        break;
     }
   }
 
@@ -147,7 +166,46 @@ AnalyzerConfig _parseArguments(List<String> args) {
     outputPath: outputPath,
     generateReports: generateReports,
     logLevel: logLevel,
+    logFilePath: logFilePath,
   );
+}
+
+extension ProjectNodeExtension on ProjectNode {
+  ProjectNode addFile(FileNode file) {
+    return copyWith(files: List<FileNode>.from(files)..add(file));
+  }
+
+  ProjectNode addOrUpdateDirectory(DirectoryNode dir) {
+    final index =
+        directories.indexWhere((d) => d.name == dir.name && d.path == dir.path);
+    if (index >= 0) {
+      final newDirs = List<DirectoryNode>.from(directories);
+      newDirs[index] = dir;
+      return copyWith(directories: newDirs);
+    } else {
+      return copyWith(
+          directories: List<DirectoryNode>.from(directories)..add(dir));
+    }
+  }
+}
+
+extension DirectoryNodeExtension on DirectoryNode {
+  DirectoryNode addFile(FileNode file) {
+    return copyWith(files: List<FileNode>.from(files)..add(file));
+  }
+
+  DirectoryNode addOrUpdateDirectory(DirectoryNode dir) {
+    final index =
+        directories.indexWhere((d) => d.name == dir.name && d.path == dir.path);
+    if (index >= 0) {
+      final newDirs = List<DirectoryNode>.from(directories);
+      newDirs[index] = dir;
+      return copyWith(directories: newDirs);
+    } else {
+      return copyWith(
+          directories: List<DirectoryNode>.from(directories)..add(dir));
+    }
+  }
 }
 
 /// Добавляет узел файла в дерево проекта
@@ -158,57 +216,50 @@ void _addFileNodeToTree(ProjectNode rootNode, FileNode fileNode) {
   // Ничего не делаем, если путь пустой
   if (pathSegments.isEmpty ||
       (pathSegments.length == 1 && pathSegments[0].isEmpty)) {
-    rootNode.files.add(fileNode);
+    rootNode = rootNode.addFile(fileNode);
     return;
   }
 
-  // Работаем с набором директорий от корневого узла
-  List<DirectoryNode> currentNodeDirs = rootNode.directories;
-  String currentPath = rootNode.path;
+  // Обработка иерархии директорий
+  var currentPath = rootNode.path;
+  dynamic currentNode = rootNode; // Изменили тип с ProjectNode на dynamic
 
   // Создаем цепочку директорий
   for (int i = 0; i < pathSegments.length - 1; i++) {
     final segment = pathSegments[i];
-    if (segment.isEmpty) continue; // Пропускаем пустые сегменты
+    if (segment.isEmpty) continue;
 
-    // Поиск существующего узла директории
-    DirectoryNode? nextNode = currentNodeDirs
-        .cast<DirectoryNode?>()
-        .firstWhere((node) => node!.name == segment, orElse: () => null);
+    currentPath = path.join(currentPath, segment);
 
-    // Создание нового узла, если он не существует
-    if (nextNode == null) {
-      nextNode = DirectoryNode(
-        path: path.join(currentPath, segment),
-        name: segment,
-      );
-      currentNodeDirs.add(nextNode);
+    // Поиск или создание директории
+    DirectoryNode? nextNode;
+    if (currentNode is ProjectNode) {
+      nextNode = currentNode.directories
+          .firstWhereOrNull((dir) => dir.name == segment);
+    } else if (currentNode is DirectoryNode) {
+      nextNode = currentNode.directories
+          .firstWhereOrNull((dir) => dir.name == segment);
     }
 
-    // Переходим к следующей директории
-    currentNodeDirs = nextNode.directories;
-    currentPath = nextNode.path;
+    if (nextNode == null) {
+      nextNode = DirectoryNode(path: currentPath, name: segment);
+      if (currentNode is ProjectNode) {
+        currentNode = currentNode.addOrUpdateDirectory(nextNode);
+      } else if (currentNode is DirectoryNode) {
+        currentNode = currentNode.addOrUpdateDirectory(nextNode);
+      }
+    } else {
+      currentNode = nextNode;
+    }
   }
 
-  // Находим последнюю директорию и добавляем файл
+  // Добавляем файл в последнюю директорию
   if (pathSegments.last.isNotEmpty) {
-    // Определяем последнюю директорию
-    DirectoryNode? lastDir;
-    if (pathSegments.length > 1) {
-      final lastDirName = pathSegments[pathSegments.length - 2];
-      lastDir = currentNodeDirs.firstWhere((dir) => dir.name == lastDirName,
-          orElse: () => throw Exception('Directory structure inconsistent'));
-    } else {
-      // Если файл находится в корне, добавляем его напрямую
-      rootNode.files.add(fileNode);
-      return;
+    if (currentNode is ProjectNode) {
+      currentNode = currentNode.addFile(fileNode);
+    } else if (currentNode is DirectoryNode) {
+      currentNode = currentNode.addFile(fileNode);
     }
-
-    // Добавляем файл в последнюю директорию
-    lastDir.files.add(fileNode);
-  } else {
-    // На всякий случай, если последний сегмент пустой
-    rootNode.files.add(fileNode);
   }
 }
 

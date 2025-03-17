@@ -31,6 +31,7 @@ dependencies:
   shared_preferences: ^2.5.2
   provider: ^6.1.2
   analyzer: ^7.3.0
+  collection: ^1.19.1  # Используйте последнюю совместимую версию
 
 dev_dependencies:
   flutter_test:

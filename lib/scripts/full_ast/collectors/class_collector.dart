@@ -163,8 +163,10 @@ class ClassCollector extends BaseCollector {
       location: location,
     );
 
-    // Добавляем метод в текущий класс
-    _currentClass!.methods.add(methodInfo);
+    // Правильный подход с сохранением иммутабельности
+    final updatedMethods = List<MethodInfo>.from(_currentClass!.methods)
+      ..add(methodInfo);
+    _currentClass = _currentClass!.copyWith(methods: updatedMethods);
 
     // Посещаем тело метода
     super.visitMethodDeclaration(node);
@@ -184,6 +186,7 @@ class ClassCollector extends BaseCollector {
     final isStatic = node.isStatic;
 
     // Обрабатываем каждую переменную в объявлении поля
+    List<FieldInfo> updatedFields = List<FieldInfo>.from(_currentClass!.fields);
     for (final variable in node.fields.variables) {
       final fieldName = variable.name.lexeme;
       final location = createSourceLocation(variable);
@@ -219,9 +222,12 @@ class ClassCollector extends BaseCollector {
         location: location,
       );
 
-      // Добавляем поле в текущий класс
-      _currentClass!.fields.add(fieldInfo);
+      // Добавляем в новый список
+      updatedFields.add(fieldInfo);
     }
+
+    // Обновляем _currentClass атомарно
+    _currentClass = _currentClass!.copyWith(fields: updatedFields);
 
     // Посещаем поле для дальнейшего анализа
     super.visitFieldDeclaration(node);
@@ -278,7 +284,10 @@ class ClassCollector extends BaseCollector {
     );
 
     // Добавляем конструктор в текущий класс
-    _currentClass!.constructors.add(constructorInfo);
+    final updatedConstructors =
+        List<ConstructorInfo>.from(_currentClass!.constructors)
+          ..add(constructorInfo);
+    _currentClass = _currentClass!.copyWith(constructors: updatedConstructors);
 
     // Посещаем тело конструктора
     super.visitConstructorDeclaration(node);
@@ -331,8 +340,19 @@ class ClassCollector extends BaseCollector {
     // Посещаем все члены enum
     super.visitEnumDeclaration(node);
 
-    // Остальной код остается без изменений
-    // ...
+    // Добавляем enum в список классов
+    _classes.add(_currentClass!);
+
+    // Добавляем enum в общий список деклараций
+    addDeclaration(DeclarationInfo(
+      name: name,
+      type: 'enum',
+      isPublic: !name.startsWith('_'),
+      location: location,
+    ));
+
+    // Очищаем текущий класс
+    _currentClass = null;
   }
 
   @override

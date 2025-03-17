@@ -24,7 +24,8 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
   final String collectorName;
 
   /// Список собранных деклараций
-  final List<DeclarationInfo> _declarations = [];
+  // Используем setter и getter для управления коллекцией в иммутабельном стиле
+  List<DeclarationInfo> _declarations = [];
 
   /// Создаёт экземпляр базового коллектора с указанным именем.
   BaseCollector({required this.collectorName})
@@ -35,9 +36,26 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
 
   /// Добавляет декларацию в список собранных деклараций
   void addDeclaration(DeclarationInfo declaration) {
-    _declarations.add(declaration);
+    final updatedDeclarations = List<DeclarationInfo>.from(_declarations)
+      ..add(declaration);
+    _declarations = updatedDeclarations;
     _logger
         .d('Добавлена декларация: ${declaration.name} (${declaration.type})');
+  }
+
+  /// Добавляет список деклараций в общий список
+  void addDeclarations(List<DeclarationInfo> newDeclarations) {
+    if (newDeclarations.isEmpty) return;
+
+    final updatedDeclarations = List<DeclarationInfo>.from(_declarations)
+      ..addAll(newDeclarations);
+    _declarations = updatedDeclarations;
+    _logger.d('Добавлено ${newDeclarations.length} деклараций');
+  }
+
+  /// Заменяет список деклараций
+  void setDeclarations(List<DeclarationInfo> declarations) {
+    _declarations = List<DeclarationInfo>.from(declarations);
   }
 
   /// Извлекает документацию из узла AST
@@ -57,7 +75,24 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
 
   /// Создаёт информацию о местоположении узла в исходном коде
   SourceLocation createSourceLocation(analyzer.AstNode node) {
-    return SourceLocation.fromNode(node);
+    if (lineInfo == null) {
+      _logger.w('LineInfo не установлена в коллекторе $collectorName. '
+          'Местоположение будет неполным.');
+      return SourceLocation(
+        offset: node.offset,
+        length: node.length,
+        line: 0,
+        column: 0,
+      );
+    }
+
+    final location = lineInfo!.getLocation(node.offset);
+    return SourceLocation(
+      offset: node.offset,
+      length: node.length,
+      line: location.lineNumber,
+      column: location.columnNumber,
+    );
   }
 
   /// Извлекает информацию об аннотациях узла
@@ -82,7 +117,7 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
   /// Метод для инициализации коллектора перед началом обхода AST
   void initialize() {
     _logger.d('Инициализация коллектора $collectorName');
-    _declarations.clear();
+    _declarations = []; // Заменяем на пустой список вместо модификации
   }
 
   /// Метод для завершения работы коллектора после обхода AST
@@ -101,6 +136,48 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
     final ComplexityCalculator calculator = ComplexityCalculator();
     body.accept(calculator);
     return calculator.complexity;
+  }
+
+  /// Извлекает имя из узла с опциональной проверкой приватности
+  String extractName(analyzer.SimpleIdentifier identifier) {
+    final name = identifier.name;
+    return name;
+  }
+
+  /// Определяет, является ли элемент публичным (не начинается с подчеркивания)
+  bool isPublic(String name) {
+    return !name.startsWith('_');
+  }
+
+  /// Извлекает модификаторы из узла декларации метода
+  List<String> extractModifiers(analyzer.MethodDeclaration node) {
+    final modifiers = <String>[];
+
+    if (node.isAbstract) modifiers.add('abstract');
+    if (node.isStatic) modifiers.add('static');
+
+    // Проверяем свойства тела функции для определения async/sync модификаторов
+    if (node.body is analyzer.BlockFunctionBody) {
+      final body = node.body as analyzer.BlockFunctionBody;
+      if (body.isAsynchronous) {
+        if (body.isGenerator) {
+          modifiers.add('async*');
+        } else {
+          modifiers.add('async');
+        }
+      } else if (body.isGenerator) {
+        modifiers.add('sync*');
+      }
+    }
+
+    // Проверяем наличие external ключевого слова
+    if (node.externalKeyword != null) modifiers.add('external');
+
+    if (node.isGetter) modifiers.add('getter');
+    if (node.isSetter) modifiers.add('setter');
+    if (node.isOperator) modifiers.add('operator');
+
+    return modifiers;
   }
 }
 
@@ -169,5 +246,17 @@ class ComplexityCalculator extends RecursiveAstVisitor<void> {
   void visitCatchClause(analyzer.CatchClause node) {
     complexity += 1;
     super.visitCatchClause(node);
+  }
+
+  @override
+  void visitSwitchPatternCase(analyzer.SwitchPatternCase node) {
+    complexity += 1; // Увеличиваем сложность для каждого pattern case
+    super.visitSwitchPatternCase(node);
+  }
+
+  @override
+  void visitPatternAssignment(analyzer.PatternAssignment node) {
+    complexity += 1; // Паттерны в присваиваниях также увеличивают сложность
+    super.visitPatternAssignment(node);
   }
 }
