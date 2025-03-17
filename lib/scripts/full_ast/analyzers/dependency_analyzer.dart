@@ -1,60 +1,76 @@
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:logger/logger.dart';
+import 'package:part_catalog/scripts/full_ast/models/component_dependency_info.dart';
 import 'package:path/path.dart' as path;
 
-import '../models/ast_node.dart'
-    as ast; // Используем alias для разрешения конфликта имен
-import '../models/dependency_info.dart';
+import '../models/ast_node.dart';
+import '../models/file_dependency_info.dart';
 import '../utils/logger.dart';
 
 /// Анализатор зависимостей между файлами и компонентами кода
 class DependencyAnalyzer {
   /// Логгер для класса
-  final _logger = setupLogger('DependencyAnalyzer');
+  final Logger _logger = setupLogger('DependencyAnalyzer');
 
-  /// Анализирует зависимости для файла и добавляет их в FileNode
-  Future<void> analyzeFile(
-      ast.FileNode fileNode, ParseStringResult parseResult) async {
+  /// Анализирует зависимости для файла и создает обновленный FileNode
+  Future<FileNode> analyzeFile(
+      FileNode fileNode, ParseStringResult parseResult) async {
     try {
       _logger.d('Анализ зависимостей в файле: ${fileNode.path}');
 
       // Создаем объект для хранения зависимостей файла
-      fileNode.dependencies ??= ast.DependencyInfo(
-        imports: [],
-        exports: [],
-        internalDependencies: [],
-        externalPackages: {},
-      );
+      final FileDependencyInfo dependencies;
 
-      // Анализ импортов и экспортов
-      await _analyzeDependencies(fileNode, parseResult);
+      if (fileNode.dependencies is FileDependencyInfo) {
+        dependencies = fileNode.dependencies as FileDependencyInfo;
+      } else {
+        dependencies = const FileDependencyInfo(
+          imports: [],
+          exports: [],
+          internalDependencies: [],
+          externalPackages: {},
+        );
+      }
+
+      // Анализируем зависимости и создаем новый объект зависимостей
+      final updatedDependencies =
+          await _analyzeDependencies(fileNode, parseResult, dependencies);
 
       // Анализ внутренних зависимостей между компонентами
-      await _analyzeInternalDependencies(fileNode, parseResult);
+      final withInternalDeps = await _analyzeInternalDependencies(
+          fileNode, parseResult, updatedDependencies);
 
       // Анализ использования внешних пакетов
-      await _analyzeExternalPackages(fileNode);
+      final finalDependencies =
+          await _analyzeExternalPackages(fileNode, withInternalDeps);
 
-      _logger.d(
-          'Найдено ${fileNode.dependencies?.imports.length ?? 0} импортов и '
-          '${fileNode.dependencies?.internalDependencies.length ?? 0} внутренних зависимостей в ${fileNode.name}');
+      _logger.d('Найдено ${finalDependencies.imports.length} импортов и '
+          '${finalDependencies.internalDependencies.length} внутренних зависимостей в ${fileNode.name}');
+
+      // Используем метод toDependencyInfo, который теперь возвращает ast.DependencyInfo
+      final FileDependencySummary dependencyInfo =
+          finalDependencies.toDependencyInfo();
+
+      // Создаем новый FileNode с обновленными зависимостями
+      return fileNode.copyWith(dependencies: dependencyInfo);
     } catch (e, stackTrace) {
-      _logger.e('Ошибка при анализе зависимостей в файле ${fileNode.path}',
+      _logger.e('Ошибка при анализе зависимостей для ${fileNode.path}',
           error: e, stackTrace: stackTrace);
+      return fileNode; // Возвращаем исходный файл в случае ошибки
     }
   }
 
   /// Анализирует зависимости на основе импортов и экспортов
-  Future<void> _analyzeDependencies(
-      ast.FileNode fileNode, ParseStringResult parseResult) async {
-    // Проверка, что объект зависимостей уже создан
-    fileNode.dependencies ??= ast.DependencyInfo(
-      imports: [],
-      exports: [],
-      internalDependencies: [],
-      externalPackages: {},
-    );
+  Future<FileDependencyInfo> _analyzeDependencies(FileNode fileNode,
+      ParseStringResult parseResult, FileDependencyInfo dependencies) async {
+    // Сначала копируем существующие зависимости
+    final List<ImportDependency> imports = [...dependencies.imports];
+    final List<ExportDependency> exports = [...dependencies.exports];
+    final Map<String, int> externalPackages = {
+      ...dependencies.externalPackages
+    };
 
     // Добавляем информацию из импортов
     for (final import in fileNode.imports) {
@@ -63,15 +79,14 @@ class DependencyAnalyzer {
       if (uri.startsWith('package:')) {
         // Внешний пакет
         final packageName = _extractPackageName(uri);
-        fileNode.dependencies?.externalPackages[packageName] =
-            (fileNode.dependencies?.externalPackages[packageName] ?? 0) + 1;
+        externalPackages[packageName] =
+            (externalPackages[packageName] ?? 0) + 1;
       } else if (uri.startsWith('dart:')) {
         // Стандартная библиотека Dart
-        fileNode.dependencies?.externalPackages[uri] =
-            (fileNode.dependencies?.externalPackages[uri] ?? 0) + 1;
+        externalPackages[uri] = (externalPackages[uri] ?? 0) + 1;
       } else {
         // Внутренний импорт
-        fileNode.dependencies?.imports.add(ast.ImportDependency(
+        imports.add(ImportDependency(
           sourceFile: fileNode.path,
           targetFile: _resolveRelativePath(fileNode.path, uri),
           isDeferred: import.isDeferred,
@@ -85,29 +100,37 @@ class DependencyAnalyzer {
 
       if (!uri.startsWith('package:') && !uri.startsWith('dart:')) {
         // Внутренний экспорт
-        fileNode.dependencies?.exports.add(ast.ExportDependency(
+        exports.add(ExportDependency(
           sourceFile: fileNode.path,
           targetFile: _resolveRelativePath(fileNode.path, uri),
         ));
       }
     }
+
+    // Возвращаем новый объект FileDependencyInfo с обновленными данными
+    return dependencies.copyWith(
+      imports: imports,
+      exports: exports,
+      externalPackages: externalPackages,
+    );
   }
 
   /// Анализирует внутренние зависимости между компонентами в файле
-  Future<void> _analyzeInternalDependencies(
-      ast.FileNode fileNode, ParseStringResult parseResult) async {
+  Future<FileDependencyInfo> _analyzeInternalDependencies(FileNode fileNode,
+      ParseStringResult parseResult, FileDependencyInfo dependencies) async {
     final visitor = _DependencyVisitor(fileNode);
     parseResult.unit.accept(visitor);
 
-    // Добавляем найденные внутренние зависимости
-    fileNode.dependencies?.internalDependencies.addAll(
-        visitor.internalDependencies.map((dep) => ast.InternalDependency(
-              sourceType: dep.sourceType,
-              sourceName: dep.sourceName,
-              targetType: dep.targetType,
-              targetName: dep.targetName,
-              dependencyType: dep.dependencyType,
-            )));
+    // Создаем список с существующими и новыми зависимостями
+    final List<InternalDependency> internalDependencies = [
+      ...dependencies.internalDependencies,
+      ...visitor.internalDependencies
+    ];
+
+    // Возвращаем новый объект с обновленными внутренними зависимостями
+    return dependencies.copyWith(
+      internalDependencies: internalDependencies,
+    );
   }
 
   /// Выделяет имя пакета из URI импорта
@@ -120,9 +143,16 @@ class DependencyAnalyzer {
   }
 
   /// Анализирует использование внешних пакетов
-  Future<void> _analyzeExternalPackages(ast.FileNode fileNode) async {
-    // Этот метод уже частично реализован в _analyzeDependencies
-    // Здесь можно добавить дополнительную логику, если требуется
+  Future<FileDependencyInfo> _analyzeExternalPackages(
+      FileNode fileNode, FileDependencyInfo dependencies) async {
+    // Дополнительная логика анализа внешних пакетов, если необходима
+    // В текущей реализации большая часть этой логики уже есть в _analyzeDependencies
+
+    // Здесь можно добавить дополнительную обработку пакетов
+    // Например, группирование по категориям, вычисление метрик и т.д.
+
+    // Пока просто возвращаем существующие зависимости
+    return dependencies;
   }
 
   /// Разрешает относительный путь к файлу
@@ -139,7 +169,7 @@ class DependencyAnalyzer {
 
 /// Вспомогательный класс для сбора внутренних зависимостей
 class _DependencyVisitor extends RecursiveAstVisitor<void> {
-  final ast.FileNode fileNode;
+  final FileNode fileNode;
   final List<InternalDependency> internalDependencies = [];
 
   // Текущий контекст анализа (класс, метод и т.д.)
@@ -170,7 +200,7 @@ class _DependencyVisitor extends RecursiveAstVisitor<void> {
         internalDependencies.add(InternalDependency(
           sourceType: 'class',
           sourceName: currentClassName!,
-          targetType: 'class',
+          targetType: 'interface',
           targetName: interface.name2.lexeme,
           dependencyType: 'implements',
         ));
@@ -277,6 +307,48 @@ class _DependencyVisitor extends RecursiveAstVisitor<void> {
     super.visitMethodInvocation(node);
   }
 
+  @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    // Анализ создания экземпляров классов
+    if (currentMethodName != null) {
+      // Используем name2 вместо name
+      final targetName = node.constructorName.type.name2.lexeme;
+
+      internalDependencies.add(InternalDependency(
+        sourceType: 'method',
+        sourceName: currentMethodName!,
+        targetType: 'class',
+        targetName: targetName,
+        dependencyType: 'instantiates',
+      ));
+    }
+
+    super.visitInstanceCreationExpression(node);
+  }
+
+  @override
+  void visitPropertyAccess(PropertyAccess node) {
+    // Анализ доступа к свойствам объектов
+    if (currentMethodName != null && node.target is SimpleIdentifier) {
+      final targetClassName = (node.target as SimpleIdentifier).name;
+      final propertyName = node.propertyName.name;
+
+      // Проверяем, не является ли это вызовом метода (уже обработано в visitMethodInvocation)
+      if (!_isBasicProperty(propertyName)) {
+        internalDependencies.add(InternalDependency(
+          sourceType: 'method',
+          sourceName: currentMethodName!,
+          targetType: 'field',
+          targetName: '$targetClassName.$propertyName',
+          dependencyType: 'accesses',
+          weight: 1,
+        ));
+      }
+    }
+
+    super.visitPropertyAccess(node);
+  }
+
   /// Проверяет, является ли тип базовым (встроенным) типом Dart
   bool _isBasicType(String typeName) {
     final basicTypes = [
@@ -333,5 +405,20 @@ class _DependencyVisitor extends RecursiveAstVisitor<void> {
     ];
 
     return basicMethods.contains(methodName);
+  }
+
+  /// Проверяет, является ли свойство базовым (встроенным) свойством Dart
+  bool _isBasicProperty(String propertyName) {
+    final basicProperties = [
+      'length',
+      'isEmpty',
+      'isNotEmpty',
+      'first',
+      'last',
+      'hashCode',
+      'runtimeType',
+    ];
+
+    return basicProperties.contains(propertyName);
   }
 }

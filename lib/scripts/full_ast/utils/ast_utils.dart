@@ -1,14 +1,17 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:logger/logger.dart';
+import 'package:part_catalog/scripts/full_ast/models/annotation_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/combinator_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/component_dependency_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/metrics_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/part_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/source_location.dart';
 import 'dart:io';
 
-import '../models/ast_node.dart';
-import '../models/declaration_info.dart';
+import '../models/ast_node.dart' as ast;
 import 'logger.dart';
 
 /// Утилиты для работы с AST (Abstract Syntax Tree)
@@ -64,8 +67,8 @@ class AstUtils {
   }
 
   /// Извлекает все импорты из компиляционного модуля
-  static List<ImportInfo> extractImports(CompilationUnit unit) {
-    final imports = <ImportInfo>[];
+  static List<ast.ImportInfo> extractImports(CompilationUnit unit) {
+    final imports = <ast.ImportInfo>[];
 
     for (var directive in unit.directives) {
       if (directive is ImportDirective) {
@@ -85,17 +88,12 @@ class AstUtils {
           }
         }
 
-        imports.add(ImportInfo(
+        imports.add(ast.ImportInfo(
           uri: directive.uri.stringValue ?? '',
           prefix: directive.prefix?.name,
           isDeferred: directive.deferredKeyword != null,
           combinators: combinators,
-          location: SourceLocation(
-            offset: directive.offset,
-            length: directive.length,
-            startLine: directive.beginToken.location.lineNumber,
-            endLine: directive.endToken.location.lineNumber,
-          ),
+          location: SourceLocation.fromNode(directive),
         ));
       }
     }
@@ -104,8 +102,8 @@ class AstUtils {
   }
 
   /// Извлекает все экспорты из компиляционного модуля
-  static List<ExportInfo> extractExports(CompilationUnit unit) {
-    final exports = <ExportInfo>[];
+  static List<ast.ExportInfo> extractExports(CompilationUnit unit) {
+    final exports = <ast.ExportInfo>[];
 
     for (var directive in unit.directives) {
       if (directive is ExportDirective) {
@@ -125,15 +123,10 @@ class AstUtils {
           }
         }
 
-        exports.add(ExportInfo(
+        exports.add(ast.ExportInfo(
           uri: directive.uri.stringValue ?? '',
           combinators: combinators,
-          location: SourceLocation(
-            offset: directive.offset,
-            length: directive.length,
-            startLine: directive.beginToken.location.lineNumber,
-            endLine: directive.endToken.location.lineNumber,
-          ),
+          location: SourceLocation.fromNode(directive),
         ));
       }
     }
@@ -142,35 +135,29 @@ class AstUtils {
   }
 
   /// Извлекает все part/part-of директивы из компиляционного модуля
-  static List<PartInfo> extractParts(CompilationUnit unit) {
+  static List<PartInfo> extractParts(
+      CompilationUnit unit, String sourceFilePath) {
     final parts = <PartInfo>[];
 
     for (var directive in unit.directives) {
       if (directive is PartDirective) {
+        final uri = directive.uri.stringValue ?? '';
         parts.add(PartInfo(
-          uri: directive.uri.stringValue,
-          isPartOf: false,
-          location: SourceLocation(
-            offset: directive.offset,
-            length: directive.length,
-            startLine: directive.beginToken.location.lineNumber,
-            endLine: directive.endToken.location.lineNumber,
-          ),
+          sourceFile: sourceFilePath,
+          targetFile: uri, // Используем URI как путь к целевому файлу
+          uri: uri,
+          offset: directive.offset,
+          length: directive.length,
         ));
       } else if (directive is PartOfDirective) {
-        final libraryName = directive.libraryName?.name;
-        final uri = directive.uri?.stringValue;
+        final uri = directive.uri?.stringValue ?? '';
 
         parts.add(PartInfo(
+          sourceFile: sourceFilePath,
+          targetFile: uri, // Используем URI как целевой файл
           uri: uri,
-          libraryName: libraryName,
-          isPartOf: true,
-          location: SourceLocation(
-            offset: directive.offset,
-            length: directive.length,
-            startLine: directive.beginToken.location.lineNumber,
-            endLine: directive.endToken.location.lineNumber,
-          ),
+          offset: directive.offset,
+          length: directive.length,
         ));
       }
     }
@@ -195,12 +182,7 @@ class AstUtils {
 
   /// Создаёт информацию о местоположении узла в исходном коде
   static SourceLocation createSourceLocation(AstNode node) {
-    return SourceLocation(
-      offset: node.offset,
-      length: node.length,
-      startLine: node.beginToken.location.lineNumber,
-      endLine: node.endToken.location.lineNumber,
-    );
+    return SourceLocation.fromNode(node);
   }
 
   /// Извлекает информацию об аннотациях узла
@@ -254,28 +236,33 @@ class AstUtils {
   /// Подсчитывает количество строк различных категорий в коде
   static CodeMetrics calculateCodeMetrics(String source) {
     final lines = source.split('\n');
-    final metrics = CodeMetrics();
-
-    metrics.totalLines = lines.length;
-    metrics.characterCount = source.length;
+    var metrics = CodeMetrics(
+      totalLines: lines.length,
+      characterCount: source.length,
+    );
 
     var inMultilineComment = false;
+    var blankLines = 0;
+    var commentLines = 0;
+    var codeLines = 0;
+    var todoCount = 0;
+    var fixmeCount = 0;
 
     for (var line in lines) {
       final trimmedLine = line.trim();
 
       if (trimmedLine.isEmpty) {
-        metrics.blankLines++;
+        blankLines++;
         continue;
       }
 
-      // Проверка TODO и FIXME комментариев
-      if (trimmedLine.contains('TODO')) metrics.todoCount++;
-      if (trimmedLine.contains('FIXME')) metrics.fixmeCount++;
+      // Проверка TO DO и FIX ME комментариев
+      if (trimmedLine.contains('TODO')) todoCount++;
+      if (trimmedLine.contains('FIXME')) fixmeCount++;
 
       // Многострочный комментарий
       if (inMultilineComment) {
-        metrics.commentLines++;
+        commentLines++;
         if (trimmedLine.contains('*/')) {
           inMultilineComment = false;
         }
@@ -284,7 +271,7 @@ class AstUtils {
 
       // Начало многострочного комментария
       if (trimmedLine.startsWith('/*') || trimmedLine.contains('/*')) {
-        metrics.commentLines++;
+        commentLines++;
         if (!trimmedLine.contains('*/')) {
           inMultilineComment = true;
         }
@@ -293,31 +280,47 @@ class AstUtils {
 
       // Однострочный комментарий
       if (trimmedLine.startsWith('//')) {
-        metrics.commentLines++;
+        commentLines++;
         continue;
       }
 
       // Строка кода с комментарием
       if (trimmedLine.contains('//')) {
-        metrics.commentLines++;
-        metrics.codeLines++;
+        commentLines++;
+        codeLines++;
         continue;
       }
 
       // Обычная строка кода
-      metrics.codeLines++;
+      codeLines++;
     }
 
+    // Создаем новый объект с подсчитанными значениями
+    metrics = metrics.copyWith(
+      blankLines: blankLines,
+      commentLines: commentLines,
+      codeLines: codeLines,
+      todoCount: todoCount,
+      fixmeCount: fixmeCount,
+    );
+
     // Вычисление дополнительных метрик
+    double commentDensity = 0.0;
+    double averageLineLength = 0.0;
+
     if (metrics.codeLines > 0) {
-      metrics.commentDensity = metrics.commentLines / metrics.codeLines;
+      commentDensity = metrics.commentLines / metrics.codeLines;
     }
 
     if (metrics.totalLines > 0) {
-      metrics.averageLineLength = metrics.characterCount / metrics.totalLines;
+      averageLineLength = metrics.characterCount / metrics.totalLines;
     }
 
-    return metrics;
+    // Возвращаем финальный объект со всеми метриками
+    return metrics.copyWith(
+      commentDensity: commentDensity,
+      averageLineLength: averageLineLength,
+    );
   }
 
   /// Вычисляет цикломатическую сложность кода
@@ -424,10 +427,6 @@ class _DependencyVisitor extends RecursiveAstVisitor<void> {
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
     if (currentClass != null) {
       final constructedType = node.constructorName.type.name2.lexeme;
-      final constructorName = node.constructorName.name?.name;
-      final fullConstructorName = constructorName != null
-          ? '$constructedType.$constructorName'
-          : constructedType;
 
       dependencies.add(InternalDependency(
         sourceType: currentMethod != null ? 'method' : 'class',
@@ -456,14 +455,10 @@ class _ComplexityVisitor extends GeneralizingAstVisitor<void> {
 
   @override
   void visitForStatement(ForStatement node) {
+    // ForStatement обрабатывает все типы циклов for,
+    // включая обычные for и for-in (for-each)
     complexity += 1;
     super.visitForStatement(node);
-  }
-
-  @override
-  void visitForEachStatement(ForEachStatement node) {
-    complexity += 1;
-    super.visitForEachStatement(node);
   }
 
   @override
@@ -482,6 +477,13 @@ class _ComplexityVisitor extends GeneralizingAstVisitor<void> {
   void visitSwitchCase(SwitchCase node) {
     complexity += 1;
     super.visitSwitchCase(node);
+  }
+
+  @override
+  void visitSwitchDefault(SwitchDefault node) {
+    // Дополнительно учитываем default case
+    complexity += 1;
+    super.visitSwitchDefault(node);
   }
 
   @override
@@ -531,33 +533,34 @@ class _NestingLevelVisitor extends GeneralizingAstVisitor<void> {
 
   @override
   void visitIfStatement(IfStatement node) {
-    super.visitIfStatement(node);
+    // Сначала посещаем условие
+    node.expression.accept(this);
 
-    // Не считаем сам блок if как вложенность, так как он уже учтен в visitBlock
+    // Затем тело if
     if (node.thenStatement is! Block) {
       _increaseNestingLevel();
       node.thenStatement.accept(this);
       _decreaseNestingLevel();
+    } else {
+      node.thenStatement.accept(this);
     }
 
+    // И тело else, если есть
     if (node.elseStatement != null && node.elseStatement is! Block) {
       _increaseNestingLevel();
       node.elseStatement!.accept(this);
       _decreaseNestingLevel();
+    } else if (node.elseStatement != null) {
+      node.elseStatement!.accept(this);
     }
   }
 
   @override
   void visitForStatement(ForStatement node) {
+    // ForStatement обрабатывает все типы for-циклов,
+    // включая обычные for и for-in (for-each)
     _increaseNestingLevel();
     super.visitForStatement(node);
-    _decreaseNestingLevel();
-  }
-
-  @override
-  void visitForEachStatement(ForEachStatement node) {
-    _increaseNestingLevel();
-    super.visitForEachStatement(node);
     _decreaseNestingLevel();
   }
 

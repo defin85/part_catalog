@@ -7,6 +7,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart'; // Добавляем импорт для SimpleAstVisitor
 import 'package:logger/logger.dart';
+import 'package:part_catalog/scripts/full_ast/models/declaration_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/function_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/variable_info.dart';
 
 import '../collectors/base_collector.dart';
 import '../collectors/class_collector.dart';
@@ -29,9 +32,9 @@ class CodeAnalyzer {
   CodeAnalyzer() {
     // Инициализируем коллекторы для разных типов узлов AST
     _collectors = [
-      ClassCollector(),
-      FunctionCollector(),
-      TypeCollector(),
+      ClassCollector(collectorName: 'ClassCollector'),
+      FunctionCollector(collectorName: 'FunctionCollector'),
+      TypeCollector(collectorName: 'TypeCollector'),
     ];
   }
 
@@ -70,6 +73,8 @@ class CodeAnalyzer {
       return FileNode(
         path: file.path,
         name: file.path.split(Platform.pathSeparator).last,
+        size: file.lengthSync(),
+        lastModified: file.lastModifiedSync(),
         hasError: true,
         errorMessage: e.toString(),
         errorStackTrace: stackTrace.toString(),
@@ -88,31 +93,38 @@ class CodeAnalyzer {
   }
 
   /// Анализирует структуру файла, применяя все коллекторы
-  void _analyzeStructure(FileNode fileNode, ParseStringResult parseResult) {
+  FileNode _analyzeStructure(FileNode fileNode, ParseStringResult parseResult) {
     // Инициализируем коллекторы перед использованием
     for (final collector in _collectors) {
       collector.initialize();
     }
+
+    List<ClassInfo> updatedClasses = fileNode.classes;
+    List<FunctionInfo> updatedFunctions = fileNode.functions;
+    List<DeclarationInfo> updatedDeclarations =
+        List<DeclarationInfo>.from(fileNode.declarations);
 
     // Применяем каждый коллектор для анализа различных аспектов кода
     for (final collector in _collectors) {
       try {
         parseResult.unit.accept(collector);
 
-        // Собираем результаты анализа в соответствующие поля файла
+        // Собираем результаты анализа во временные переменные
         if (collector is ClassCollector) {
-          fileNode.classes = collector.classes;
+          updatedClasses = collector.classes;
         } else if (collector is FunctionCollector) {
-          fileNode.functions = collector.functions;
+          updatedFunctions = collector.functions;
         } else if (collector is TypeCollector) {
-          fileNode.types = collector.types;
+          // TypeInfo должны быть также добавлены в declarations, так как они
+          // представляют декларации типов
+          updatedDeclarations.addAll(collector.types.cast<DeclarationInfo>());
         }
 
         // Завершаем работу коллектора
         collector.finalize();
 
-        // Также обновляем список всех объявлений в файле
-        fileNode.declarations
+        // Также обновляем список всех объявлений
+        updatedDeclarations
             .addAll(collector.declarations.cast<DeclarationInfo>());
       } catch (e, stackTrace) {
         _logger.w(
@@ -123,28 +135,47 @@ class CodeAnalyzer {
       }
     }
 
-    // Анализируем топ-уровневые переменные
-    _analyzeTopLevelVariables(fileNode, parseResult);
+    // Создаем новый объект FileNode с обновленными данными
+    // Убираем поле types из вызова copyWith
+    final updatedFileNode = fileNode.copyWith(
+      classes: updatedClasses,
+      functions: updatedFunctions,
+      declarations: updatedDeclarations,
+    );
 
-    // Анализируем документацию файла
-    _analyzeFileDocumentation(fileNode, parseResult);
+    // Анализируем топ-уровневые переменные и другие аспекты для обновленного узла
+    _analyzeTopLevelVariables(updatedFileNode, parseResult);
+    _analyzeFileDocumentation(updatedFileNode, parseResult);
+    _calculateComplexityMetrics(updatedFileNode, parseResult);
 
-    // Рассчитываем метрики сложности кода
-    _calculateComplexityMetrics(fileNode, parseResult);
+    return updatedFileNode;
   }
 
   /// Анализирует импорты и экспорты в файле
   void _analyzeImportsExports(
       FileNode fileNode, ParseStringResult parseResult) {
-    fileNode.imports = AstUtils.extractImports(parseResult.unit);
-    fileNode.exports = AstUtils.extractExports(parseResult.unit);
-    fileNode.parts = AstUtils.extractParts(parseResult.unit);
+    final imports = AstUtils.extractImports(parseResult.unit);
+    final exports = AstUtils.extractExports(parseResult.unit);
+    final partInfos = AstUtils.extractParts(parseResult.unit, fileNode.path);
+
+    // Преобразуем List<PartInfo> в List<String>, извлекая URI из каждого объекта PartInfo
+    final parts = partInfos.map((partInfo) => partInfo.uri).toList();
+
+    // Update the fileNode using copyWith instead of direct assignment
+    final updatedFileNode = fileNode.copyWith(
+      imports: imports,
+      exports: exports,
+      parts: parts,
+    );
+
+    // Copy all updated properties back to the fileNode
+    fileNode = updatedFileNode;
   }
 
   /// Анализирует ошибки парсинга
   void _analyzeErrors(FileNode fileNode, ParseStringResult parseResult) {
     if (parseResult.errors.isNotEmpty) {
-      fileNode.parseErrors = parseResult.errors
+      final errors = parseResult.errors
           .map((e) => ParseErrorInfo(
                 message: e.message,
                 offset: e.offset,
@@ -152,6 +183,14 @@ class CodeAnalyzer {
                 severity: e.severity.name,
               ))
           .toList();
+
+      // Update the fileNode using copyWith instead of direct assignment
+      final updatedFileNode = fileNode.copyWith(
+        parseErrors: errors,
+      );
+
+      // Copy all updated properties back to the fileNode
+      fileNode = updatedFileNode;
     }
   }
 
@@ -160,7 +199,14 @@ class CodeAnalyzer {
       FileNode fileNode, ParseStringResult parseResult) {
     final visitor = _TopLevelVariableVisitor();
     parseResult.unit.accept(visitor);
-    fileNode.topLevelVariables = visitor.variables;
+
+    // Update the fileNode using copyWith instead of direct assignment
+    final updatedFileNode = fileNode.copyWith(
+      topLevelVariables: visitor.variables,
+    );
+
+    // Copy all updated properties back to the fileNode
+    fileNode = updatedFileNode;
   }
 
   /// Анализирует документацию файла
@@ -172,7 +218,12 @@ class CodeAnalyzer {
     final firstMember = _getFirstMemberWithComment(unit);
     if (firstMember != null) {
       // Если первый элемент имеет комментарий, используем его как документацию файла
-      fileNode.documentation = AstUtils.extractDocumentation(firstMember);
+      final updatedFileNode = fileNode.copyWith(
+        documentation: AstUtils.extractDocumentation(firstMember),
+      );
+
+      // Copy all updated properties back to the fileNode
+      fileNode = updatedFileNode;
     } else {
       // Проверяем, есть ли комментарии до первого члена
       final firstToken = unit.beginToken;
@@ -180,7 +231,12 @@ class CodeAnalyzer {
         final docComment =
             _extractFileDocumentation(firstToken.precedingComments!);
         if (docComment != null && docComment.isNotEmpty) {
-          fileNode.documentation = docComment;
+          final updatedFileNode = fileNode.copyWith(
+            documentation: docComment,
+          );
+
+          // Copy all updated properties back to the fileNode
+          fileNode = updatedFileNode;
         }
       }
     }
@@ -250,24 +306,20 @@ class CodeAnalyzer {
     final fileContent = parseResult.content;
 
     // Рассчитываем базовые метрики
-    fileNode.metrics = AstUtils.calculateCodeMetrics(fileContent);
+    var metrics = AstUtils.calculateCodeMetrics(fileContent);
 
     // Обновляем метрики на основе собранной информации
-    fileNode.metrics.classCount = fileNode.classes.length;
+    metrics = metrics.copyWith(classCount: fileNode.classes.length);
 
     // Исправляем проблему с методами - нужно приведение типов, так как классы в классах имеют тип Object
-    fileNode.metrics.methodCount = fileNode.classes.fold<int>(0, (sum, cls) {
-      // Используем безопасный доступ, предполагая что класс имеет свойство methods
-      final methods = cls is ClassInfo ? cls.methods : null;
-      return sum + (methods?.length ?? 0);
+    final methodCount = fileNode.classes.fold<int>(0, (sum, cls) {
+      // Используем безопасный доступ к методам класса
+      return sum + (cls.methods.length);
     });
 
-    fileNode.metrics.functionCount = fileNode.functions.length;
-    fileNode.metrics.maxNestingLevel =
-        AstUtils.calculateMaxNestingLevel(parseResult.unit);
-
     // Рассчитываем среднюю длину методов при наличии методов
-    if (fileNode.metrics.methodCount > 0) {
+    double? averageMethodLength;
+    if (methodCount > 0) {
       // Сначала вычисляем общую сложность методов как целое число
       final totalMethodLines = fileNode.classes.fold<int>(
         0,
@@ -290,20 +342,32 @@ class CodeAnalyzer {
       );
 
       // Теперь выполняем деление, чтобы получить среднее значение
-      fileNode.metrics.averageMethodLength =
-          totalMethodLines / fileNode.metrics.methodCount;
+      averageMethodLength = totalMethodLines / methodCount;
     }
 
     // Рассчитываем плотность комментариев
-    if (fileNode.metrics.codeLines > 0) {
-      fileNode.metrics.commentDensity =
-          fileNode.metrics.commentLines / fileNode.metrics.codeLines;
+    double? commentDensity;
+    if (metrics.codeLines > 0) {
+      commentDensity = metrics.commentLines / metrics.codeLines;
     }
 
+    // Обновляем метрики с новыми расчетами
+    metrics = metrics.copyWith(
+      methodCount: methodCount,
+      functionCount: fileNode.functions.length,
+      maxNestingLevel: AstUtils.calculateMaxNestingLevel(parseResult.unit),
+      averageMethodLength: averageMethodLength ?? 0.0,
+      commentDensity: commentDensity ?? 0.0,
+    );
+
+    // Обновляем fileNode с новыми метриками
+    final updatedFileNode = fileNode.copyWith(metrics: metrics);
+    fileNode = updatedFileNode;
+
     _logger.d(
-        'Метрики файла ${fileNode.path}: классы=${fileNode.metrics.classCount}, '
-        'методы=${fileNode.metrics.methodCount}, функции=${fileNode.metrics.functionCount}, '
-        'сложность=${fileNode.metrics.complexity}');
+        'Метрики файла ${fileNode.path}: классы=${fileNode.metrics?.classCount ?? 0}, '
+        'методы=${fileNode.metrics?.methodCount ?? 0}, функции=${fileNode.metrics?.functionCount ?? 0}, '
+        'сложность=${fileNode.metrics?.complexity ?? 0}');
   }
 }
 
@@ -322,8 +386,11 @@ class _TopLevelVariableVisitor extends SimpleAstVisitor<void> {
         isConst: node.variables.isConst,
         isLate: node.variables.isLate,
         documentation: AstUtils.extractDocumentation(node),
-        initializer: variable.initializer?.toString(),
+        initialValue: variable.initializer
+            ?.toString(), // Исправлено с 'initializer' на 'initialValue'
         location: AstUtils.createSourceLocation(variable),
+        isPublic: !variable.name.lexeme
+            .startsWith('_'), // Добавлена проверка публичности
       ));
     }
     super.visitTopLevelVariableDeclaration(node);

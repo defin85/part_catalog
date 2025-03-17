@@ -1,8 +1,10 @@
-import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/ast.dart' as analyzer;
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/source/line_info.dart';
 import 'package:logger/logger.dart';
+import 'package:part_catalog/scripts/full_ast/models/annotation_info.dart';
+import 'package:part_catalog/scripts/full_ast/models/source_location.dart';
 
-import '../models/ast_node.dart';
 import '../models/declaration_info.dart';
 import '../utils/logger.dart';
 
@@ -14,6 +16,9 @@ import '../utils/logger.dart';
 abstract class BaseCollector extends GeneralizingAstVisitor<void> {
   /// Логгер для класса
   final Logger _logger;
+
+  /// Информация о строках в исходном файле
+  LineInfo? lineInfo;
 
   /// Название коллектора для логирования
   final String collectorName;
@@ -36,7 +41,7 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
   }
 
   /// Извлекает документацию из узла AST
-  String? extractDocumentation(AnnotatedNode? node) {
+  String? extractDocumentation(analyzer.AnnotatedNode? node) {
     if (node == null || node.documentationComment == null) {
       return null;
     }
@@ -51,17 +56,13 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
   }
 
   /// Создаёт информацию о местоположении узла в исходном коде
-  SourceLocation createSourceLocation(AstNode node) {
-    return SourceLocation(
-      offset: node.offset,
-      length: node.length,
-      startLine: node.beginToken.location.lineNumber,
-      endLine: node.endToken.location.lineNumber,
-    );
+  SourceLocation createSourceLocation(analyzer.AstNode node) {
+    return SourceLocation.fromNode(node);
   }
 
   /// Извлекает информацию об аннотациях узла
-  List<AnnotationInfo> collectAnnotations(List<Annotation> annotations) {
+  List<AnnotationInfo> collectAnnotations(
+      List<analyzer.Annotation> annotations) {
     return annotations
         .map((annotation) => AnnotationInfo(
               name: annotation.name.toString(),
@@ -71,7 +72,7 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
   }
 
   /// Вспомогательный метод для форматирования типа
-  String formatTypeAsString(TypeAnnotation? type) {
+  String formatTypeAsString(analyzer.TypeAnnotation? type) {
     if (type == null) {
       return 'dynamic';
     }
@@ -92,8 +93,8 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
 
   /// Вычисляет уровень сложности кода для метода или функции
   /// на основе вложенности управляющих конструкций.
-  int calculateComplexity(FunctionBody body) {
-    if (body is EmptyFunctionBody) {
+  int calculateComplexity(analyzer.FunctionBody body) {
+    if (body is analyzer.EmptyFunctionBody) {
       return 1; // Минимальная сложность для пустого тела функции
     }
 
@@ -109,43 +110,48 @@ class ComplexityCalculator extends RecursiveAstVisitor<void> {
   int complexity = 1; // Начальная сложность
 
   @override
-  void visitIfStatement(IfStatement node) {
+  void visitIfStatement(analyzer.IfStatement node) {
     complexity += 1;
     super.visitIfStatement(node);
   }
 
   @override
-  void visitForStatement(ForStatement node) {
+  void visitForStatement(analyzer.ForStatement node) {
     complexity += 1;
+    // Проверяем, является ли это циклом for-each
+    if (node.forLoopParts is analyzer.ForEachParts) {
+      // Это цикл for-each (for-in)
+      complexity += 1; // Дополнительная сложность для for-each, если необходимо
+    }
     super.visitForStatement(node);
   }
 
   @override
-  void visitForEachStatement(ForEachStatement node) {
+  void visitForElement(analyzer.ForElement node) {
     complexity += 1;
-    super.visitForEachStatement(node);
+    super.visitForElement(node);
   }
 
   @override
-  void visitWhileStatement(WhileStatement node) {
+  void visitWhileStatement(analyzer.WhileStatement node) {
     complexity += 1;
     super.visitWhileStatement(node);
   }
 
   @override
-  void visitDoStatement(DoStatement node) {
+  void visitDoStatement(analyzer.DoStatement node) {
     complexity += 1;
     super.visitDoStatement(node);
   }
 
   @override
-  void visitSwitchCase(SwitchCase node) {
+  void visitSwitchCase(analyzer.SwitchCase node) {
     complexity += 1;
     super.visitSwitchCase(node);
   }
 
   @override
-  void visitBinaryExpression(BinaryExpression node) {
+  void visitBinaryExpression(analyzer.BinaryExpression node) {
     // Логические выражения увеличивают сложность
     if (node.operator.lexeme == '&&' || node.operator.lexeme == '||') {
       complexity += 1;
@@ -154,13 +160,13 @@ class ComplexityCalculator extends RecursiveAstVisitor<void> {
   }
 
   @override
-  void visitConditionalExpression(ConditionalExpression node) {
+  void visitConditionalExpression(analyzer.ConditionalExpression node) {
     complexity += 1; // Тернарный оператор
     super.visitConditionalExpression(node);
   }
 
   @override
-  void visitCatchClause(CatchClause node) {
+  void visitCatchClause(analyzer.CatchClause node) {
     complexity += 1;
     super.visitCatchClause(node);
   }

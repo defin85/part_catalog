@@ -1,7 +1,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:logger/logger.dart';
+import 'package:part_catalog/scripts/full_ast/utils/logger.dart';
 
-import '../models/ast_node.dart';
 import '../models/declaration_info.dart';
 import '../models/function_info.dart';
 import 'base_collector.dart';
@@ -11,14 +11,18 @@ import 'base_collector.dart';
 /// Отвечает за извлечение информации о функциях, их параметрах,
 /// возвращаемых типах и других характеристиках.
 class FunctionCollector extends BaseCollector {
+  /// Логгер для класса
+  final Logger _logger;
+
   /// Список собранных функций
   final List<FunctionInfo> _functions = [];
 
   /// Текущая область видимости (контекст класса, если внутри класса)
   String? _currentClass;
 
-  /// Создаёт экземпляр коллектора функций
-  FunctionCollector() : super(collectorName: 'FunctionCollector');
+  // Создаёт экземпляр коллектора функций
+  FunctionCollector({required super.collectorName})
+      : _logger = setupLogger('AST.$collectorName');
 
   /// Возвращает список собранных функций
   List<FunctionInfo> get functions => List.unmodifiable(_functions);
@@ -49,8 +53,9 @@ class FunctionCollector extends BaseCollector {
     }
 
     // Определяем, является ли функция асинхронной/генератором
-    final isAsync = node.functionExpression.isAsynchronous;
-    final isGenerator = node.functionExpression.isGenerator;
+    final FunctionBody body = node.functionExpression.body;
+    final isAsync = body.isAsynchronous;
+    final isGenerator = body.isGenerator;
 
     // Получаем текст тела функции для анализа
     final bodyText = node.functionExpression.body.toString();
@@ -208,8 +213,8 @@ class FunctionCollector extends BaseCollector {
         returnType:
             'dynamic', // Анонимные функции часто не имеют явного типа возврата
         parameters: parameters,
-        isAsync: node.isAsynchronous,
-        isGenerator: node.isGenerator,
+        isAsync: node.body.isAsynchronous,
+        isGenerator: node.body.isGenerator,
         isAnonymous: true,
         complexity: complexity,
         body: bodyText,

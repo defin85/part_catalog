@@ -1,7 +1,8 @@
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:logger/logger.dart';
+import 'package:part_catalog/scripts/full_ast/models/enum_constant_info.dart';
+import 'package:part_catalog/scripts/full_ast/utils/logger.dart';
 
-import '../models/ast_node.dart';
 import '../models/declaration_info.dart';
 import '../models/type_info.dart';
 import 'base_collector.dart';
@@ -11,11 +12,15 @@ import 'base_collector.dart';
 /// Отвечает за извлечение информации о перечислениях (enum),
 /// определениях типов (typedef) и других типовых определениях.
 class TypeCollector extends BaseCollector {
+  /// Логгер для класса
+  final Logger _logger;
+
   /// Список собранных информаций о типах
   final List<TypeInfo> _types = [];
 
-  /// Создаёт экземпляр коллектора типов
-  TypeCollector() : super(collectorName: 'TypeCollector');
+  // Создаёт экземпляр коллектора функций
+  TypeCollector({required super.collectorName})
+      : _logger = setupLogger('AST.$collectorName');
 
   /// Возвращает список собранных типов
   List<TypeInfo> get types => List.unmodifiable(_types);
@@ -33,14 +38,16 @@ class TypeCollector extends BaseCollector {
     final documentation = extractDocumentation(node);
     final location = createSourceLocation(node);
 
-    // Извлекаем константы enum
+    // Извлекаем константы enum с использованием правильного класса
     final constants = node.constants
         .map((constant) => EnumConstantInfo(
               name: constant.name.lexeme,
+              parentName: name, // Имя родительского перечисления
+              index: node.constants.indexOf(constant), // Индекс в перечислении
               documentation: extractDocumentation(constant),
               annotations: collectAnnotations(constant.metadata),
               location: createSourceLocation(constant),
-              constructorArguments: constant.arguments?.toString(),
+              value: constant.arguments?.toString(), // Возможное значение
             ))
         .toList();
 

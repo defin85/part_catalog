@@ -100,7 +100,7 @@ class ExportedTypesCollector extends SimpleAstVisitor<void> {
       'type': 'extension',
       'name': node.name?.lexeme ?? 'anonymous',
       'isPublic': node.name != null && !node.name!.lexeme.startsWith('_'),
-      'extendedType': node.extendedType.toString(),
+      'extendedType': node.onClause?.extendedType.toString() ?? 'unknown',
     });
     super.visitExtensionDeclaration(node);
   }

@@ -15,8 +15,8 @@ class ClassCollector extends BaseCollector {
   /// Текущий анализируемый класс
   ClassInfo? _currentClass;
 
-  /// Создаёт экземпляр коллектора классов
-  ClassCollector() : super(collectorName: 'ClassCollector');
+  // Создаёт экземпляр коллектора функций
+  ClassCollector({required super.collectorName});
 
   /// Возвращает список собранных классов
   List<ClassInfo> get classes => List.unmodifiable(_classes);
@@ -57,8 +57,11 @@ class ClassCollector extends BaseCollector {
     // Собираем модификаторы класса
     final modifiers = <String>[];
     if (node.abstractKeyword != null) modifiers.add('abstract');
-    if (node.externalKeyword != null) modifiers.add('external');
     if (node.finalKeyword != null) modifiers.add('final');
+    if (node.sealedKeyword != null) modifiers.add('sealed');
+    if (node.interfaceKeyword != null) modifiers.add('interface');
+    if (node.mixinKeyword != null) modifiers.add('mixin');
+    if (node.baseKeyword != null) modifiers.add('base');
 
     // Создаем объект для информации о классе
     _currentClass = ClassInfo(
@@ -87,7 +90,7 @@ class ClassCollector extends BaseCollector {
       addDeclaration(DeclarationInfo(
         name: className,
         type: 'class',
-        isPublic: true, // Определяем публичность по имени
+        isPublic: !className.startsWith('_'), // Определяем публичность по имени
         location: location,
       ));
 
@@ -191,7 +194,9 @@ class ClassCollector extends BaseCollector {
       if (node.fields.isFinal) modifiers.add('final');
       if (node.fields.isConst) modifiers.add('const');
       if (node.fields.isLate) modifiers.add('late');
-      if (node.fields.isExternal) modifiers.add('external');
+      if (node.externalKeyword != null) {
+        modifiers.add('external'); // Исправляем здесь
+      }
 
       // Получаем инициализатор поля, если есть
       final initializer = variable.initializer?.toString();
@@ -286,13 +291,14 @@ class ClassCollector extends BaseCollector {
     final documentation = extractDocumentation(node);
     final location = createSourceLocation(node);
 
-    // Извлекаем константы enum
+    // Извлекаем константы enum и преобразуем их в EnumConstantInfo
     final constants = node.constants.map((constant) {
-      return {
-        'name': constant.name.lexeme,
-        'documentation': extractDocumentation(constant),
-        'location': createSourceLocation(constant),
-      };
+      return ClassEnumConstInfo(
+        name: constant.name.lexeme,
+        documentation: extractDocumentation(constant),
+        location: createSourceLocation(constant),
+        constructorArguments: constant.arguments?.toString(),
+      );
     }).toList();
 
     // Извлекаем интерфейсы, которые enum реализует
@@ -313,7 +319,7 @@ class ClassCollector extends BaseCollector {
       documentation: documentation,
       isAbstract: false,
       isEnum: true, // Помечаем как enum
-      enumConstants: constants,
+      enumConstants: constants, // Теперь constants имеет правильный тип
       interfaces: interfaces,
       mixins: mixins,
       fields: [],
@@ -325,19 +331,8 @@ class ClassCollector extends BaseCollector {
     // Посещаем все члены enum
     super.visitEnumDeclaration(node);
 
-    // Добавляем enum в список классов
-    _classes.add(_currentClass!);
-
-    // Добавляем enum в общий список деклараций
-    addDeclaration(DeclarationInfo(
-      name: name,
-      type: 'enum',
-      isPublic: !name.startsWith('_'),
-      location: location,
-    ));
-
-    // Очищаем текущий класс
-    _currentClass = null;
+    // Остальной код остается без изменений
+    // ...
   }
 
   @override
@@ -405,7 +400,8 @@ class ClassCollector extends BaseCollector {
     final location = createSourceLocation(node);
 
     // Извлекаем тип, для которого создано расширение
-    final onType = node.extendedType.toString();
+    // Исправляем здесь: используем node.onClause?.extendedType вместо node.onClause?.type
+    final onType = node.onClause?.extendedType.toString() ?? 'dynamic';
 
     // Извлекаем параметры типа
     final typeParameters = node.typeParameters?.typeParameters

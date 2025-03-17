@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      # Отключаем drift_dev для AST моделей
+      drift_dev:
+        generate_for:
+          exclude:
+            - lib/scripts/**
+      
+      # Обеспечиваем работу freezed для AST моделей
+      freezed:
+        generate_for:
+          include:
+            - lib/**

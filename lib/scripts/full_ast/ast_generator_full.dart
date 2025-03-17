@@ -4,6 +4,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
+import 'dart:convert';
 
 import 'analyzers/code_analyzer.dart';
 import 'analyzers/dependency_analyzer.dart';
@@ -154,31 +155,61 @@ void _addFileNodeToTree(ProjectNode rootNode, FileNode fileNode) {
   final relativePath = path.relative(fileNode.path, from: rootNode.path);
   final pathSegments = path.split(relativePath);
 
-  DirectoryNode currentNode = rootNode;
+  // Ничего не делаем, если путь пустой
+  if (pathSegments.isEmpty ||
+      (pathSegments.length == 1 && pathSegments[0].isEmpty)) {
+    rootNode.files.add(fileNode);
+    return;
+  }
+
+  // Работаем с набором директорий от корневого узла
+  List<DirectoryNode> currentNodeDirs = rootNode.directories;
+  String currentPath = rootNode.path;
 
   // Создаем цепочку директорий
   for (int i = 0; i < pathSegments.length - 1; i++) {
     final segment = pathSegments[i];
+    if (segment.isEmpty) continue; // Пропускаем пустые сегменты
 
     // Поиск существующего узла директории
-    DirectoryNode? nextNode = currentNode.directories
+    DirectoryNode? nextNode = currentNodeDirs
         .cast<DirectoryNode?>()
         .firstWhere((node) => node!.name == segment, orElse: () => null);
 
     // Создание нового узла, если он не существует
     if (nextNode == null) {
       nextNode = DirectoryNode(
-        path: path.join(currentNode.path, segment),
+        path: path.join(currentPath, segment),
         name: segment,
       );
-      currentNode.directories.add(nextNode);
+      currentNodeDirs.add(nextNode);
     }
 
-    currentNode = nextNode;
+    // Переходим к следующей директории
+    currentNodeDirs = nextNode.directories;
+    currentPath = nextNode.path;
   }
 
-  // Добавляем файл в последнюю директорию
-  currentNode.files.add(fileNode);
+  // Находим последнюю директорию и добавляем файл
+  if (pathSegments.last.isNotEmpty) {
+    // Определяем последнюю директорию
+    DirectoryNode? lastDir;
+    if (pathSegments.length > 1) {
+      final lastDirName = pathSegments[pathSegments.length - 2];
+      lastDir = currentNodeDirs.firstWhere((dir) => dir.name == lastDirName,
+          orElse: () => throw Exception('Directory structure inconsistent'));
+    } else {
+      // Если файл находится в корне, добавляем его напрямую
+      rootNode.files.add(fileNode);
+      return;
+    }
+
+    // Добавляем файл в последнюю директорию
+    lastDir.files.add(fileNode);
+  } else {
+    // На всякий случай, если последний сегмент пустой
+    rootNode.files.add(fileNode);
+  }
 }
 
 /// Сохранение результатов анализа
@@ -193,8 +224,9 @@ Future<void> _saveResults(ProjectNode rootNode, AnalyzerConfig config) async {
   }
 
   // Сериализация и сохранение результатов
-  final jsonData = rootNode.toJson();
-  await outputFile.writeAsString(jsonData);
+  final jsonMap = rootNode.toJson();
+  final jsonString = jsonEncode(jsonMap); // Преобразуем Map в строку JSON
+  await outputFile.writeAsString(jsonString);
 
   _logger.i('Результаты успешно сохранены');
 }
