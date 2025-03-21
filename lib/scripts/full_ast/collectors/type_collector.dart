@@ -16,7 +16,7 @@ class TypeCollector extends BaseCollector {
   final Logger _logger;
 
   /// Список собранных информаций о типах
-  final List<TypeInfo> _types = [];
+  List<TypeInfo> _types = [];
 
   // Создаёт экземпляр коллектора функций
   TypeCollector({required super.collectorName})
@@ -28,7 +28,8 @@ class TypeCollector extends BaseCollector {
   @override
   void initialize() {
     super.initialize();
-    _types.clear();
+    // Было: _types.clear();
+    _types = []; // Заменяем на новый пустой список
   }
 
   @override
@@ -77,7 +78,7 @@ class TypeCollector extends BaseCollector {
     );
 
     // Добавляем enum в список типов
-    _types.add(enumInfo);
+    _types = List<TypeInfo>.from(_types)..add(enumInfo);
 
     // Добавляем enum в список деклараций
     addDeclaration(DeclarationInfo(
@@ -124,7 +125,7 @@ class TypeCollector extends BaseCollector {
     );
 
     // Добавляем typedef в список типов
-    _types.add(typedefInfo);
+    _types = List<TypeInfo>.from(_types)..add(typedefInfo);
 
     // Добавляем typedef в список деклараций
     addDeclaration(DeclarationInfo(
@@ -171,7 +172,7 @@ class TypeCollector extends BaseCollector {
     );
 
     // Добавляем функциональный typedef в список типов
-    _types.add(functionTypedefInfo);
+    _types = List<TypeInfo>.from(_types)..add(functionTypedefInfo);
 
     // Добавляем функциональный typedef в список деклараций
     addDeclaration(DeclarationInfo(
@@ -221,7 +222,7 @@ class TypeCollector extends BaseCollector {
     );
 
     // Добавляем extension type в список типов
-    _types.add(extensionTypeInfo);
+    _types = List<TypeInfo>.from(_types)..add(extensionTypeInfo);
 
     // Добавляем extension type в список деклараций
     addDeclaration(DeclarationInfo(

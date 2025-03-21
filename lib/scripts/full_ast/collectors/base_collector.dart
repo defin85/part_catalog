@@ -116,8 +116,14 @@ abstract class BaseCollector extends GeneralizingAstVisitor<void> {
 
   /// Метод для инициализации коллектора перед началом обхода AST
   void initialize() {
+    if (lineInfo != null) {
+      _logger.d('LineInfo установлен для коллектора $collectorName');
+    } else {
+      _logger.w(
+          'LineInfo не предоставлен при инициализации коллектора $collectorName');
+    }
     _logger.d('Инициализация коллектора $collectorName');
-    _declarations = []; // Заменяем на пустой список вместо модификации
+    _declarations = [];
   }
 
   /// Метод для завершения работы коллектора после обхода AST

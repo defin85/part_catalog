@@ -94,9 +94,15 @@ class CodeAnalyzer {
 
   /// Анализирует структуру файла, применяя все коллекторы
   FileNode _analyzeStructure(FileNode fileNode, ParseStringResult parseResult) {
+    final compilationUnit = parseResult.unit;
+    final lineInfo =
+        parseResult.lineInfo; // Получаем LineInfo из результата парсинга
+
     // Инициализируем коллекторы перед использованием
     for (final collector in _collectors) {
+      collector.lineInfo = lineInfo; // Устанавливаем lineInfo
       collector.initialize();
+      compilationUnit.accept(collector);
     }
 
     List<ClassInfo> updatedClasses = fileNode.classes;

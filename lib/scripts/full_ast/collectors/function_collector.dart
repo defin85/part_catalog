@@ -15,7 +15,7 @@ class FunctionCollector extends BaseCollector {
   final Logger _logger;
 
   /// Список собранных функций
-  final List<FunctionInfo> _functions = [];
+  List<FunctionInfo> _functions = [];
 
   /// Текущая область видимости (контекст класса, если внутри класса)
   String? _currentClass;
@@ -30,7 +30,7 @@ class FunctionCollector extends BaseCollector {
   @override
   void initialize() {
     super.initialize();
-    _functions.clear();
+    _functions = []; // Заменяем на присвоение нового списка
     _currentClass = null;
   }
 
@@ -92,7 +92,7 @@ class FunctionCollector extends BaseCollector {
     );
 
     // Добавляем функцию в список
-    _functions.add(functionInfo);
+    _functions = List<FunctionInfo>.from(_functions)..add(functionInfo);
 
     // Добавляем функцию в список деклараций
     addDeclaration(DeclarationInfo(
