@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:part_catalog/core/utils/s.dart';
 import 'package:part_catalog/core/widgets/language_switcher.dart';
 import 'package:part_catalog/features/clients/screens/clients_screen.dart';
+import 'package:part_catalog/features/home/models/navigation_item.dart';
 import 'package:part_catalog/features/vehicles/screens/cars_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,22 +15,31 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  final _screens = [
-    const ClientsScreen(),
-    const CarsScreen(),
-    // Другие экраны
+  // Объединяем экраны и данные для навигации в единую структуру
+  late final List<NavigationItem> _navigationItems = [
+    NavigationItem(
+      screen: const ClientsScreen(),
+      icon: Icons.people,
+      titleGetter: (context) => S.of(context)?.clientsScreenTitle ?? 'Clients',
+    ),
+    NavigationItem(
+      screen: const CarsScreen(),
+      icon: Icons.directions_car,
+      titleGetter: (context) => S.of(context)?.carsScreenTitle ?? 'Cars',
+    ),
+    // Добавление других экранов потребует изменений только здесь
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(S.of(context).appTitle),
+        title: Text(S.of(context)?.appTitle ?? 'Part Catalog'),
         actions: const [
           LanguageSwitcher(),
         ],
       ),
-      body: _screens[_selectedIndex],
+      body: _navigationItems[_selectedIndex].screen,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -37,17 +47,14 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedIndex = index;
           });
         },
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.people),
-            label: S.of(context).clientsScreenTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.directions_car),
-            label: S.of(context).carsScreenTitle,
-          ),
-          // Другие пункты меню
-        ],
+        items: _navigationItems
+            .map(
+              (item) => BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                label: item.titleGetter(context),
+              ),
+            )
+            .toList(),
       ),
     );
   }

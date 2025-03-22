@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import '../l10n/app_localizations.dart';
+import 'package:part_catalog/core/l10n/app_localizations.dart';
 
 /// Вспомогательный класс для работы с локализацией приложения
 class S {
@@ -23,7 +23,7 @@ class S {
   ];
 
   // Метод быстрого доступа к строкам
-  static AppLocalizations of(BuildContext context) =>
+  static AppLocalizations? of(BuildContext context) =>
       AppLocalizations.of(context);
 
   // Проверка текущей локали

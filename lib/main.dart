@@ -1,5 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/utils/s.dart';
@@ -7,24 +10,46 @@ import 'package:part_catalog/core/providers/locale_provider.dart';
 import 'package:part_catalog/features/home/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
-void main() async {
-  await dotenv.load();
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  // Выполнение в защищенной зоне для перехвата всех ошибок
+  runZonedGuarded(() async {
+    // Загружаем переменные окружения
+    await dotenv.load();
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Инициализация базы данных с проверкой таблиц
-  final database = AppDatabase();
-  await database.ensureDatabaseReady();
+    // Настраиваем FlutterError для перехвата ошибок Flutter
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      final logger = Logger();
+      logger.e(
+        'Flutter error: ${details.exception}',
+        error: details.exception,
+        stackTrace: details.stack,
+      );
+    };
 
-  // Регистрация в service_locator
-  setupLocator(); // предполагаем, что это регистрирует database
+    // Создаем экземпляр базы данных один раз
+    final database = AppDatabase();
+    await database.ensureDatabaseReady();
 
-  runApp(
-    // Провайдер для управления локалью
-    ChangeNotifierProvider(
-      create: (_) => LocaleProvider(),
-      child: const MyApp(),
-    ),
-  );
+    // Передаем существующий экземпляр в setupLocator
+    setupLocator(database);
+
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => locator<LocaleProvider>(),
+        child: const MyApp(),
+      ),
+    );
+  }, (error, stackTrace) {
+    // Ловим все необработанные исключения
+    final logger = Logger();
+    logger.e(
+      'Unhandled error',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  });
 }
 
 class MyApp extends StatelessWidget {
