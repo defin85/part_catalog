@@ -1,0 +1,8 @@
+{
+    "statusReceived": "Received",
+    "statusOrdered": "Ordered",
+    "statusNotOrdered": "Not ordered",
+    "partNumberLabel": "Part Number",
+    "brandLabel": "Brand",
+    "pcs": "pcs"
+}

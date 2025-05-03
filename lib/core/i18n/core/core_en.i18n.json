@@ -1,0 +1,21 @@
+{
+    "appTitle": "Part Catalog",
+    "error": "Error",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "resetDatabase": "Reset Database",
+    "resetDatabaseSuccess": "Database reset successfully",
+    "resetDatabaseError": "Error resetting database: {error}",
+    "dataLoadingError": "Error loading data",
+    "errorLoadingData": "Error loading data: {error}",
+    "resetButtonLabel": "Reset",
+    "closeButtonLabel": "Close",
+    "filter": "Filter",
+    "changeLanguageTooltip": "Change language",
+    "filterOff": "Clear Filter",
+    "all": "All",
+    "filterByClient": "Filter by Client",
+    "loading": "Loading...",
+    "copiedToClipboard(value: String)": "{value} copied to clipboard"
+}

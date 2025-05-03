@@ -1,52 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/core/utils/s.dart';
-import 'package:part_catalog/core/providers/locale_provider.dart';
-import 'package:provider/provider.dart';
+// Импортируем сгенерированный файл slang
+import 'package:part_catalog/core/i18n/strings.g.dart';
 
 class LanguageSwitcher extends StatelessWidget {
   const LanguageSwitcher({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final localeProvider = Provider.of<LocaleProvider>(context);
-    final currentLocale =
-        localeProvider.locale ?? Localizations.localeOf(context);
+    // Получаем текущую локаль из Slang (тип AppLocale)
+    final currentLocale = LocaleSettings.currentLocale;
 
-    return PopupMenuButton<Locale>(
-      tooltip: 'Сменить язык / Change language',
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.language),
-            const SizedBox(width: 4),
-            Text(currentLocale.languageCode.toUpperCase()),
-          ],
-        ),
-      ),
+    return PopupMenuButton<AppLocale>(
+      tooltip: t.core.changeLanguageTooltip, // Используем ключ из Slang
+      icon: const Icon(Icons.language),
       itemBuilder: (context) {
-        return S.supportedLocales.map((locale) {
-          final isSelected = locale.languageCode == currentLocale.languageCode;
+        // ----- Переписываем с использованием цикла for -----
+        final List<PopupMenuEntry<AppLocale>> menuItems = [];
+        // Используем AppLocale.values вместо AppLocaleUtils.supportedLocales
+        for (final AppLocale locale in AppLocale.values) {
+          final isSelected = locale == currentLocale;
+          final localeName = _getLocaleName(locale);
 
-          return PopupMenuItem<Locale>(
-            value: locale,
-            child: Row(
-              children: [
-                if (isSelected)
-                  const Icon(Icons.check, size: 18)
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: 8),
-                Text(S.getLocaleName(locale)),
-              ],
+          menuItems.add(
+            PopupMenuItem<AppLocale>(
+              value: locale,
+              child: Row(
+                children: [
+                  if (isSelected)
+                    const Icon(Icons.check, size: 18)
+                  else
+                    const SizedBox(width: 18), // Пустое место для выравнивания
+                  const SizedBox(width: 8),
+                  Text(localeName),
+                ],
+              ),
             ),
           );
-        }).toList();
+        }
+        return menuItems;
+        // ----- Конец переписывания -----
       },
-      onSelected: (Locale selectedLocale) {
-        localeProvider.setLocale(selectedLocale);
+      onSelected: (AppLocale selectedLocale) {
+        // Устанавливаем новую локаль через Slang
+        LocaleSettings.setLocale(selectedLocale);
       },
     );
+  }
+
+  // Вспомогательный метод для получения имени локали
+  String _getLocaleName(AppLocale locale) {
+    // Используем switch expression для большей лаконичности
+    return switch (locale) {
+      AppLocale.ru => 'Русский', // Или t.core.languageNameRu
+      AppLocale.en => 'English', // Или t.core.languageNameEn
+      // default случай не нужен, так как все значения enum перечислены
+    };
   }
 }

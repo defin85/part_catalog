@@ -6,9 +6,8 @@ part of 'car_parameter_info.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CarParameterInfoImpl _$$CarParameterInfoImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CarParameterInfoImpl(
+_CarParameterInfo _$CarParameterInfoFromJson(Map<String, dynamic> json) =>
+    _CarParameterInfo(
       key: json['key'] as String?,
       name: json['name'] as String?,
       values: (json['values'] as List<dynamic>?)
@@ -17,8 +16,7 @@ _$CarParameterInfoImpl _$$CarParameterInfoImplFromJson(
       sortOrder: (json['sortOrder'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$CarParameterInfoImplToJson(
-        _$CarParameterInfoImpl instance) =>
+Map<String, dynamic> _$CarParameterInfoToJson(_CarParameterInfo instance) =>
     <String, dynamic>{
       'key': instance.key,
       'name': instance.name,
@@ -26,15 +24,13 @@ Map<String, dynamic> _$$CarParameterInfoImplToJson(
       'sortOrder': instance.sortOrder,
     };
 
-_$CarFilterValuesImpl _$$CarFilterValuesImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CarFilterValuesImpl(
+_CarFilterValues _$CarFilterValuesFromJson(Map<String, dynamic> json) =>
+    _CarFilterValues(
       id: json['id'] as String?,
       text: json['text'] as String?,
     );
 
-Map<String, dynamic> _$$CarFilterValuesImplToJson(
-        _$CarFilterValuesImpl instance) =>
+Map<String, dynamic> _$CarFilterValuesToJson(_CarFilterValues instance) =>
     <String, dynamic>{
       'id': instance.id,
       'text': instance.text,

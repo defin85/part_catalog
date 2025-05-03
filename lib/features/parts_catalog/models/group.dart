@@ -7,7 +7,7 @@ part 'group.g.dart';
 /// Модель данных для группы.
 /// {@endtemplate}
 @freezed
-class Group with _$Group {
+abstract class Group with _$Group {
   /// {@macro group}
   factory Group({
     /// Идентификатор группы.

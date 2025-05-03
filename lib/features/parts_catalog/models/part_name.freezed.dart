@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,94 +10,63 @@ part of 'part_name.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-PartName _$PartNameFromJson(Map<String, dynamic> json) {
-  return _PartName.fromJson(json);
-}
 
 /// @nodoc
 mixin _$PartName {
   /// Идентификатор.
   @JsonKey(name: 'id')
-  String get id => throw _privateConstructorUsedError;
+  String get id;
 
   /// Название.
   @JsonKey(name: 'name')
-  String get name => throw _privateConstructorUsedError;
-
-  /// Serializes this PartName to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String get name;
 
   /// Create a copy of PartName
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PartNameCopyWith<PartName> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $PartNameCopyWith<$Res> {
-  factory $PartNameCopyWith(PartName value, $Res Function(PartName) then) =
-      _$PartNameCopyWithImpl<$Res, PartName>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String id, @JsonKey(name: 'name') String name});
-}
-
-/// @nodoc
-class _$PartNameCopyWithImpl<$Res, $Val extends PartName>
-    implements $PartNameCopyWith<$Res> {
-  _$PartNameCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of PartName
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $PartNameCopyWith<PartName> get copyWith =>
+      _$PartNameCopyWithImpl<PartName>(this as PartName, _$identity);
+
+  /// Serializes this PartName to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is PartName &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, name);
+
+  @override
+  String toString() {
+    return 'PartName(id: $id, name: $name)';
   }
 }
 
 /// @nodoc
-abstract class _$$PartNameImplCopyWith<$Res>
-    implements $PartNameCopyWith<$Res> {
-  factory _$$PartNameImplCopyWith(
-          _$PartNameImpl value, $Res Function(_$PartNameImpl) then) =
-      __$$PartNameImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $PartNameCopyWith<$Res> {
+  factory $PartNameCopyWith(PartName value, $Res Function(PartName) _then) =
+      _$PartNameCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'id') String id, @JsonKey(name: 'name') String name});
 }
 
 /// @nodoc
-class __$$PartNameImplCopyWithImpl<$Res>
-    extends _$PartNameCopyWithImpl<$Res, _$PartNameImpl>
-    implements _$$PartNameImplCopyWith<$Res> {
-  __$$PartNameImplCopyWithImpl(
-      _$PartNameImpl _value, $Res Function(_$PartNameImpl) _then)
-      : super(_value, _then);
+class _$PartNameCopyWithImpl<$Res> implements $PartNameCopyWith<$Res> {
+  _$PartNameCopyWithImpl(this._self, this._then);
+
+  final PartName _self;
+  final $Res Function(PartName) _then;
 
   /// Create a copy of PartName
   /// with the given fields replaced by the non-null parameter values.
@@ -106,13 +76,13 @@ class __$$PartNameImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
   }) {
-    return _then(_$PartNameImpl(
+    return _then(_self.copyWith(
       id: null == id
-          ? _value.id
+          ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
       name: null == name
-          ? _value.name
+          ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
     ));
@@ -121,13 +91,12 @@ class __$$PartNameImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PartNameImpl implements _PartName {
-  _$PartNameImpl(
+class _PartName implements PartName {
+  _PartName(
       {@JsonKey(name: 'id') required this.id,
       @JsonKey(name: 'name') required this.name});
-
-  factory _$PartNameImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PartNameImplFromJson(json);
+  factory _PartName.fromJson(Map<String, dynamic> json) =>
+      _$PartNameFromJson(json);
 
   /// Идентификатор.
   @override
@@ -139,16 +108,26 @@ class _$PartNameImpl implements _PartName {
   @JsonKey(name: 'name')
   final String name;
 
+  /// Create a copy of PartName
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'PartName(id: $id, name: $name)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$PartNameCopyWith<_PartName> get copyWith =>
+      __$PartNameCopyWithImpl<_PartName>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$PartNameToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PartNameImpl &&
+            other is _PartName &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name));
   }
@@ -157,44 +136,49 @@ class _$PartNameImpl implements _PartName {
   @override
   int get hashCode => Object.hash(runtimeType, id, name);
 
-  /// Create a copy of PartName
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$PartNameImplCopyWith<_$PartNameImpl> get copyWith =>
-      __$$PartNameImplCopyWithImpl<_$PartNameImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PartNameImplToJson(
-      this,
-    );
+  String toString() {
+    return 'PartName(id: $id, name: $name)';
   }
 }
 
-abstract class _PartName implements PartName {
-  factory _PartName(
-      {@JsonKey(name: 'id') required final String id,
-      @JsonKey(name: 'name') required final String name}) = _$PartNameImpl;
-
-  factory _PartName.fromJson(Map<String, dynamic> json) =
-      _$PartNameImpl.fromJson;
-
-  /// Идентификатор.
+/// @nodoc
+abstract mixin class _$PartNameCopyWith<$Res>
+    implements $PartNameCopyWith<$Res> {
+  factory _$PartNameCopyWith(_PartName value, $Res Function(_PartName) _then) =
+      __$PartNameCopyWithImpl;
   @override
-  @JsonKey(name: 'id')
-  String get id;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') String id, @JsonKey(name: 'name') String name});
+}
 
-  /// Название.
-  @override
-  @JsonKey(name: 'name')
-  String get name;
+/// @nodoc
+class __$PartNameCopyWithImpl<$Res> implements _$PartNameCopyWith<$Res> {
+  __$PartNameCopyWithImpl(this._self, this._then);
+
+  final _PartName _self;
+  final $Res Function(_PartName) _then;
 
   /// Create a copy of PartName
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PartNameImplCopyWith<_$PartNameImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+  }) {
+    return _then(_PartName(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
 }
+
+// dart format on

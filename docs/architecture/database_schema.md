@@ -108,20 +108,24 @@ SettingsItems → AppInfoItems: Один-ко-многим (одна настр�
 
 ## Маппинг моделей
 
-### Двухуровневая архитектура моделей:
+### Трехуровневая архитектура моделей:
 
-Модели таблиц (Items) - Представляют структуру таблиц в БД
-Бизнес-модели (Models) - Используются в бизнес-логике приложения
+1. Модели таблиц (Items) - Представляют структуру таблиц в БД (ClientsItem, OrdersItem). Генерируются Drift.
+2. Модели данных (@freezed, Data) - Чистые иммутабельные структуры для хранения данных (EntityCoreData, OrderSpecificData, ClientData). Используются для передачи данных между слоями Infrastructure и Domain.
+3. Бизнес-модели (Композиторы, Composite) - Реализуют интерфейсы (IEntity, IDocumentEntity), содержат бизнес-логику и композируют модели данных (OrderModelComposite, ClientModelComposite). Используются в слоях Domain и Application.
 
 ### Маппинг между моделями:
 
-Модель БД (Items)	Бизнес-модель	Сервисный класс	Методы преобразования
-ClientsItem	Client	ClientService	_mapToModel(ClientsItem) → Client<br>_mapToCompanion(Client) → ClientsItemsCompanion
-CarsItem	CarModel	CarService	_mapToModel(CarsItem) → CarModel<br>_mapToCompanion(CarModel) → CarsItemsCompanion
-CarWithOwner	CarWithOwnerModel	CarService	_mapWithOwnerToModel(CarWithOwner) → CarWithOwnerModel
-OrdersItem	OrderModel	OrderService	_mapToModel(OrdersItem) → OrderModel<br>_mapToCompanion(OrderModel) → OrdersItemsCompanion
-OrderPartsItem	OrderPartModel	OrderService	_mapPartToModel(OrderPartsItem) → OrderPartModel<br>_mapPartToCompanion(OrderPartModel) → OrderPartsItemsCompanion
-OrderServicesItem	OrderServiceModel	OrderService	_mapServiceToModel(OrderServicesItem) → OrderServiceModel<br>_mapServiceToCompanion(OrderServiceModel) → OrderServicesItemsCompanion
+**Data Layer (DAO/Repository) <-> Domain Layer (Service):**
+
+**Из БД в Domain:**
+1. DAO получает данные из БД в виде моделей таблиц (ClientsItem).
+2. Репозиторий или Сервис маппит модели таблиц в соответствующие модели данных (@freezed) (EntityCoreData, ClientData).
+3. Сервис использует фабричные конструкторы классов-композиторов (ClientModelComposite.create или ClientModelComposite.fromData) для создания бизнес-моделей из моделей данных.
+**Из Domain в БД:**
+1. Сервис передает класс-композитор (ClientModelComposite) в Репозиторий.
+2. Репозиторий извлекает внутренние модели данных (@freezed) из композитора.
+3. Репозиторий или DAO маппит модели данных в Companion модели таблиц (ClientsItemsCompanion) для сохранения в БД.
 
 ## Миграции
 

@@ -7,7 +7,7 @@ part 'example_prices_response.g.dart';
 /// Модель данных для ответа с примером цен.
 /// {@endtemplate}
 @freezed
-class ExamplePricesResponse with _$ExamplePricesResponse {
+abstract class ExamplePricesResponse with _$ExamplePricesResponse {
   /// {@macro example_prices_response}
   factory ExamplePricesResponse({
     /// Идентификатор.

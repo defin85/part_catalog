@@ -8,7 +8,7 @@ part 'schema_model.g.dart';
 /// Модель данных для схемы.
 /// {@endtemplate}
 @freezed
-class SchemaModel with _$SchemaModel {
+abstract class SchemaModel with _$SchemaModel {
   /// {@macro schema_model}
   factory SchemaModel({
     /// Идентификатор группы.

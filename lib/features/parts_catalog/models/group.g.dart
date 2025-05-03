@@ -6,7 +6,7 @@ part of 'group.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$GroupImpl _$$GroupImplFromJson(Map<String, dynamic> json) => _$GroupImpl(
+_Group _$GroupFromJson(Map<String, dynamic> json) => _Group(
       id: json['id'] as String,
       parentId: json['parentId'] as String?,
       hasSubgroups: json['hasSubgroups'] as bool?,
@@ -16,8 +16,7 @@ _$GroupImpl _$$GroupImplFromJson(Map<String, dynamic> json) => _$GroupImpl(
       description: json['description'] as String?,
     );
 
-Map<String, dynamic> _$$GroupImplToJson(_$GroupImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$GroupToJson(_Group instance) => <String, dynamic>{
       'id': instance.id,
       'parentId': instance.parentId,
       'hasSubgroups': instance.hasSubgroups,

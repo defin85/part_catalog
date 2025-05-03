@@ -1,0 +1,21 @@
+{
+    "appTitle": "Каталог запчастей",
+    "error": "Ошибка",
+    "delete": "Удалить",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "resetDatabase": "Сбросить базу данных",
+    "resetDatabaseSuccess": "База данных успешно сброшена",
+    "resetDatabaseError": "Ошибка сброса базы данных: {error}",
+    "dataLoadingError": "Ошибка при загрузке данных",
+    "errorLoadingData": "Ошибка загрузки данных: {error}",
+    "resetButtonLabel": "Сбросить",
+    "closeButtonLabel": "Закрыть",
+    "filter": "Фильтр",
+    "changeLanguageTooltip": "Сменить язык",
+    "filterOff": "Сбросить фильтр",
+    "all": "Все",
+    "filterByClient": "Фильтр по клиенту",
+    "loading": "Загрузка...",
+    "copiedToClipboard(value: String)": "{value} скопировано в буфер обмена"
+}

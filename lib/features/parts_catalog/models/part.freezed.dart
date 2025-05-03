@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,141 +10,85 @@ part of 'part.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-Part _$PartFromJson(Map<String, dynamic> json) {
-  return _Part.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Part {
   /// Идентификатор детали.
   @JsonKey(name: 'id')
-  String? get id => throw _privateConstructorUsedError;
+  String? get id;
 
   /// Идентификатор названия детали (может быть null).
   @JsonKey(name: 'nameId')
-  String? get nameId => throw _privateConstructorUsedError;
+  String? get nameId;
 
   /// Название детали.
   @JsonKey(name: 'name')
-  String? get name => throw _privateConstructorUsedError;
+  String? get name;
 
   /// Номер детали.
   @JsonKey(name: 'number')
-  String? get number => throw _privateConstructorUsedError;
+  String? get number;
 
   /// Примечание к детали.
   @JsonKey(name: 'notice')
-  String? get notice => throw _privateConstructorUsedError;
+  String? get notice;
 
   /// Описание детали.
   @JsonKey(name: 'description')
-  String? get description => throw _privateConstructorUsedError;
+  String? get description;
 
   /// Номер позиции на изображении группы.
   @JsonKey(name: 'positionNumber')
-  String? get positionNumber => throw _privateConstructorUsedError;
+  String? get positionNumber;
 
   /// URL для поиска результатов.
   @JsonKey(name: 'url')
-  String? get url => throw _privateConstructorUsedError;
-
-  /// Serializes this Part to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get url;
 
   /// Create a copy of Part
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PartCopyWith<Part> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $PartCopyWith<$Res> {
-  factory $PartCopyWith(Part value, $Res Function(Part) then) =
-      _$PartCopyWithImpl<$Res, Part>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'nameId') String? nameId,
-      @JsonKey(name: 'name') String? name,
-      @JsonKey(name: 'number') String? number,
-      @JsonKey(name: 'notice') String? notice,
-      @JsonKey(name: 'description') String? description,
-      @JsonKey(name: 'positionNumber') String? positionNumber,
-      @JsonKey(name: 'url') String? url});
-}
-
-/// @nodoc
-class _$PartCopyWithImpl<$Res, $Val extends Part>
-    implements $PartCopyWith<$Res> {
-  _$PartCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Part
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $PartCopyWith<Part> get copyWith =>
+      _$PartCopyWithImpl<Part>(this as Part, _$identity);
+
+  /// Serializes this Part to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? id = freezed,
-    Object? nameId = freezed,
-    Object? name = freezed,
-    Object? number = freezed,
-    Object? notice = freezed,
-    Object? description = freezed,
-    Object? positionNumber = freezed,
-    Object? url = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      nameId: freezed == nameId
-          ? _value.nameId
-          : nameId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      number: freezed == number
-          ? _value.number
-          : number // ignore: cast_nullable_to_non_nullable
-              as String?,
-      notice: freezed == notice
-          ? _value.notice
-          : notice // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      positionNumber: freezed == positionNumber
-          ? _value.positionNumber
-          : positionNumber // ignore: cast_nullable_to_non_nullable
-              as String?,
-      url: freezed == url
-          ? _value.url
-          : url // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Part &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.nameId, nameId) || other.nameId == nameId) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.number, number) || other.number == number) &&
+            (identical(other.notice, notice) || other.notice == notice) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.positionNumber, positionNumber) ||
+                other.positionNumber == positionNumber) &&
+            (identical(other.url, url) || other.url == url));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, nameId, name, number, notice,
+      description, positionNumber, url);
+
+  @override
+  String toString() {
+    return 'Part(id: $id, nameId: $nameId, name: $name, number: $number, notice: $notice, description: $description, positionNumber: $positionNumber, url: $url)';
   }
 }
 
 /// @nodoc
-abstract class _$$PartImplCopyWith<$Res> implements $PartCopyWith<$Res> {
-  factory _$$PartImplCopyWith(
-          _$PartImpl value, $Res Function(_$PartImpl) then) =
-      __$$PartImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $PartCopyWith<$Res> {
+  factory $PartCopyWith(Part value, $Res Function(Part) _then) =
+      _$PartCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'id') String? id,
@@ -157,11 +102,11 @@ abstract class _$$PartImplCopyWith<$Res> implements $PartCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$PartImplCopyWithImpl<$Res>
-    extends _$PartCopyWithImpl<$Res, _$PartImpl>
-    implements _$$PartImplCopyWith<$Res> {
-  __$$PartImplCopyWithImpl(_$PartImpl _value, $Res Function(_$PartImpl) _then)
-      : super(_value, _then);
+class _$PartCopyWithImpl<$Res> implements $PartCopyWith<$Res> {
+  _$PartCopyWithImpl(this._self, this._then);
+
+  final Part _self;
+  final $Res Function(Part) _then;
 
   /// Create a copy of Part
   /// with the given fields replaced by the non-null parameter values.
@@ -177,37 +122,37 @@ class __$$PartImplCopyWithImpl<$Res>
     Object? positionNumber = freezed,
     Object? url = freezed,
   }) {
-    return _then(_$PartImpl(
+    return _then(_self.copyWith(
       id: freezed == id
-          ? _value.id
+          ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String?,
       nameId: freezed == nameId
-          ? _value.nameId
+          ? _self.nameId
           : nameId // ignore: cast_nullable_to_non_nullable
               as String?,
       name: freezed == name
-          ? _value.name
+          ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String?,
       number: freezed == number
-          ? _value.number
+          ? _self.number
           : number // ignore: cast_nullable_to_non_nullable
               as String?,
       notice: freezed == notice
-          ? _value.notice
+          ? _self.notice
           : notice // ignore: cast_nullable_to_non_nullable
               as String?,
       description: freezed == description
-          ? _value.description
+          ? _self.description
           : description // ignore: cast_nullable_to_non_nullable
               as String?,
       positionNumber: freezed == positionNumber
-          ? _value.positionNumber
+          ? _self.positionNumber
           : positionNumber // ignore: cast_nullable_to_non_nullable
               as String?,
       url: freezed == url
-          ? _value.url
+          ? _self.url
           : url // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -216,8 +161,8 @@ class __$$PartImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PartImpl implements _Part {
-  _$PartImpl(
+class _Part implements Part {
+  _Part(
       {@JsonKey(name: 'id') this.id,
       @JsonKey(name: 'nameId') this.nameId,
       @JsonKey(name: 'name') this.name,
@@ -226,9 +171,7 @@ class _$PartImpl implements _Part {
       @JsonKey(name: 'description') this.description,
       @JsonKey(name: 'positionNumber') this.positionNumber,
       @JsonKey(name: 'url') this.url});
-
-  factory _$PartImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PartImplFromJson(json);
+  factory _Part.fromJson(Map<String, dynamic> json) => _$PartFromJson(json);
 
   /// Идентификатор детали.
   @override
@@ -270,16 +213,26 @@ class _$PartImpl implements _Part {
   @JsonKey(name: 'url')
   final String? url;
 
+  /// Create a copy of Part
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'Part(id: $id, nameId: $nameId, name: $name, number: $number, notice: $notice, description: $description, positionNumber: $positionNumber, url: $url)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$PartCopyWith<_Part> get copyWith =>
+      __$PartCopyWithImpl<_Part>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$PartToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PartImpl &&
+            other is _Part &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.nameId, nameId) || other.nameId == nameId) &&
             (identical(other.name, name) || other.name == name) &&
@@ -297,79 +250,85 @@ class _$PartImpl implements _Part {
   int get hashCode => Object.hash(runtimeType, id, nameId, name, number, notice,
       description, positionNumber, url);
 
-  /// Create a copy of Part
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$PartImplCopyWith<_$PartImpl> get copyWith =>
-      __$$PartImplCopyWithImpl<_$PartImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PartImplToJson(
-      this,
-    );
+  String toString() {
+    return 'Part(id: $id, nameId: $nameId, name: $name, number: $number, notice: $notice, description: $description, positionNumber: $positionNumber, url: $url)';
   }
 }
 
-abstract class _Part implements Part {
-  factory _Part(
-      {@JsonKey(name: 'id') final String? id,
-      @JsonKey(name: 'nameId') final String? nameId,
-      @JsonKey(name: 'name') final String? name,
-      @JsonKey(name: 'number') final String? number,
-      @JsonKey(name: 'notice') final String? notice,
-      @JsonKey(name: 'description') final String? description,
-      @JsonKey(name: 'positionNumber') final String? positionNumber,
-      @JsonKey(name: 'url') final String? url}) = _$PartImpl;
-
-  factory _Part.fromJson(Map<String, dynamic> json) = _$PartImpl.fromJson;
-
-  /// Идентификатор детали.
+/// @nodoc
+abstract mixin class _$PartCopyWith<$Res> implements $PartCopyWith<$Res> {
+  factory _$PartCopyWith(_Part value, $Res Function(_Part) _then) =
+      __$PartCopyWithImpl;
   @override
-  @JsonKey(name: 'id')
-  String? get id;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') String? id,
+      @JsonKey(name: 'nameId') String? nameId,
+      @JsonKey(name: 'name') String? name,
+      @JsonKey(name: 'number') String? number,
+      @JsonKey(name: 'notice') String? notice,
+      @JsonKey(name: 'description') String? description,
+      @JsonKey(name: 'positionNumber') String? positionNumber,
+      @JsonKey(name: 'url') String? url});
+}
 
-  /// Идентификатор названия детали (может быть null).
-  @override
-  @JsonKey(name: 'nameId')
-  String? get nameId;
+/// @nodoc
+class __$PartCopyWithImpl<$Res> implements _$PartCopyWith<$Res> {
+  __$PartCopyWithImpl(this._self, this._then);
 
-  /// Название детали.
-  @override
-  @JsonKey(name: 'name')
-  String? get name;
-
-  /// Номер детали.
-  @override
-  @JsonKey(name: 'number')
-  String? get number;
-
-  /// Примечание к детали.
-  @override
-  @JsonKey(name: 'notice')
-  String? get notice;
-
-  /// Описание детали.
-  @override
-  @JsonKey(name: 'description')
-  String? get description;
-
-  /// Номер позиции на изображении группы.
-  @override
-  @JsonKey(name: 'positionNumber')
-  String? get positionNumber;
-
-  /// URL для поиска результатов.
-  @override
-  @JsonKey(name: 'url')
-  String? get url;
+  final _Part _self;
+  final $Res Function(_Part) _then;
 
   /// Create a copy of Part
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PartImplCopyWith<_$PartImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = freezed,
+    Object? nameId = freezed,
+    Object? name = freezed,
+    Object? number = freezed,
+    Object? notice = freezed,
+    Object? description = freezed,
+    Object? positionNumber = freezed,
+    Object? url = freezed,
+  }) {
+    return _then(_Part(
+      id: freezed == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
+      nameId: freezed == nameId
+          ? _self.nameId
+          : nameId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      name: freezed == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+      number: freezed == number
+          ? _self.number
+          : number // ignore: cast_nullable_to_non_nullable
+              as String?,
+      notice: freezed == notice
+          ? _self.notice
+          : notice // ignore: cast_nullable_to_non_nullable
+              as String?,
+      description: freezed == description
+          ? _self.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      positionNumber: freezed == positionNumber
+          ? _self.positionNumber
+          : positionNumber // ignore: cast_nullable_to_non_nullable
+              as String?,
+      url: freezed == url
+          ? _self.url
+          : url // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on

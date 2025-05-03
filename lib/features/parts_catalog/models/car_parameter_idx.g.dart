@@ -6,14 +6,12 @@ part of 'car_parameter_idx.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CarParameterIdxImpl _$$CarParameterIdxImplFromJson(
-        Map<String, dynamic> json) =>
-    _$CarParameterIdxImpl(
+_CarParameterIdx _$CarParameterIdxFromJson(Map<String, dynamic> json) =>
+    _CarParameterIdx(
       idx: json['idx'] as String?,
     );
 
-Map<String, dynamic> _$$CarParameterIdxImplToJson(
-        _$CarParameterIdxImpl instance) =>
+Map<String, dynamic> _$CarParameterIdxToJson(_CarParameterIdx instance) =>
     <String, dynamic>{
       'idx': instance.idx,
     };

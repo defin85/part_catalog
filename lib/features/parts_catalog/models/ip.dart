@@ -7,7 +7,7 @@ part 'ip.g.dart';
 /// Модель данных для IP-адреса.
 /// {@endtemplate}
 @freezed
-class Ip with _$Ip {
+abstract class Ip with _$Ip {
   /// {@macro ip}
   factory Ip({
     /// IP-адрес.

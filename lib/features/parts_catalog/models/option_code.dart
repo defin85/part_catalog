@@ -7,7 +7,7 @@ part 'option_code.g.dart';
 /// Модель данных для кода опции автомобиля.
 /// {@endtemplate}
 @freezed
-class OptionCode with _$OptionCode {
+abstract class OptionCode with _$OptionCode {
   /// {@macro option_code}
   factory OptionCode({
     /// Код опции.

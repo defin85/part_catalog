@@ -7,7 +7,7 @@ part 'car2.g.dart';
 /// Модель данных для автомобиля (Car2).
 /// {@endtemplate}
 @freezed
-class Car2 with _$Car2 {
+abstract class Car2 with _$Car2 {
   /// {@macro car2}
   factory Car2({
     /// Идентификатор автомобиля.
@@ -58,7 +58,7 @@ class Car2 with _$Car2 {
 /// Модель данных для параметра автомобиля.
 /// {@endtemplate}
 @freezed
-class CarParameter with _$CarParameter {
+abstract class CarParameter with _$CarParameter {
   /// {@macro car_parameter}
   factory CarParameter({
     /// Hash ID параметра автомобиля.

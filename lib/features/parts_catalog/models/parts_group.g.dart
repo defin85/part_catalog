@@ -6,8 +6,7 @@ part of 'parts_group.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PartsGroupImpl _$$PartsGroupImplFromJson(Map<String, dynamic> json) =>
-    _$PartsGroupImpl(
+_PartsGroup _$PartsGroupFromJson(Map<String, dynamic> json) => _PartsGroup(
       name: json['name'] as String?,
       number: json['number'] as String?,
       positionNumber: json['positionNumber'] as String?,
@@ -17,7 +16,7 @@ _$PartsGroupImpl _$$PartsGroupImplFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$$PartsGroupImplToJson(_$PartsGroupImpl instance) =>
+Map<String, dynamic> _$PartsGroupToJson(_PartsGroup instance) =>
     <String, dynamic>{
       'name': instance.name,
       'number': instance.number,

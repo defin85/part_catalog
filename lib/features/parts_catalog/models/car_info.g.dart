@@ -6,8 +6,7 @@ part of 'car_info.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CarInfoImpl _$$CarInfoImplFromJson(Map<String, dynamic> json) =>
-    _$CarInfoImpl(
+_CarInfo _$CarInfoFromJson(Map<String, dynamic> json) => _CarInfo(
       title: json['title'] as String?,
       catalogId: json['catalogId'] as String?,
       brand: json['brand'] as String?,
@@ -27,8 +26,7 @@ _$CarInfoImpl _$$CarInfoImplFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$$CarInfoImplToJson(_$CarInfoImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$CarInfoToJson(_CarInfo instance) => <String, dynamic>{
       'title': instance.title,
       'catalogId': instance.catalogId,
       'brand': instance.brand,

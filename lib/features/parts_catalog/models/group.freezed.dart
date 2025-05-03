@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,131 +10,82 @@ part of 'group.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-Group _$GroupFromJson(Map<String, dynamic> json) {
-  return _Group.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Group {
   /// Идентификатор группы.
   @JsonKey(name: 'id')
-  String get id => throw _privateConstructorUsedError;
+  String get id;
 
   /// Идентификатор родительской группы (может быть null).
   @JsonKey(name: 'parentId')
-  String? get parentId => throw _privateConstructorUsedError;
+  String? get parentId;
 
   /// Признак наличия подгрупп.
   @JsonKey(name: 'hasSubgroups')
-  bool? get hasSubgroups => throw _privateConstructorUsedError;
+  bool? get hasSubgroups;
 
   /// Признак наличия деталей в группе.
   @JsonKey(name: 'hasParts')
-  bool? get hasParts => throw _privateConstructorUsedError;
+  bool? get hasParts;
 
   /// Название группы.
   @JsonKey(name: 'name')
-  String get name => throw _privateConstructorUsedError;
+  String get name;
 
   /// Изображение группы.
   @JsonKey(name: 'img')
-  String? get img => throw _privateConstructorUsedError;
+  String? get img;
 
   /// Описание группы.
   @JsonKey(name: 'description')
-  String? get description => throw _privateConstructorUsedError;
-
-  /// Serializes this Group to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get description;
 
   /// Create a copy of Group
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $GroupCopyWith<Group> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $GroupCopyWith<$Res> {
-  factory $GroupCopyWith(Group value, $Res Function(Group) then) =
-      _$GroupCopyWithImpl<$Res, Group>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String id,
-      @JsonKey(name: 'parentId') String? parentId,
-      @JsonKey(name: 'hasSubgroups') bool? hasSubgroups,
-      @JsonKey(name: 'hasParts') bool? hasParts,
-      @JsonKey(name: 'name') String name,
-      @JsonKey(name: 'img') String? img,
-      @JsonKey(name: 'description') String? description});
-}
-
-/// @nodoc
-class _$GroupCopyWithImpl<$Res, $Val extends Group>
-    implements $GroupCopyWith<$Res> {
-  _$GroupCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Group
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $GroupCopyWith<Group> get copyWith =>
+      _$GroupCopyWithImpl<Group>(this as Group, _$identity);
+
+  /// Serializes this Group to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? id = null,
-    Object? parentId = freezed,
-    Object? hasSubgroups = freezed,
-    Object? hasParts = freezed,
-    Object? name = null,
-    Object? img = freezed,
-    Object? description = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      parentId: freezed == parentId
-          ? _value.parentId
-          : parentId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hasSubgroups: freezed == hasSubgroups
-          ? _value.hasSubgroups
-          : hasSubgroups // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      hasParts: freezed == hasParts
-          ? _value.hasParts
-          : hasParts // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      img: freezed == img
-          ? _value.img
-          : img // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Group &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.parentId, parentId) ||
+                other.parentId == parentId) &&
+            (identical(other.hasSubgroups, hasSubgroups) ||
+                other.hasSubgroups == hasSubgroups) &&
+            (identical(other.hasParts, hasParts) ||
+                other.hasParts == hasParts) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.img, img) || other.img == img) &&
+            (identical(other.description, description) ||
+                other.description == description));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, parentId, hasSubgroups,
+      hasParts, name, img, description);
+
+  @override
+  String toString() {
+    return 'Group(id: $id, parentId: $parentId, hasSubgroups: $hasSubgroups, hasParts: $hasParts, name: $name, img: $img, description: $description)';
   }
 }
 
 /// @nodoc
-abstract class _$$GroupImplCopyWith<$Res> implements $GroupCopyWith<$Res> {
-  factory _$$GroupImplCopyWith(
-          _$GroupImpl value, $Res Function(_$GroupImpl) then) =
-      __$$GroupImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $GroupCopyWith<$Res> {
+  factory $GroupCopyWith(Group value, $Res Function(Group) _then) =
+      _$GroupCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'id') String id,
@@ -146,12 +98,11 @@ abstract class _$$GroupImplCopyWith<$Res> implements $GroupCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$GroupImplCopyWithImpl<$Res>
-    extends _$GroupCopyWithImpl<$Res, _$GroupImpl>
-    implements _$$GroupImplCopyWith<$Res> {
-  __$$GroupImplCopyWithImpl(
-      _$GroupImpl _value, $Res Function(_$GroupImpl) _then)
-      : super(_value, _then);
+class _$GroupCopyWithImpl<$Res> implements $GroupCopyWith<$Res> {
+  _$GroupCopyWithImpl(this._self, this._then);
+
+  final Group _self;
+  final $Res Function(Group) _then;
 
   /// Create a copy of Group
   /// with the given fields replaced by the non-null parameter values.
@@ -166,33 +117,33 @@ class __$$GroupImplCopyWithImpl<$Res>
     Object? img = freezed,
     Object? description = freezed,
   }) {
-    return _then(_$GroupImpl(
+    return _then(_self.copyWith(
       id: null == id
-          ? _value.id
+          ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
       parentId: freezed == parentId
-          ? _value.parentId
+          ? _self.parentId
           : parentId // ignore: cast_nullable_to_non_nullable
               as String?,
       hasSubgroups: freezed == hasSubgroups
-          ? _value.hasSubgroups
+          ? _self.hasSubgroups
           : hasSubgroups // ignore: cast_nullable_to_non_nullable
               as bool?,
       hasParts: freezed == hasParts
-          ? _value.hasParts
+          ? _self.hasParts
           : hasParts // ignore: cast_nullable_to_non_nullable
               as bool?,
       name: null == name
-          ? _value.name
+          ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
       img: freezed == img
-          ? _value.img
+          ? _self.img
           : img // ignore: cast_nullable_to_non_nullable
               as String?,
       description: freezed == description
-          ? _value.description
+          ? _self.description
           : description // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -201,8 +152,8 @@ class __$$GroupImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$GroupImpl implements _Group {
-  _$GroupImpl(
+class _Group implements Group {
+  _Group(
       {@JsonKey(name: 'id') required this.id,
       @JsonKey(name: 'parentId') this.parentId,
       @JsonKey(name: 'hasSubgroups') this.hasSubgroups,
@@ -210,9 +161,7 @@ class _$GroupImpl implements _Group {
       @JsonKey(name: 'name') required this.name,
       @JsonKey(name: 'img') this.img,
       @JsonKey(name: 'description') this.description});
-
-  factory _$GroupImpl.fromJson(Map<String, dynamic> json) =>
-      _$$GroupImplFromJson(json);
+  factory _Group.fromJson(Map<String, dynamic> json) => _$GroupFromJson(json);
 
   /// Идентификатор группы.
   @override
@@ -249,16 +198,26 @@ class _$GroupImpl implements _Group {
   @JsonKey(name: 'description')
   final String? description;
 
+  /// Create a copy of Group
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'Group(id: $id, parentId: $parentId, hasSubgroups: $hasSubgroups, hasParts: $hasParts, name: $name, img: $img, description: $description)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$GroupCopyWith<_Group> get copyWith =>
+      __$GroupCopyWithImpl<_Group>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$GroupToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$GroupImpl &&
+            other is _Group &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.parentId, parentId) ||
                 other.parentId == parentId) &&
@@ -277,73 +236,79 @@ class _$GroupImpl implements _Group {
   int get hashCode => Object.hash(runtimeType, id, parentId, hasSubgroups,
       hasParts, name, img, description);
 
-  /// Create a copy of Group
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$GroupImplCopyWith<_$GroupImpl> get copyWith =>
-      __$$GroupImplCopyWithImpl<_$GroupImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$GroupImplToJson(
-      this,
-    );
+  String toString() {
+    return 'Group(id: $id, parentId: $parentId, hasSubgroups: $hasSubgroups, hasParts: $hasParts, name: $name, img: $img, description: $description)';
   }
 }
 
-abstract class _Group implements Group {
-  factory _Group(
-      {@JsonKey(name: 'id') required final String id,
-      @JsonKey(name: 'parentId') final String? parentId,
-      @JsonKey(name: 'hasSubgroups') final bool? hasSubgroups,
-      @JsonKey(name: 'hasParts') final bool? hasParts,
-      @JsonKey(name: 'name') required final String name,
-      @JsonKey(name: 'img') final String? img,
-      @JsonKey(name: 'description') final String? description}) = _$GroupImpl;
-
-  factory _Group.fromJson(Map<String, dynamic> json) = _$GroupImpl.fromJson;
-
-  /// Идентификатор группы.
+/// @nodoc
+abstract mixin class _$GroupCopyWith<$Res> implements $GroupCopyWith<$Res> {
+  factory _$GroupCopyWith(_Group value, $Res Function(_Group) _then) =
+      __$GroupCopyWithImpl;
   @override
-  @JsonKey(name: 'id')
-  String get id;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') String id,
+      @JsonKey(name: 'parentId') String? parentId,
+      @JsonKey(name: 'hasSubgroups') bool? hasSubgroups,
+      @JsonKey(name: 'hasParts') bool? hasParts,
+      @JsonKey(name: 'name') String name,
+      @JsonKey(name: 'img') String? img,
+      @JsonKey(name: 'description') String? description});
+}
 
-  /// Идентификатор родительской группы (может быть null).
-  @override
-  @JsonKey(name: 'parentId')
-  String? get parentId;
+/// @nodoc
+class __$GroupCopyWithImpl<$Res> implements _$GroupCopyWith<$Res> {
+  __$GroupCopyWithImpl(this._self, this._then);
 
-  /// Признак наличия подгрупп.
-  @override
-  @JsonKey(name: 'hasSubgroups')
-  bool? get hasSubgroups;
-
-  /// Признак наличия деталей в группе.
-  @override
-  @JsonKey(name: 'hasParts')
-  bool? get hasParts;
-
-  /// Название группы.
-  @override
-  @JsonKey(name: 'name')
-  String get name;
-
-  /// Изображение группы.
-  @override
-  @JsonKey(name: 'img')
-  String? get img;
-
-  /// Описание группы.
-  @override
-  @JsonKey(name: 'description')
-  String? get description;
+  final _Group _self;
+  final $Res Function(_Group) _then;
 
   /// Create a copy of Group
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$GroupImplCopyWith<_$GroupImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? parentId = freezed,
+    Object? hasSubgroups = freezed,
+    Object? hasParts = freezed,
+    Object? name = null,
+    Object? img = freezed,
+    Object? description = freezed,
+  }) {
+    return _then(_Group(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      parentId: freezed == parentId
+          ? _self.parentId
+          : parentId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hasSubgroups: freezed == hasSubgroups
+          ? _self.hasSubgroups
+          : hasSubgroups // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      hasParts: freezed == hasParts
+          ? _self.hasParts
+          : hasParts // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      img: freezed == img
+          ? _self.img
+          : img // ignore: cast_nullable_to_non_nullable
+              as String?,
+      description: freezed == description
+          ? _self.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on

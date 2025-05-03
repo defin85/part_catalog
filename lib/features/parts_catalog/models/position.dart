@@ -7,7 +7,7 @@ part 'position.g.dart';
 /// Модель данных для позиции блока с номером на изображении.
 /// {@endtemplate}
 @freezed
-class Position with _$Position {
+abstract class Position with _$Position {
   /// {@macro position}
   factory Position({
     /// Номер на изображении.

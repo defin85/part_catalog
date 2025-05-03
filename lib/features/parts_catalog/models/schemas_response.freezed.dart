@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,40 +10,55 @@ part of 'schemas_response.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-SchemasResponse _$SchemasResponseFromJson(Map<String, dynamic> json) {
-  return _SchemasResponse.fromJson(json);
-}
 
 /// @nodoc
 mixin _$SchemasResponse {
   /// Группа (может быть null).
   @JsonKey(name: 'group')
-  Group? get group => throw _privateConstructorUsedError;
+  Group? get group;
 
   /// Список схем.
   @JsonKey(name: 'list')
-  List<SchemaModel>? get list => throw _privateConstructorUsedError;
-
-  /// Serializes this SchemasResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  List<SchemaModel>? get list;
 
   /// Create a copy of SchemasResponse
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
   $SchemasResponseCopyWith<SchemasResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+      _$SchemasResponseCopyWithImpl<SchemasResponse>(
+          this as SchemasResponse, _$identity);
+
+  /// Serializes this SchemasResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SchemasResponse &&
+            (identical(other.group, group) || other.group == group) &&
+            const DeepCollectionEquality().equals(other.list, list));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, group, const DeepCollectionEquality().hash(list));
+
+  @override
+  String toString() {
+    return 'SchemasResponse(group: $group, list: $list)';
+  }
 }
 
 /// @nodoc
-abstract class $SchemasResponseCopyWith<$Res> {
+abstract mixin class $SchemasResponseCopyWith<$Res> {
   factory $SchemasResponseCopyWith(
-          SchemasResponse value, $Res Function(SchemasResponse) then) =
-      _$SchemasResponseCopyWithImpl<$Res, SchemasResponse>;
+          SchemasResponse value, $Res Function(SchemasResponse) _then) =
+      _$SchemasResponseCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'group') Group? group,
@@ -52,14 +68,12 @@ abstract class $SchemasResponseCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$SchemasResponseCopyWithImpl<$Res, $Val extends SchemasResponse>
+class _$SchemasResponseCopyWithImpl<$Res>
     implements $SchemasResponseCopyWith<$Res> {
-  _$SchemasResponseCopyWithImpl(this._value, this._then);
+  _$SchemasResponseCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final SchemasResponse _self;
+  final $Res Function(SchemasResponse) _then;
 
   /// Create a copy of SchemasResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -69,16 +83,16 @@ class _$SchemasResponseCopyWithImpl<$Res, $Val extends SchemasResponse>
     Object? group = freezed,
     Object? list = freezed,
   }) {
-    return _then(_value.copyWith(
+    return _then(_self.copyWith(
       group: freezed == group
-          ? _value.group
+          ? _self.group
           : group // ignore: cast_nullable_to_non_nullable
               as Group?,
       list: freezed == list
-          ? _value.list
+          ? _self.list
           : list // ignore: cast_nullable_to_non_nullable
               as List<SchemaModel>?,
-    ) as $Val);
+    ));
   }
 
   /// Create a copy of SchemasResponse
@@ -86,71 +100,25 @@ class _$SchemasResponseCopyWithImpl<$Res, $Val extends SchemasResponse>
   @override
   @pragma('vm:prefer-inline')
   $GroupCopyWith<$Res>? get group {
-    if (_value.group == null) {
+    if (_self.group == null) {
       return null;
     }
 
-    return $GroupCopyWith<$Res>(_value.group!, (value) {
-      return _then(_value.copyWith(group: value) as $Val);
+    return $GroupCopyWith<$Res>(_self.group!, (value) {
+      return _then(_self.copyWith(group: value));
     });
   }
 }
 
 /// @nodoc
-abstract class _$$SchemasResponseImplCopyWith<$Res>
-    implements $SchemasResponseCopyWith<$Res> {
-  factory _$$SchemasResponseImplCopyWith(_$SchemasResponseImpl value,
-          $Res Function(_$SchemasResponseImpl) then) =
-      __$$SchemasResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'group') Group? group,
-      @JsonKey(name: 'list') List<SchemaModel>? list});
-
-  @override
-  $GroupCopyWith<$Res>? get group;
-}
-
-/// @nodoc
-class __$$SchemasResponseImplCopyWithImpl<$Res>
-    extends _$SchemasResponseCopyWithImpl<$Res, _$SchemasResponseImpl>
-    implements _$$SchemasResponseImplCopyWith<$Res> {
-  __$$SchemasResponseImplCopyWithImpl(
-      _$SchemasResponseImpl _value, $Res Function(_$SchemasResponseImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of SchemasResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? group = freezed,
-    Object? list = freezed,
-  }) {
-    return _then(_$SchemasResponseImpl(
-      group: freezed == group
-          ? _value.group
-          : group // ignore: cast_nullable_to_non_nullable
-              as Group?,
-      list: freezed == list
-          ? _value._list
-          : list // ignore: cast_nullable_to_non_nullable
-              as List<SchemaModel>?,
-    ));
-  }
-}
-
-/// @nodoc
 @JsonSerializable()
-class _$SchemasResponseImpl implements _SchemasResponse {
-  _$SchemasResponseImpl(
+class _SchemasResponse implements SchemasResponse {
+  _SchemasResponse(
       {@JsonKey(name: 'group') this.group,
       @JsonKey(name: 'list') final List<SchemaModel>? list})
       : _list = list;
-
-  factory _$SchemasResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SchemasResponseImplFromJson(json);
+  factory _SchemasResponse.fromJson(Map<String, dynamic> json) =>
+      _$SchemasResponseFromJson(json);
 
   /// Группа (может быть null).
   @override
@@ -171,16 +139,26 @@ class _$SchemasResponseImpl implements _SchemasResponse {
     return EqualUnmodifiableListView(value);
   }
 
+  /// Create a copy of SchemasResponse
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'SchemasResponse(group: $group, list: $list)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SchemasResponseCopyWith<_SchemasResponse> get copyWith =>
+      __$SchemasResponseCopyWithImpl<_SchemasResponse>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SchemasResponseToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SchemasResponseImpl &&
+            other is _SchemasResponse &&
             (identical(other.group, group) || other.group == group) &&
             const DeepCollectionEquality().equals(other._list, _list));
   }
@@ -190,46 +168,69 @@ class _$SchemasResponseImpl implements _SchemasResponse {
   int get hashCode => Object.hash(
       runtimeType, group, const DeepCollectionEquality().hash(_list));
 
-  /// Create a copy of SchemasResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$SchemasResponseImplCopyWith<_$SchemasResponseImpl> get copyWith =>
-      __$$SchemasResponseImplCopyWithImpl<_$SchemasResponseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SchemasResponseImplToJson(
-      this,
-    );
+  String toString() {
+    return 'SchemasResponse(group: $group, list: $list)';
   }
 }
 
-abstract class _SchemasResponse implements SchemasResponse {
-  factory _SchemasResponse(
-          {@JsonKey(name: 'group') final Group? group,
-          @JsonKey(name: 'list') final List<SchemaModel>? list}) =
-      _$SchemasResponseImpl;
-
-  factory _SchemasResponse.fromJson(Map<String, dynamic> json) =
-      _$SchemasResponseImpl.fromJson;
-
-  /// Группа (может быть null).
+/// @nodoc
+abstract mixin class _$SchemasResponseCopyWith<$Res>
+    implements $SchemasResponseCopyWith<$Res> {
+  factory _$SchemasResponseCopyWith(
+          _SchemasResponse value, $Res Function(_SchemasResponse) _then) =
+      __$SchemasResponseCopyWithImpl;
   @override
-  @JsonKey(name: 'group')
-  Group? get group;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'group') Group? group,
+      @JsonKey(name: 'list') List<SchemaModel>? list});
 
-  /// Список схем.
   @override
-  @JsonKey(name: 'list')
-  List<SchemaModel>? get list;
+  $GroupCopyWith<$Res>? get group;
+}
+
+/// @nodoc
+class __$SchemasResponseCopyWithImpl<$Res>
+    implements _$SchemasResponseCopyWith<$Res> {
+  __$SchemasResponseCopyWithImpl(this._self, this._then);
+
+  final _SchemasResponse _self;
+  final $Res Function(_SchemasResponse) _then;
 
   /// Create a copy of SchemasResponse
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SchemasResponseImplCopyWith<_$SchemasResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? group = freezed,
+    Object? list = freezed,
+  }) {
+    return _then(_SchemasResponse(
+      group: freezed == group
+          ? _self.group
+          : group // ignore: cast_nullable_to_non_nullable
+              as Group?,
+      list: freezed == list
+          ? _self._list
+          : list // ignore: cast_nullable_to_non_nullable
+              as List<SchemaModel>?,
+    ));
+  }
+
+  /// Create a copy of SchemasResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $GroupCopyWith<$Res>? get group {
+    if (_self.group == null) {
+      return null;
+    }
+
+    return $GroupCopyWith<$Res>(_self.group!, (value) {
+      return _then(_self.copyWith(group: value));
+    });
+  }
 }
+
+// dart format on

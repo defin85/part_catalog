@@ -9,7 +9,7 @@ part 'car_info.g.dart';
 /// Модель данных для информации об автомобиле.
 /// {@endtemplate}
 @freezed
-class CarInfo with _$CarInfo {
+abstract class CarInfo with _$CarInfo {
   /// {@macro car_info}
   factory CarInfo({
     /// Заголовок.

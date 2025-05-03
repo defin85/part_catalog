@@ -6,13 +6,20 @@ import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'dart:io';
 import 'package:logger/logger.dart';
 import 'schema_synchronizer.dart';
+import 'package:uuid/uuid.dart';
 
-// Новые пути импорта
+// импорты таблиц
 import 'items/clients_items.dart';
 import 'items/cars_items.dart';
 import 'items/app_info_items.dart';
+import 'items/orders_items.dart';
+import 'items/order_parts_items.dart';
+import 'items/order_services_items.dart';
+
+// импорты DAO
 import 'daos/clients_dao.dart';
 import 'daos/cars_dao.dart';
+import 'daos/orders_dao.dart';
 
 part 'database.g.dart';
 
@@ -20,8 +27,15 @@ part 'database.g.dart';
 /// База данных приложения, использующая Drift ORM.
 /// {@endtemplate}
 @DriftDatabase(
-  tables: [ClientsItems, CarsItems, AppInfoItems],
-  daos: [ClientsDao, CarsDao],
+  tables: [
+    ClientsItems,
+    CarsItems,
+    AppInfoItems,
+    OrdersItems,
+    OrderPartsItems,
+    OrderServicesItems
+  ],
+  daos: [ClientsDao, CarsDao, OrdersDao],
 ) // Обновлены имена таблиц
 class AppDatabase extends _$AppDatabase {
   /// {@macro app_database}
@@ -31,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   final Logger _logger = Logger();
 
   @override
-  int get schemaVersion => 7; // Увеличиваем версию из-за изменения схемы
+  int get schemaVersion => 10; // Увеличиваем версию из-за изменения схемы
 
   /// Получает экземпляр DAO клиентов.
   @override
@@ -40,6 +54,10 @@ class AppDatabase extends _$AppDatabase {
   /// Получает экземпляр DAO автомобилей.
   @override
   CarsDao get carsDao => CarsDao(this);
+
+  /// Получает экземпляр DAO заказ-нарядов.
+  @override
+  OrdersDao get ordersDao => OrdersDao(this);
 
   // Определите стратегию миграции
   @override

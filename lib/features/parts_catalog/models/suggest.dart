@@ -7,7 +7,7 @@ part 'suggest.g.dart';
 /// Модель данных для подсказки.
 /// {@endtemplate}
 @freezed
-class Suggest with _$Suggest {
+abstract class Suggest with _$Suggest {
   /// {@macro suggest}
   factory Suggest({
     /// Идентификатор поиска.

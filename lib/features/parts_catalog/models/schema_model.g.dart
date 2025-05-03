@@ -6,8 +6,7 @@ part of 'schema_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SchemaModelImpl _$$SchemaModelImplFromJson(Map<String, dynamic> json) =>
-    _$SchemaModelImpl(
+_SchemaModel _$SchemaModelFromJson(Map<String, dynamic> json) => _SchemaModel(
       groupId: json['groupId'] as String,
       img: json['img'] as String?,
       name: json['name'] as String,
@@ -17,7 +16,7 @@ _$SchemaModelImpl _$$SchemaModelImplFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$$SchemaModelImplToJson(_$SchemaModelImpl instance) =>
+Map<String, dynamic> _$SchemaModelToJson(_SchemaModel instance) =>
     <String, dynamic>{
       'groupId': instance.groupId,
       'img': instance.img,

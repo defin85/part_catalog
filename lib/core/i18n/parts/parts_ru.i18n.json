@@ -1,0 +1,8 @@
+{
+    "statusReceived": "Получено",
+    "statusOrdered": "Заказано",
+    "statusNotOrdered": "Не заказано",
+    "partNumberLabel": "Артикул",
+    "brandLabel": "Бренд",
+    "pcs": "шт."
+}

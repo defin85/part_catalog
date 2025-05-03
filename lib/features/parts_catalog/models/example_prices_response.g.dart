@@ -6,9 +6,9 @@ part of 'example_prices_response.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ExamplePricesResponseImpl _$$ExamplePricesResponseImplFromJson(
+_ExamplePricesResponse _$ExamplePricesResponseFromJson(
         Map<String, dynamic> json) =>
-    _$ExamplePricesResponseImpl(
+    _ExamplePricesResponse(
       id: json['id'] as String?,
       title: json['title'] as String?,
       code: json['code'] as String?,
@@ -23,8 +23,8 @@ _$ExamplePricesResponseImpl _$$ExamplePricesResponseImplFromJson(
       ),
     );
 
-Map<String, dynamic> _$$ExamplePricesResponseImplToJson(
-        _$ExamplePricesResponseImpl instance) =>
+Map<String, dynamic> _$ExamplePricesResponseToJson(
+        _ExamplePricesResponse instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,

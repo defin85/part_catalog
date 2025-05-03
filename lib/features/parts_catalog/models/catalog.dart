@@ -7,7 +7,7 @@ part 'catalog.g.dart';
 /// Модель данных для каталога.
 /// {@endtemplate}
 @freezed
-class Catalog with _$Catalog {
+abstract class Catalog with _$Catalog {
   /// {@macro catalog}
   factory Catalog({
     /// Идентификатор каталога.

@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,114 +10,70 @@ part of 'schema_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-SchemaModel _$SchemaModelFromJson(Map<String, dynamic> json) {
-  return _SchemaModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$SchemaModel {
   /// Идентификатор группы.
   @JsonKey(name: 'groupId')
-  String get groupId => throw _privateConstructorUsedError;
+  String get groupId;
 
   /// URL изображения.
   @JsonKey(name: 'img')
-  String? get img => throw _privateConstructorUsedError;
+  String? get img;
 
   /// Название.
   @JsonKey(name: 'name')
-  String get name => throw _privateConstructorUsedError;
+  String get name;
 
   /// Описание.
   @JsonKey(name: 'description')
-  String? get description => throw _privateConstructorUsedError;
+  String? get description;
 
   /// Список названий деталей.
   @JsonKey(name: 'partNames')
-  List<PartName>? get partNames => throw _privateConstructorUsedError;
-
-  /// Serializes this SchemaModel to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  List<PartName>? get partNames;
 
   /// Create a copy of SchemaModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SchemaModelCopyWith<SchemaModel> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $SchemaModelCopyWith<$Res> {
-  factory $SchemaModelCopyWith(
-          SchemaModel value, $Res Function(SchemaModel) then) =
-      _$SchemaModelCopyWithImpl<$Res, SchemaModel>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'groupId') String groupId,
-      @JsonKey(name: 'img') String? img,
-      @JsonKey(name: 'name') String name,
-      @JsonKey(name: 'description') String? description,
-      @JsonKey(name: 'partNames') List<PartName>? partNames});
-}
-
-/// @nodoc
-class _$SchemaModelCopyWithImpl<$Res, $Val extends SchemaModel>
-    implements $SchemaModelCopyWith<$Res> {
-  _$SchemaModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of SchemaModel
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $SchemaModelCopyWith<SchemaModel> get copyWith =>
+      _$SchemaModelCopyWithImpl<SchemaModel>(this as SchemaModel, _$identity);
+
+  /// Serializes this SchemaModel to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? groupId = null,
-    Object? img = freezed,
-    Object? name = null,
-    Object? description = freezed,
-    Object? partNames = freezed,
-  }) {
-    return _then(_value.copyWith(
-      groupId: null == groupId
-          ? _value.groupId
-          : groupId // ignore: cast_nullable_to_non_nullable
-              as String,
-      img: freezed == img
-          ? _value.img
-          : img // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      partNames: freezed == partNames
-          ? _value.partNames
-          : partNames // ignore: cast_nullable_to_non_nullable
-              as List<PartName>?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is SchemaModel &&
+            (identical(other.groupId, groupId) || other.groupId == groupId) &&
+            (identical(other.img, img) || other.img == img) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            const DeepCollectionEquality().equals(other.partNames, partNames));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, groupId, img, name, description,
+      const DeepCollectionEquality().hash(partNames));
+
+  @override
+  String toString() {
+    return 'SchemaModel(groupId: $groupId, img: $img, name: $name, description: $description, partNames: $partNames)';
   }
 }
 
 /// @nodoc
-abstract class _$$SchemaModelImplCopyWith<$Res>
-    implements $SchemaModelCopyWith<$Res> {
-  factory _$$SchemaModelImplCopyWith(
-          _$SchemaModelImpl value, $Res Function(_$SchemaModelImpl) then) =
-      __$$SchemaModelImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $SchemaModelCopyWith<$Res> {
+  factory $SchemaModelCopyWith(
+          SchemaModel value, $Res Function(SchemaModel) _then) =
+      _$SchemaModelCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'groupId') String groupId,
@@ -127,12 +84,11 @@ abstract class _$$SchemaModelImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$SchemaModelImplCopyWithImpl<$Res>
-    extends _$SchemaModelCopyWithImpl<$Res, _$SchemaModelImpl>
-    implements _$$SchemaModelImplCopyWith<$Res> {
-  __$$SchemaModelImplCopyWithImpl(
-      _$SchemaModelImpl _value, $Res Function(_$SchemaModelImpl) _then)
-      : super(_value, _then);
+class _$SchemaModelCopyWithImpl<$Res> implements $SchemaModelCopyWith<$Res> {
+  _$SchemaModelCopyWithImpl(this._self, this._then);
+
+  final SchemaModel _self;
+  final $Res Function(SchemaModel) _then;
 
   /// Create a copy of SchemaModel
   /// with the given fields replaced by the non-null parameter values.
@@ -145,25 +101,25 @@ class __$$SchemaModelImplCopyWithImpl<$Res>
     Object? description = freezed,
     Object? partNames = freezed,
   }) {
-    return _then(_$SchemaModelImpl(
+    return _then(_self.copyWith(
       groupId: null == groupId
-          ? _value.groupId
+          ? _self.groupId
           : groupId // ignore: cast_nullable_to_non_nullable
               as String,
       img: freezed == img
-          ? _value.img
+          ? _self.img
           : img // ignore: cast_nullable_to_non_nullable
               as String?,
       name: null == name
-          ? _value.name
+          ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
       description: freezed == description
-          ? _value.description
+          ? _self.description
           : description // ignore: cast_nullable_to_non_nullable
               as String?,
       partNames: freezed == partNames
-          ? _value._partNames
+          ? _self.partNames
           : partNames // ignore: cast_nullable_to_non_nullable
               as List<PartName>?,
     ));
@@ -172,17 +128,16 @@ class __$$SchemaModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SchemaModelImpl implements _SchemaModel {
-  _$SchemaModelImpl(
+class _SchemaModel implements SchemaModel {
+  _SchemaModel(
       {@JsonKey(name: 'groupId') required this.groupId,
       @JsonKey(name: 'img') this.img,
       @JsonKey(name: 'name') required this.name,
       @JsonKey(name: 'description') this.description,
       @JsonKey(name: 'partNames') final List<PartName>? partNames})
       : _partNames = partNames;
-
-  factory _$SchemaModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SchemaModelImplFromJson(json);
+  factory _SchemaModel.fromJson(Map<String, dynamic> json) =>
+      _$SchemaModelFromJson(json);
 
   /// Идентификатор группы.
   @override
@@ -218,16 +173,26 @@ class _$SchemaModelImpl implements _SchemaModel {
     return EqualUnmodifiableListView(value);
   }
 
+  /// Create a copy of SchemaModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'SchemaModel(groupId: $groupId, img: $img, name: $name, description: $description, partNames: $partNames)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SchemaModelCopyWith<_SchemaModel> get copyWith =>
+      __$SchemaModelCopyWithImpl<_SchemaModel>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SchemaModelToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SchemaModelImpl &&
+            other is _SchemaModel &&
             (identical(other.groupId, groupId) || other.groupId == groupId) &&
             (identical(other.img, img) || other.img == img) &&
             (identical(other.name, name) || other.name == name) &&
@@ -242,63 +207,69 @@ class _$SchemaModelImpl implements _SchemaModel {
   int get hashCode => Object.hash(runtimeType, groupId, img, name, description,
       const DeepCollectionEquality().hash(_partNames));
 
-  /// Create a copy of SchemaModel
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$SchemaModelImplCopyWith<_$SchemaModelImpl> get copyWith =>
-      __$$SchemaModelImplCopyWithImpl<_$SchemaModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SchemaModelImplToJson(
-      this,
-    );
+  String toString() {
+    return 'SchemaModel(groupId: $groupId, img: $img, name: $name, description: $description, partNames: $partNames)';
   }
 }
 
-abstract class _SchemaModel implements SchemaModel {
-  factory _SchemaModel(
-          {@JsonKey(name: 'groupId') required final String groupId,
-          @JsonKey(name: 'img') final String? img,
-          @JsonKey(name: 'name') required final String name,
-          @JsonKey(name: 'description') final String? description,
-          @JsonKey(name: 'partNames') final List<PartName>? partNames}) =
-      _$SchemaModelImpl;
-
-  factory _SchemaModel.fromJson(Map<String, dynamic> json) =
-      _$SchemaModelImpl.fromJson;
-
-  /// Идентификатор группы.
+/// @nodoc
+abstract mixin class _$SchemaModelCopyWith<$Res>
+    implements $SchemaModelCopyWith<$Res> {
+  factory _$SchemaModelCopyWith(
+          _SchemaModel value, $Res Function(_SchemaModel) _then) =
+      __$SchemaModelCopyWithImpl;
   @override
-  @JsonKey(name: 'groupId')
-  String get groupId;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'groupId') String groupId,
+      @JsonKey(name: 'img') String? img,
+      @JsonKey(name: 'name') String name,
+      @JsonKey(name: 'description') String? description,
+      @JsonKey(name: 'partNames') List<PartName>? partNames});
+}
 
-  /// URL изображения.
-  @override
-  @JsonKey(name: 'img')
-  String? get img;
+/// @nodoc
+class __$SchemaModelCopyWithImpl<$Res> implements _$SchemaModelCopyWith<$Res> {
+  __$SchemaModelCopyWithImpl(this._self, this._then);
 
-  /// Название.
-  @override
-  @JsonKey(name: 'name')
-  String get name;
-
-  /// Описание.
-  @override
-  @JsonKey(name: 'description')
-  String? get description;
-
-  /// Список названий деталей.
-  @override
-  @JsonKey(name: 'partNames')
-  List<PartName>? get partNames;
+  final _SchemaModel _self;
+  final $Res Function(_SchemaModel) _then;
 
   /// Create a copy of SchemaModel
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SchemaModelImplCopyWith<_$SchemaModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? groupId = null,
+    Object? img = freezed,
+    Object? name = null,
+    Object? description = freezed,
+    Object? partNames = freezed,
+  }) {
+    return _then(_SchemaModel(
+      groupId: null == groupId
+          ? _self.groupId
+          : groupId // ignore: cast_nullable_to_non_nullable
+              as String,
+      img: freezed == img
+          ? _self.img
+          : img // ignore: cast_nullable_to_non_nullable
+              as String?,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      description: freezed == description
+          ? _self.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      partNames: freezed == partNames
+          ? _self._partNames
+          : partNames // ignore: cast_nullable_to_non_nullable
+              as List<PartName>?,
+    ));
+  }
 }
+
+// dart format on

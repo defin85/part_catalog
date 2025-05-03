@@ -7,7 +7,7 @@ part 'groups_tree.g.dart';
 /// Модель данных для дерева групп.
 /// {@endtemplate}
 @freezed
-class GroupsTree with _$GroupsTree {
+abstract class GroupsTree with _$GroupsTree {
   /// {@macro groups_tree}
   factory GroupsTree({
     /// Идентификатор.

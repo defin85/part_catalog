@@ -1,61 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/core/utils/s.dart';
+import 'package:go_router/go_router.dart'; // Импортируем go_router
+import 'package:part_catalog/core/navigation/app_routes.dart'; // Импортируем маршруты
 import 'package:part_catalog/core/widgets/language_switcher.dart';
-import 'package:part_catalog/features/clients/screens/clients_screen.dart';
-import 'package:part_catalog/features/home/models/navigation_item.dart';
-import 'package:part_catalog/features/vehicles/screens/cars_screen.dart';
+// Используем slang для локализации
+import 'package:part_catalog/core/i18n/strings.g.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+/// Оболочка навигации (Shell) для основных разделов приложения.
+/// Используется с ShellRoute в go_router.
+class HomeScreen extends StatelessWidget {
+  /// Дочерний виджет, предоставляемый ShellRoute (текущий экран).
+  final Widget child;
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
+  const HomeScreen({
+    super.key,
+    required this.child,
+  });
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
-  // Объединяем экраны и данные для навигации в единую структуру
-  late final List<NavigationItem> _navigationItems = [
-    NavigationItem(
-      screen: const ClientsScreen(),
+  // Определяем элементы навигации статически или получаем из конфигурации
+  // Теперь они больше связаны с маршрутами, чем с конкретными виджетами
+  static final _navigationDestinations = [
+    (
+      route: AppRoutes.clients,
       icon: Icons.people,
-      titleGetter: (context) => S.of(context)?.clientsScreenTitle ?? 'Clients',
+      labelKey: t.clients.screenTitle
     ),
-    NavigationItem(
-      screen: const CarsScreen(),
+    (
+      route: AppRoutes.vehicles,
       icon: Icons.directions_car,
-      titleGetter: (context) => S.of(context)?.carsScreenTitle ?? 'Cars',
+      labelKey: t.vehicles.screenTitle
     ),
-    // Добавление других экранов потребует изменений только здесь
+    (
+      route: AppRoutes.orders,
+      icon: Icons.list_alt,
+      labelKey: t.orders.screenTitle
+    ),
+    // Добавьте другие основные разделы здесь
   ];
 
   @override
   Widget build(BuildContext context) {
+    // Получаем текущий маршрут для определения активного индекса
+    final String location = GoRouterState.of(context).uri.toString();
+    final int currentIndex = _calculateSelectedIndex(location);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(S.of(context)?.appTitle ?? 'Part Catalog'),
+        // Заголовок теперь может зависеть от текущего раздела или быть общим
+        title: Text(_navigationDestinations[currentIndex].labelKey),
         actions: const [
           LanguageSwitcher(),
         ],
       ),
-      body: _navigationItems[_selectedIndex].screen,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+      // Отображаем дочерний экран, предоставленный ShellRoute
+      body: child,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: currentIndex,
+        onDestinationSelected: (index) {
+          // Используем go_router для навигации
+          context.go(_navigationDestinations[index].route);
         },
-        items: _navigationItems
+        destinations: _navigationDestinations
             .map(
-              (item) => BottomNavigationBarItem(
-                icon: Icon(item.icon),
-                label: item.titleGetter(context),
+              (dest) => NavigationDestination(
+                icon: Icon(dest.icon),
+                label: dest.labelKey, // Используем ключ локализации slang
               ),
             )
             .toList(),
       ),
     );
+  }
+
+  /// Определяет индекс активного элемента навигации на основе текущего маршрута.
+  int _calculateSelectedIndex(String location) {
+    // Находим первый элемент, чей маршрут является началом текущего location
+    final index = _navigationDestinations.indexWhere(
+      (dest) => location.startsWith(dest.route),
+    );
+    // Если маршрут не найден (например, главная страница или ошибка), возвращаем 0
+    return index < 0 ? 0 : index;
   }
 }

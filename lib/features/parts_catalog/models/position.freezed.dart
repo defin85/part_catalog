@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,83 +10,54 @@ part of 'position.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-Position _$PositionFromJson(Map<String, dynamic> json) {
-  return _Position.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Position {
   /// Номер на изображении.
   @JsonKey(name: 'number')
-  String? get number => throw _privateConstructorUsedError;
+  String? get number;
 
   /// Координаты блока с номером на изображении (X, Y, H, W).
   @JsonKey(name: 'coordinates')
-  List<double>? get coordinates => throw _privateConstructorUsedError;
-
-  /// Serializes this Position to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  List<double>? get coordinates;
 
   /// Create a copy of Position
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PositionCopyWith<Position> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $PositionCopyWith<$Res> {
-  factory $PositionCopyWith(Position value, $Res Function(Position) then) =
-      _$PositionCopyWithImpl<$Res, Position>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'number') String? number,
-      @JsonKey(name: 'coordinates') List<double>? coordinates});
-}
-
-/// @nodoc
-class _$PositionCopyWithImpl<$Res, $Val extends Position>
-    implements $PositionCopyWith<$Res> {
-  _$PositionCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Position
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $PositionCopyWith<Position> get copyWith =>
+      _$PositionCopyWithImpl<Position>(this as Position, _$identity);
+
+  /// Serializes this Position to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? number = freezed,
-    Object? coordinates = freezed,
-  }) {
-    return _then(_value.copyWith(
-      number: freezed == number
-          ? _value.number
-          : number // ignore: cast_nullable_to_non_nullable
-              as String?,
-      coordinates: freezed == coordinates
-          ? _value.coordinates
-          : coordinates // ignore: cast_nullable_to_non_nullable
-              as List<double>?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Position &&
+            (identical(other.number, number) || other.number == number) &&
+            const DeepCollectionEquality()
+                .equals(other.coordinates, coordinates));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, number, const DeepCollectionEquality().hash(coordinates));
+
+  @override
+  String toString() {
+    return 'Position(number: $number, coordinates: $coordinates)';
   }
 }
 
 /// @nodoc
-abstract class _$$PositionImplCopyWith<$Res>
-    implements $PositionCopyWith<$Res> {
-  factory _$$PositionImplCopyWith(
-          _$PositionImpl value, $Res Function(_$PositionImpl) then) =
-      __$$PositionImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $PositionCopyWith<$Res> {
+  factory $PositionCopyWith(Position value, $Res Function(Position) _then) =
+      _$PositionCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'number') String? number,
@@ -93,12 +65,11 @@ abstract class _$$PositionImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$PositionImplCopyWithImpl<$Res>
-    extends _$PositionCopyWithImpl<$Res, _$PositionImpl>
-    implements _$$PositionImplCopyWith<$Res> {
-  __$$PositionImplCopyWithImpl(
-      _$PositionImpl _value, $Res Function(_$PositionImpl) _then)
-      : super(_value, _then);
+class _$PositionCopyWithImpl<$Res> implements $PositionCopyWith<$Res> {
+  _$PositionCopyWithImpl(this._self, this._then);
+
+  final Position _self;
+  final $Res Function(Position) _then;
 
   /// Create a copy of Position
   /// with the given fields replaced by the non-null parameter values.
@@ -108,13 +79,13 @@ class __$$PositionImplCopyWithImpl<$Res>
     Object? number = freezed,
     Object? coordinates = freezed,
   }) {
-    return _then(_$PositionImpl(
+    return _then(_self.copyWith(
       number: freezed == number
-          ? _value.number
+          ? _self.number
           : number // ignore: cast_nullable_to_non_nullable
               as String?,
       coordinates: freezed == coordinates
-          ? _value._coordinates
+          ? _self.coordinates
           : coordinates // ignore: cast_nullable_to_non_nullable
               as List<double>?,
     ));
@@ -123,14 +94,13 @@ class __$$PositionImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PositionImpl implements _Position {
-  _$PositionImpl(
+class _Position implements Position {
+  _Position(
       {@JsonKey(name: 'number') this.number,
       @JsonKey(name: 'coordinates') final List<double>? coordinates})
       : _coordinates = coordinates;
-
-  factory _$PositionImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PositionImplFromJson(json);
+  factory _Position.fromJson(Map<String, dynamic> json) =>
+      _$PositionFromJson(json);
 
   /// Номер на изображении.
   @override
@@ -151,16 +121,26 @@ class _$PositionImpl implements _Position {
     return EqualUnmodifiableListView(value);
   }
 
+  /// Create a copy of Position
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'Position(number: $number, coordinates: $coordinates)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$PositionCopyWith<_Position> get copyWith =>
+      __$PositionCopyWithImpl<_Position>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$PositionToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PositionImpl &&
+            other is _Position &&
             (identical(other.number, number) || other.number == number) &&
             const DeepCollectionEquality()
                 .equals(other._coordinates, _coordinates));
@@ -171,45 +151,50 @@ class _$PositionImpl implements _Position {
   int get hashCode => Object.hash(
       runtimeType, number, const DeepCollectionEquality().hash(_coordinates));
 
-  /// Create a copy of Position
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$PositionImplCopyWith<_$PositionImpl> get copyWith =>
-      __$$PositionImplCopyWithImpl<_$PositionImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$PositionImplToJson(
-      this,
-    );
+  String toString() {
+    return 'Position(number: $number, coordinates: $coordinates)';
   }
 }
 
-abstract class _Position implements Position {
-  factory _Position(
-          {@JsonKey(name: 'number') final String? number,
-          @JsonKey(name: 'coordinates') final List<double>? coordinates}) =
-      _$PositionImpl;
-
-  factory _Position.fromJson(Map<String, dynamic> json) =
-      _$PositionImpl.fromJson;
-
-  /// Номер на изображении.
+/// @nodoc
+abstract mixin class _$PositionCopyWith<$Res>
+    implements $PositionCopyWith<$Res> {
+  factory _$PositionCopyWith(_Position value, $Res Function(_Position) _then) =
+      __$PositionCopyWithImpl;
   @override
-  @JsonKey(name: 'number')
-  String? get number;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'number') String? number,
+      @JsonKey(name: 'coordinates') List<double>? coordinates});
+}
 
-  /// Координаты блока с номером на изображении (X, Y, H, W).
-  @override
-  @JsonKey(name: 'coordinates')
-  List<double>? get coordinates;
+/// @nodoc
+class __$PositionCopyWithImpl<$Res> implements _$PositionCopyWith<$Res> {
+  __$PositionCopyWithImpl(this._self, this._then);
+
+  final _Position _self;
+  final $Res Function(_Position) _then;
 
   /// Create a copy of Position
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PositionImplCopyWith<_$PositionImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? number = freezed,
+    Object? coordinates = freezed,
+  }) {
+    return _then(_Position(
+      number: freezed == number
+          ? _self.number
+          : number // ignore: cast_nullable_to_non_nullable
+              as String?,
+      coordinates: freezed == coordinates
+          ? _self._coordinates
+          : coordinates // ignore: cast_nullable_to_non_nullable
+              as List<double>?,
+    ));
+  }
 }
+
+// dart format on

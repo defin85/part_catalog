@@ -7,7 +7,7 @@ part 'car_parameter.g.dart';
 /// Модель данных для параметра автомобиля.
 /// {@endtemplate}
 @freezed
-class CarParameter with _$CarParameter {
+abstract class CarParameter with _$CarParameter {
   /// {@macro car_parameter}
   factory CarParameter({
     /// Hash ID параметра автомобиля.

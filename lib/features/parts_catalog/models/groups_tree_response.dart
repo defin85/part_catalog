@@ -8,7 +8,7 @@ part 'groups_tree_response.g.dart';
 /// Модель данных для ответа с деревом групп.
 /// {@endtemplate}
 @freezed
-class GroupsTreeResponse with _$GroupsTreeResponse {
+abstract class GroupsTreeResponse with _$GroupsTreeResponse {
   /// {@macro groups_tree_response}
   factory GroupsTreeResponse({
     /// Идентификатор.

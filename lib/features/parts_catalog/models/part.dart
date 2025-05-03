@@ -7,7 +7,7 @@ part 'part.g.dart';
 /// Модель данных для детали.
 /// {@endtemplate}
 @freezed
-class Part with _$Part {
+abstract class Part with _$Part {
   /// {@macro part}
   factory Part({
     /// Идентификатор детали.

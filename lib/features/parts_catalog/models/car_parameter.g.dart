@@ -6,8 +6,8 @@ part of 'car_parameter.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CarParameterImpl _$$CarParameterImplFromJson(Map<String, dynamic> json) =>
-    _$CarParameterImpl(
+_CarParameter _$CarParameterFromJson(Map<String, dynamic> json) =>
+    _CarParameter(
       idx: json['idx'] as String?,
       key: json['key'] as String?,
       name: json['name'] as String?,
@@ -15,7 +15,7 @@ _$CarParameterImpl _$$CarParameterImplFromJson(Map<String, dynamic> json) =>
       sortOrder: (json['sortOrder'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$$CarParameterImplToJson(_$CarParameterImpl instance) =>
+Map<String, dynamic> _$CarParameterToJson(_CarParameter instance) =>
     <String, dynamic>{
       'idx': instance.idx,
       'key': instance.key,

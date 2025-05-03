@@ -7,7 +7,7 @@ part 'car_parameter_idx.g.dart';
 /// Модель данных для индекса параметра автомобиля.
 /// {@endtemplate}
 @freezed
-class CarParameterIdx with _$CarParameterIdx {
+abstract class CarParameterIdx with _$CarParameterIdx {
   /// {@macro car_parameter_idx}
   factory CarParameterIdx({
     /// Индекс параметра автомобиля.

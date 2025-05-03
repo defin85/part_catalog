@@ -7,7 +7,7 @@ part 'error.g.dart';
 /// Модель данных для ошибки.
 /// {@endtemplate}
 @freezed
-class Error with _$Error {
+abstract class Error with _$Error {
   /// {@macro error}
   factory Error({
     /// Код ошибки.

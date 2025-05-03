@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart';
+import 'package:part_catalog/core/navigation/app_router.dart'; // Импорт GoRouter
 import 'package:part_catalog/core/service_locator.dart';
-import 'package:part_catalog/core/utils/s.dart';
-import 'package:part_catalog/core/providers/locale_provider.dart';
-import 'package:part_catalog/features/home/screens/home_screen.dart';
-import 'package:provider/provider.dart';
+// Используем slang для локализации
+import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   // Выполнение в защищенной зоне для перехвата всех ошибок
@@ -20,7 +19,7 @@ void main() {
     // Настраиваем FlutterError для перехвата ошибок Flutter
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
-      final logger = Logger();
+      final logger = Logger(); // Используем стандартный логгер
       logger.e(
         'Flutter error: ${details.exception}',
         error: details.exception,
@@ -28,27 +27,36 @@ void main() {
       );
     };
 
+    // Инициализация Slang (устанавливаем локаль устройства по умолчанию)
+    LocaleSettings.useDeviceLocale();
+
     // Создаем экземпляр базы данных один раз
     final database = AppDatabase();
-    await database.ensureDatabaseReady();
+    // Убедимся, что база данных готова (миграции и т.д.)
+    await database
+        .ensureDatabaseReady(); // Раскомментируйте, если есть такой метод
 
     // Передаем существующий экземпляр в setupLocator
     setupLocator(database);
 
+    // Оборачиваем приложение в TranslationProvider от slang
     runApp(
-      ChangeNotifierProvider(
-        create: (_) => locator<LocaleProvider>(),
+      TranslationProvider(
         child: const MyApp(),
       ),
     );
   }, (error, stackTrace) {
-    // Ловим все необработанные исключения
-    final logger = Logger();
+    // Ловим все необработанные исключения в зоне
+    final logger = Logger(); // Используем стандартный логгер
     logger.e(
       'Unhandled error',
       error: error,
       stackTrace: stackTrace,
     );
+    // В режиме отладки можно перебросить ошибку для лучшей видимости
+    // if (kDebugMode) {
+    //   throw error;
+    // }
   });
 }
 
@@ -57,23 +65,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущую локаль из провайдера
-    final localeProvider = Provider.of<LocaleProvider>(context);
+    // Используем MaterialApp.router для интеграции с GoRouter
+    return MaterialApp.router(
+      // Передаем конфигурацию роутера
+      routerConfig: router,
 
-    return MaterialApp(
-      // Поддерживаемые локали
-      supportedLocales: S.supportedLocales,
-      // Используем локаль из провайдера
-      locale: localeProvider.locale,
-      // Делегаты локализации
-      localizationsDelegates: S.localizationDelegates,
-      // Заголовок приложения через локализацию
-      title: 'Part Catalog',
+      // Настройки локализации из Slang
+      locale: TranslationProvider.of(context)
+          .flutterLocale, // Получаем текущую локаль
+      supportedLocales: AppLocaleUtils
+          .supportedLocales, // Получаем список поддерживаемых локалей
+      localizationsDelegates:
+          GlobalMaterialLocalizations.delegates, // Стандартные делегаты
+
+      // Заголовок приложения (можно взять из локализации, если нужно)
+      title: t.core.appTitle,
+
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        // Настройте вашу тему
+        primarySwatch: Colors.blue, // Пример
         useMaterial3: true,
+        // Дополнительные настройки темы...
       ),
-      home: HomeScreen(),
+      // Убрали home, так как начальный маршрут задается в GoRouter (initialLocation)
     );
   }
 }

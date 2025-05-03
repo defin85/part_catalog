@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,84 +10,54 @@ part of 'option_code.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-OptionCode _$OptionCodeFromJson(Map<String, dynamic> json) {
-  return _OptionCode.fromJson(json);
-}
 
 /// @nodoc
 mixin _$OptionCode {
   /// Код опции.
   @JsonKey(name: 'code')
-  String? get code => throw _privateConstructorUsedError;
+  String? get code;
 
   /// Описание опции.
   @JsonKey(name: 'description')
-  String? get description => throw _privateConstructorUsedError;
-
-  /// Serializes this OptionCode to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get description;
 
   /// Create a copy of OptionCode
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $OptionCodeCopyWith<OptionCode> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $OptionCodeCopyWith<$Res> {
-  factory $OptionCodeCopyWith(
-          OptionCode value, $Res Function(OptionCode) then) =
-      _$OptionCodeCopyWithImpl<$Res, OptionCode>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'code') String? code,
-      @JsonKey(name: 'description') String? description});
-}
-
-/// @nodoc
-class _$OptionCodeCopyWithImpl<$Res, $Val extends OptionCode>
-    implements $OptionCodeCopyWith<$Res> {
-  _$OptionCodeCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of OptionCode
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $OptionCodeCopyWith<OptionCode> get copyWith =>
+      _$OptionCodeCopyWithImpl<OptionCode>(this as OptionCode, _$identity);
+
+  /// Serializes this OptionCode to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? code = freezed,
-    Object? description = freezed,
-  }) {
-    return _then(_value.copyWith(
-      code: freezed == code
-          ? _value.code
-          : code // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is OptionCode &&
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.description, description) ||
+                other.description == description));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, code, description);
+
+  @override
+  String toString() {
+    return 'OptionCode(code: $code, description: $description)';
   }
 }
 
 /// @nodoc
-abstract class _$$OptionCodeImplCopyWith<$Res>
-    implements $OptionCodeCopyWith<$Res> {
-  factory _$$OptionCodeImplCopyWith(
-          _$OptionCodeImpl value, $Res Function(_$OptionCodeImpl) then) =
-      __$$OptionCodeImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $OptionCodeCopyWith<$Res> {
+  factory $OptionCodeCopyWith(
+          OptionCode value, $Res Function(OptionCode) _then) =
+      _$OptionCodeCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'code') String? code,
@@ -94,12 +65,11 @@ abstract class _$$OptionCodeImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$OptionCodeImplCopyWithImpl<$Res>
-    extends _$OptionCodeCopyWithImpl<$Res, _$OptionCodeImpl>
-    implements _$$OptionCodeImplCopyWith<$Res> {
-  __$$OptionCodeImplCopyWithImpl(
-      _$OptionCodeImpl _value, $Res Function(_$OptionCodeImpl) _then)
-      : super(_value, _then);
+class _$OptionCodeCopyWithImpl<$Res> implements $OptionCodeCopyWith<$Res> {
+  _$OptionCodeCopyWithImpl(this._self, this._then);
+
+  final OptionCode _self;
+  final $Res Function(OptionCode) _then;
 
   /// Create a copy of OptionCode
   /// with the given fields replaced by the non-null parameter values.
@@ -109,13 +79,13 @@ class __$$OptionCodeImplCopyWithImpl<$Res>
     Object? code = freezed,
     Object? description = freezed,
   }) {
-    return _then(_$OptionCodeImpl(
+    return _then(_self.copyWith(
       code: freezed == code
-          ? _value.code
+          ? _self.code
           : code // ignore: cast_nullable_to_non_nullable
               as String?,
       description: freezed == description
-          ? _value.description
+          ? _self.description
           : description // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -124,13 +94,12 @@ class __$$OptionCodeImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$OptionCodeImpl implements _OptionCode {
-  _$OptionCodeImpl(
+class _OptionCode implements OptionCode {
+  _OptionCode(
       {@JsonKey(name: 'code') this.code,
       @JsonKey(name: 'description') this.description});
-
-  factory _$OptionCodeImpl.fromJson(Map<String, dynamic> json) =>
-      _$$OptionCodeImplFromJson(json);
+  factory _OptionCode.fromJson(Map<String, dynamic> json) =>
+      _$OptionCodeFromJson(json);
 
   /// Код опции.
   @override
@@ -142,16 +111,26 @@ class _$OptionCodeImpl implements _OptionCode {
   @JsonKey(name: 'description')
   final String? description;
 
+  /// Create a copy of OptionCode
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'OptionCode(code: $code, description: $description)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$OptionCodeCopyWith<_OptionCode> get copyWith =>
+      __$OptionCodeCopyWithImpl<_OptionCode>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$OptionCodeToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$OptionCodeImpl &&
+            other is _OptionCode &&
             (identical(other.code, code) || other.code == code) &&
             (identical(other.description, description) ||
                 other.description == description));
@@ -161,45 +140,51 @@ class _$OptionCodeImpl implements _OptionCode {
   @override
   int get hashCode => Object.hash(runtimeType, code, description);
 
-  /// Create a copy of OptionCode
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$OptionCodeImplCopyWith<_$OptionCodeImpl> get copyWith =>
-      __$$OptionCodeImplCopyWithImpl<_$OptionCodeImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$OptionCodeImplToJson(
-      this,
-    );
+  String toString() {
+    return 'OptionCode(code: $code, description: $description)';
   }
 }
 
-abstract class _OptionCode implements OptionCode {
-  factory _OptionCode(
-          {@JsonKey(name: 'code') final String? code,
-          @JsonKey(name: 'description') final String? description}) =
-      _$OptionCodeImpl;
-
-  factory _OptionCode.fromJson(Map<String, dynamic> json) =
-      _$OptionCodeImpl.fromJson;
-
-  /// Код опции.
+/// @nodoc
+abstract mixin class _$OptionCodeCopyWith<$Res>
+    implements $OptionCodeCopyWith<$Res> {
+  factory _$OptionCodeCopyWith(
+          _OptionCode value, $Res Function(_OptionCode) _then) =
+      __$OptionCodeCopyWithImpl;
   @override
-  @JsonKey(name: 'code')
-  String? get code;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'code') String? code,
+      @JsonKey(name: 'description') String? description});
+}
 
-  /// Описание опции.
-  @override
-  @JsonKey(name: 'description')
-  String? get description;
+/// @nodoc
+class __$OptionCodeCopyWithImpl<$Res> implements _$OptionCodeCopyWith<$Res> {
+  __$OptionCodeCopyWithImpl(this._self, this._then);
+
+  final _OptionCode _self;
+  final $Res Function(_OptionCode) _then;
 
   /// Create a copy of OptionCode
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$OptionCodeImplCopyWith<_$OptionCodeImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? code = freezed,
+    Object? description = freezed,
+  }) {
+    return _then(_OptionCode(
+      code: freezed == code
+          ? _self.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String?,
+      description: freezed == description
+          ? _self.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on

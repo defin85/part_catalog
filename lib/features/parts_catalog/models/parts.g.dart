@@ -6,7 +6,7 @@ part of 'parts.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PartsImpl _$$PartsImplFromJson(Map<String, dynamic> json) => _$PartsImpl(
+_Parts _$PartsFromJson(Map<String, dynamic> json) => _Parts(
       img: json['img'] as String?,
       imgDescription: json['imgDescription'] as String?,
       partGroups: (json['partGroups'] as List<dynamic>?)
@@ -17,16 +17,14 @@ _$PartsImpl _$$PartsImplFromJson(Map<String, dynamic> json) => _$PartsImpl(
           .toList(),
     );
 
-Map<String, dynamic> _$$PartsImplToJson(_$PartsImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$PartsToJson(_Parts instance) => <String, dynamic>{
       'img': instance.img,
       'imgDescription': instance.imgDescription,
       'partGroups': instance.partGroups,
       'positions': instance.positions,
     };
 
-_$PartsGroupImpl _$$PartsGroupImplFromJson(Map<String, dynamic> json) =>
-    _$PartsGroupImpl(
+_PartsGroup _$PartsGroupFromJson(Map<String, dynamic> json) => _PartsGroup(
       name: json['name'] as String?,
       number: json['number'] as String?,
       positionNumber: json['positionNumber'] as String?,
@@ -36,7 +34,7 @@ _$PartsGroupImpl _$$PartsGroupImplFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$$PartsGroupImplToJson(_$PartsGroupImpl instance) =>
+Map<String, dynamic> _$PartsGroupToJson(_PartsGroup instance) =>
     <String, dynamic>{
       'name': instance.name,
       'number': instance.number,
@@ -45,16 +43,14 @@ Map<String, dynamic> _$$PartsGroupImplToJson(_$PartsGroupImpl instance) =>
       'parts': instance.parts,
     };
 
-_$PositionImpl _$$PositionImplFromJson(Map<String, dynamic> json) =>
-    _$PositionImpl(
+_Position _$PositionFromJson(Map<String, dynamic> json) => _Position(
       number: json['number'] as String?,
       coordinates: (json['coordinates'] as List<dynamic>?)
           ?.map((e) => (e as num).toDouble())
           .toList(),
     );
 
-Map<String, dynamic> _$$PositionImplToJson(_$PositionImpl instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$PositionToJson(_Position instance) => <String, dynamic>{
       'number': instance.number,
       'coordinates': instance.coordinates,
     };

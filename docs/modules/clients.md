@@ -25,8 +25,9 @@
 | Уровень | Назначение | Компоненты |
 |---------|------------|------------|
 | Presentation | Пользовательский интерфейс | `ClientsScreen`, `ClientDialog` |
-| Domain | Бизнес-логика | `ClientService` |
-| Data | Доступ к данным | `ClientsDao`, `ClientsItemsCompanion` |
+| Domain | Бизнес-логика | `ClientService`, `ClientModelComposite`, `IClientEntity` (если нужен специфичный интерфейс) |
+| Data | Доступ к данным | `ClientsDao`, `ClientsItemsCompanion`, `ClientData` (`@freezed`) |
+
 
 ## Основные компоненты
 
@@ -34,14 +35,14 @@
 
 Сервисный класс, обеспечивающий бизнес-логику работы с клиентами:
 
-Функциональность: Преобразует данные между моделями БД и бизнес-моделями
+Функциональность: Преобразует данные между моделями БД (`ClientsItem`), моделями данных (`ClientData`, `EntityCoreData`) и бизнес-моделями (`ClientModelComposite`). Работает с интерфейсами (`IClientEntity`).
 Ключевые методы:
-- **getClients()**: Получение всех активных клиентов
-- **watchClients()**: Реактивное наблюдение за списком клиентов
-- **addClient()**: Добавление нового клиента
-- **updateClient()**: Обновление существующего клиента
-- **deleteClient()**: Мягкое удаление клиента
-- **searchClientsByName()**: Поиск клиентов по имени или названию
+- **getClients()**: Получение списка `ClientModelComposite`.
+- **watchClients()**: Реактивное наблюдение за списком `ClientModelComposite`.
+- **addClient(ClientModelComposite client)**: Добавление нового клиента.
+- **updateClient(ClientModelComposite client)**: Обновление существующего клиента.
+- **deleteClient(String clientUuid)**: Мягкое удаление клиента.
+- **searchClientsByName()**: Поиск клиентов по имени или названию.
 
 ### ClientsDao
 
@@ -88,6 +89,14 @@ legal: Юридическое лицо
 individualEntrepreneur: Индивидуальный предприниматель
 other: Другой тип
 Дополнено вспомогательными методами для работы с отображаемыми названиями и преобразованиями строк.
+
+### ClientData (`@freezed`, пример)
+
+Модель данных, специфичная для клиента (если нужна)
+
+### ClientModelComposite (бизнес-модель)
+
+Представляет клиента в бизнес-логике приложения. Реализует IEntity (или IClientEntity).
 
 ## Основные операции
 

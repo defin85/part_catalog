@@ -24,13 +24,13 @@
 
 ## Архитектура
 
-Модуль следует принципам чистой архитектуры и состоит из следующих уровней:
+Модуль следует принципам чистой архитектуры и использует архитектуру "Композиция + Интерфейсы + `@freezed`". Он состоит из следующих уровней:
 
 | Уровень | Назначение | Компоненты |
 |---------|------------|------------|
-| Presentation | Пользовательский интерфейс | `OrdersScreen`, `OrderDetailsScreen`,  `OrderFormScreen`|
-| Domain | Бизнес-логика | `OrderService`, `OrderStatusManager` |
-| Data | Доступ к данным | `OrdersDao`, `OrderPartsDao`, `OrderServicesDao` |
+| Presentation | Пользовательский интерфейс | `OrdersScreen`, `OrderDetailsScreen`, `OrderFormScreen` |
+| Domain | Бизнес-логика | `OrderService`, `OrderStatusManager`, `OrderModelComposite`, `OrderPartModelComposite`, `OrderServiceModelComposite`, `IDocumentEntity`, `IDocumentItemEntity` |
+| Data | Доступ к данным | `OrdersDao`, `OrderPartsDao`, `OrderServicesDao`, `EntityCoreData`, `DocumentSpecificData`, `OrderSpecificData`, `ItemCoreData`, `DocumentItemSpecificData`, `PartSpecificData`, `ServiceSpecificData` (`@freezed` модели) |
 
 ## Основные компоненты
 
@@ -38,244 +38,133 @@
 
 Сервисный класс, обеспечивающий бизнес-логику работы с заказ-нарядами:
 
-Функциональность: Управление жизненным циклом заказ-нарядов, обработка данных
+Функциональность: Управляет жизненным циклом заказ-нарядов, работает с бизнес-моделями (`OrderModelComposite`, `OrderPartModelComposite`, `OrderServiceModelComposite`) и интерфейсами (`IDocumentEntity`, `IDocumentItemEntity`). Координирует взаимодействие с DAO для получения/сохранения данных, преобразуя `@freezed` модели данных в бизнес-модели и обратно.
 Ключевые методы:
-getOrders(): Получение всех активных заказ-нарядов
-watchOrders(): Реактивное наблюдение за списком заказ-нарядов
-createOrder(): Создание нового заказ-наряда
-updateOrder(): Обновление существующего заказ-наряда
-addPartToOrder(): Добавление запчасти в заказ-наряд
-addServiceToOrder(): Добавление работы в заказ-наряд
-calculateOrderTotal(): Расчет общей стоимости заказ-наряда
-changeOrderStatus(): Изменение статуса заказ-наряда
+`getOrders()`: Получение списка `OrderModelComposite`.
+`watchOrders()`: Реактивное наблюдение за списком `OrderModelComposite`.
+`createOrder()`: Создание нового `OrderModelComposite`.
+`updateOrder()`: Обновление существующего `OrderModelComposite`.
+`addPartToOrder()`: Добавление `OrderPartModelComposite` в `OrderModelComposite`.
+`addServiceToOrder()`: Добавление `OrderServiceModelComposite` в `OrderModelComposite`.
+`calculateOrderTotal()`: Расчет общей стоимости `OrderModelComposite`.
+`changeOrderStatus()`: Изменение статуса `OrderModelComposite`.
 
 ### OrderStatusManager
 
 Класс для управления статусами заказ-нарядов:
 
-Функциональность: Контроль переходов между статусами, валидация возможных действий
+Функциональность: Контроль переходов между статусами (`OrderStatus`), валидация возможных действий на основе текущего статуса `OrderModelComposite`.
 Ключевые методы:
-canTransitionTo(OrderStatus from, OrderStatus to): Проверка возможности перехода
-transitionTo(Order order, OrderStatus newStatus): Выполнение перехода
-getAvailableTransitions(Order order): Получение доступных переходов
+`canTransitionTo(OrderStatus from, OrderStatus to)`: Проверка возможности перехода.
+`transitionTo(OrderModelComposite order, OrderStatus newStatus)`: Выполнение перехода (возвращает новый экземпляр `OrderModelComposite`).
+`getAvailableTransitions(OrderModelComposite order)`: Получение доступных переходов.
 
-### OrdersDao
+### OrdersDao, OrderPartsDao, OrderServicesDao
 
-Data Access Object для прямой работы с таблицей заказ-нарядов:
+Data Access Objects для прямой работы с таблицами `OrdersItems`, `OrderPartsItems`, `OrderServicesItems` в БД:
 
-Функциональность: Предоставляет низкоуровневый доступ к данным таблицы
+Функциональность: Предоставляют низкоуровневый доступ к данным таблиц. Получают данные в виде моделей таблиц (`OrdersItem` и т.д.) и мапят их в соответствующие `@freezed` модели данных (`EntityCoreData`, `DocumentSpecificData`, `ItemCoreData` и т.д.) для передачи в сервисный слой. При сохранении принимают `Companion` объекты, созданные из `@freezed` моделей данных.
 Ключевые методы:
-getActiveOrders(): Получение всех активных заказ-нарядов
-watchActiveOrders(): Реактивное наблюдение за заказ-нарядами
-getOrdersByClientId(): Получение заказ-нарядов клиента
-getOrdersByCarId(): Получение заказ-нарядов для автомобиля
-insertOrder(): Добавление нового заказ-наряда
-updateOrder(): Обновление данных заказ-наряда
-updateOrderStatus(): Обновление статуса заказ-наряда
-getFullOrderDetails(): Получение полных данных заказ-наряда с работами и запчастями
+`getActiveOrders()`: Получение данных для активных заказ-нарядов.
+`watchActiveOrders()`: Реактивное наблюдение за данными заказ-нарядов.
+`getOrdersByClientId()`: Получение данных заказ-нарядов клиента.
+`getOrdersByCarId()`: Получение данных заказ-нарядов для автомобиля.
+`insertOrder()`: Добавление нового заказ-наряда (принимает `Companion`).
+`updateOrder()`: Обновление данных заказ-наряда (принимает `Companion`).
+`updateOrderStatus()`: Обновление статуса заказ-наряда.
+`getFullOrderDetails()`: Получение полных данных заказ-наряда с работами и запчастями (в виде `@freezed` моделей).
 
 ## Модели данных
 
-### OrdersItem (модель таблицы)
+### Модели таблиц (Drift)
 
-```dart
-class OrdersItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get clientId => integer().references(ClientsItems, #id)();
-  IntColumn get carId => integer().references(CarsItems, #id)();
-  TextColumn get orderNumber => text()();
-  DateTimeColumn get createdAt => dateTime()();
-  DateTimeColumn get scheduledDate => dateTime().nullable()();
-  DateTimeColumn get completedAt => dateTime().nullable()();
-  TextColumn get status => text()(); // "new", "in_progress", "completed", "cancelled"
-  TextColumn get description => text().nullable()();
-  RealColumn get totalAmount => real().withDefault(const Constant(0.0))();
-  DateTimeColumn get deletedAt => dateTime().nullable()();
-}
-```
+- `OrdersItems`: Структура таблицы заказ-нарядов.
+- `OrderPartsItems`: Структура таблицы запчастей заказ-наряда.
+- `OrderServicesItems`: Структура таблицы услуг заказ-наряда.
 
-### OrderPartsItem (модель таблицы)
+### Модели данных (`@freezed`)
 
-```dart
-class OrderPartsItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get orderId => integer().references(OrdersItems, #id)();
-  TextColumn get partNumber => text()();
-  TextColumn get name => text()();
-  TextColumn get brand => text().nullable()();
-  IntColumn get quantity => integer()();
-  RealColumn get price => real()();
-  TextColumn get supplierName => text().nullable()();
-  IntColumn get deliveryDays => integer().nullable()();
-  BoolColumn get isOrdered => boolean().withDefault(const Constant(false))();
-  BoolColumn get isReceived => boolean().withDefault(const Constant(false))();
-}
-```
+Чистые, иммутабельные структуры для хранения данных, используемые для передачи между слоями Data и Domain:
+- `EntityCoreData`: Базовые данные сущности (uuid, code, displayName...).
+- `DocumentSpecificData`: Специфичные данные документа (status, documentDate...).
+- `OrderSpecificData`: Специфичные данные заказ-наряда (clientId, carId...).
+- `ItemCoreData`: Базовые данные элемента (uuid, name, itemType...).
+- `DocumentItemSpecificData`: Специфичные данные элемента документа (price, quantity...).
+- `PartSpecificData`: Специфичные данные запчасти (partNumber, brand...).
+- `ServiceSpecificData`: Специфичные данные услуги (duration, performedBy...).
 
-### OrderServicesItem (модель таблицы)
+### Бизнес-модели (Композиторы)
 
-```dart
-class OrderServicesItems extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  IntColumn get orderId => integer().references(OrdersItems, #id)();
-  TextColumn get name => text()();
-  TextColumn get description => text().nullable()();
-  RealColumn get price => real()();
-  RealColumn get duration => real().nullable()(); // в часах
-  TextColumn get performedBy => text().nullable()();
-  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
-}
-```
-
-### OrderModel (бизнес-модель)
-
-Представляет заказ-наряд в бизнес-логике приложения:
-
-id: Уникальный идентификатор
-clientId: ID клиента
-carId: ID автомобиля
-orderNumber: Номер заказ-наряда
-createdAt: Дата создания
-scheduledDate: Запланированная дата выполнения
-completedAt: Дата завершения
-status: Статус заказ-наряда (OrderStatus)
-description: Описание проблемы/работ
-totalAmount: Общая стоимость
-parts: Список запчастей (OrderPartModel)
-services: Список работ (OrderServiceModel)
-clientName: Имя клиента (опционально, для отображения)
-carInfo: Информация об автомобиле (опционально, для отображения)
+Классы, реализующие интерфейсы (`IDocumentEntity`, `IDocumentItemEntity`) и инкапсулирующие `@freezed` модели данных. Представляют заказ-наряд и его элементы в бизнес-логике:
+- `OrderModelComposite`: Представляет заказ-наряд. Содержит `EntityCoreData`, `DocumentSpecificData`, `OrderSpecificData` и карту `_itemsMap` с `IDocumentItemEntity`. Реализует `IDocumentEntity`.
+- `OrderPartModelComposite`: Представляет запчасть в заказ-наряде. Содержит `ItemCoreData`, `DocumentItemSpecificData`, `PartSpecificData`. Реализует `IDocumentItemEntity`.
+- `OrderServiceModelComposite`: Представляет услугу в заказ-наряде. Содержит `ItemCoreData`, `DocumentItemSpecificData`, `ServiceSpecificData`. Реализует `IDocumentItemEntity`.
 
 ### OrderStatus (перечисление)
 
-```dart
-enum OrderStatus {
-  new,
-  inProgress,
-  waitingForParts,
-  readyForPickup,
-  completed,
-  cancelled;
-  
-  String get displayName {
-    switch (this) {
-      case OrderStatus.new: return 'Новый';
-      case OrderStatus.inProgress: return 'В работе';
-      case OrderStatus.waitingForParts: return 'Ожидание запчастей';
-      case OrderStatus.readyForPickup: return 'Готов к выдаче';
-      case OrderStatus.completed: return 'Завершен';
-      case OrderStatus.cancelled: return 'Отменен';
-    }
-  }
-  
-  Color get color {
-    switch (this) {
-      case OrderStatus.new: return Colors.blue;
-      case OrderStatus.inProgress: return Colors.orange;
-      case OrderStatus.waitingForParts: return Colors.amber;
-      case OrderStatus.readyForPickup: return Colors.green;
-      case OrderStatus.completed: return Colors.teal;
-      case OrderStatus.cancelled: return Colors.red;
-    }
-  }
-}
-```
+Определяет возможные статусы заказ-наряда (`new`, `inProgress`, `waitingForParts`, `readyForPickup`, `completed`, `cancelled`) с методами для получения отображаемого имени и цвета.
 
 ## Основные операции
 
 ### Создание заказ-наряда
 
-Процесс создания заказ-наряда включает:
-
-Выбор клиента
-Выбор автомобиля клиента
-Указание описания проблемы
-Планирование даты выполнения
-Добавление работ
-Добавление запчастей
-Расчет общей стоимости
-Сохранение заказ-наряда
+Процесс создания `OrderModelComposite` включает:
+- Выбор клиента и автомобиля.
+- Указание описания проблемы и планирование даты.
+- Добавление работ (`OrderServiceModelComposite`) и запчастей (`OrderPartModelComposite`).
+- Расчет общей стоимости.
+- Сохранение через `OrderService`, который преобразует композитор в `@freezed` модели и передает их в DAO.
 
 ### Управление запчастями заказ-наряда
 
-Операции с запчастями включают:
-
-Добавление запчасти вручную
-Подбор запчасти через каталог
-Получение цен от поставщиков
-Отметка о заказе запчасти
-Отметка о получении запчасти
+Операции с `OrderPartModelComposite` включают:
+- Добавление вручную или через каталог.
+- Получение цен от поставщиков (через `SuppliersService`).
+- Обновление статусов заказа и получения (методы `withOrderStatus`, `withReceiveStatus` в композиторе).
 
 ### Управление статусом заказ-наряда
 
-Жизненный цикл заказ-наряда включает различные статусы:
-
-Новый → В работе → Завершен
-Новый → Ожидание запчастей → В работе → Завершен
-Новый → Отменен
-Смена статуса сопровождается валидацией и может инициировать дополнительные действия.
+Изменение статуса `OrderModelComposite` через `OrderService` и `OrderStatusManager`. Смена статуса сопровождается валидацией и может инициировать дополнительные действия. Используется иммутабельный метод `withStatus` композитора.
 
 ## UI компоненты
 
 ### OrdersScreen
 
 Основной экран управления заказ-нарядами:
-
-Список активных заказ-нарядов с группировкой по статусам
-Фильтрация по клиенту, автомобилю, дате, статусу
-Поиск по номеру заказ-наряда или описанию
-Возможность создания нового заказ-наряда
-Отображение статуса и основной информации
+- Отображает список `OrderModelComposite`.
+- Использует `OrderService` для получения и фильтрации данных.
+- Позволяет создавать новые заказ-наряды.
 
 ### OrderFormScreen
 
-Форма для создания/редактирования заказ-наряда:
-
-Выбор клиента из списка с возможностью создания нового
-Выбор автомобиля из списка автомобилей клиента
-Поля для ввода описания и планирования даты
-Добавление работ со стоимостью и описанием
-Добавление запчастей с интеграцией каталога и поставщиков
-Расчет итоговой стоимости
+Форма для создания/редактирования `OrderModelComposite`:
+- Взаимодействует с `OrderService` для сохранения данных.
+- Позволяет добавлять/редактировать `OrderPartModelComposite` и `OrderServiceModelComposite`.
 
 ### OrderDetailsScreen
 
-Экран детальной информации о заказ-наряде:
-
-Полная информация о клиенте и автомобиле
-Список работ с возможностью отметки выполнения
-Список запчастей с информацией о наличии/заказе
-Изменение статуса заказ-наряда
-Печать/экспорт заказ-наряда
+Экран детальной информации о `OrderModelComposite`:
+- Отображает полную информацию, включая списки работ и запчастей.
+- Позволяет изменять статус через `OrderService`.
 
 ## Жизненный цикл заказ-наряда
 
-Жизненный цикл заказ-наряда включает следующие этапы:
-1. Создание заказ-наряда
-2. Добавление работ и запчастей
-3. Изменение статуса (в работе, ожидание запчастей, завершен)
-4. Завершение заказ-наряда
-5. Архивирование или удаление (мягкое удаление)
-6. Отчетность и аналитика по завершенным заказ-нарядам
-7. Интеграция с бухгалтерией (при необходимости)
+Жизненный цикл `OrderModelComposite` управляется через `OrderService` и `OrderStatusManager`, включая создание, изменение статусов, завершение и архивирование (мягкое удаление).
 
 ## Интеграция с другими модулями
 
 ### Взаимодействие с модулем клиентов
 
-Получение информации о клиенте
-Отображение истории заказ-нарядов клиента
-Создание нового клиента непосредственно из формы заказ-наряда
+- Получение информации о клиенте (`ClientModelComposite`) для отображения в заказ-наряде.
+- Отображение истории заказ-нарядов (`OrderModelComposite`) клиента.
 
-## Взаимодействие с модулем автомобилей
+### Взаимодействие с модулем автомобилей
 
-Выбор автомобиля клиента для заказ-наряда
-Отображение истории заказ-нарядов автомобиля
-Создание нового автомобиля непосредственно из формы заказ-наряда
+- Выбор автомобиля (`CarModelComposite`) клиента для заказ-наряда.
+- Отображение истории заказ-нарядов (`OrderModelComposite`) автомобиля.
 
 ### Взаимодействие с модулем поставщиков
 
-Подбор запчастей по артикулу с использованием ApiClientPartsCatalogs
-Получение цен и сроков поставки от поставщиков
-Отображение информации о наличии и стоимости запчастей
-Оформление заказа на запчасти у поставщика
+- Подбор запчастей (`OrderPartModelComposite`) по артикулу.
+- Получение цен и сроков поставки от поставщиков через `SuppliersService`.
+- Отображение информации о наличии и стоимости запчастей.

@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,77 +10,55 @@ part of 'ip.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-Ip _$IpFromJson(Map<String, dynamic> json) {
-  return _Ip.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Ip {
   /// IP-адрес.
   @JsonKey(name: 'ip')
-  String? get ip => throw _privateConstructorUsedError;
-
-  /// Serializes this Ip to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get ip;
 
   /// Create a copy of Ip
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $IpCopyWith<Ip> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $IpCopyWith<$Res> {
-  factory $IpCopyWith(Ip value, $Res Function(Ip) then) =
-      _$IpCopyWithImpl<$Res, Ip>;
-  @useResult
-  $Res call({@JsonKey(name: 'ip') String? ip});
-}
-
-/// @nodoc
-class _$IpCopyWithImpl<$Res, $Val extends Ip> implements $IpCopyWith<$Res> {
-  _$IpCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Ip
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $IpCopyWith<Ip> get copyWith => _$IpCopyWithImpl<Ip>(this as Ip, _$identity);
+
+  /// Serializes this Ip to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? ip = freezed,
-  }) {
-    return _then(_value.copyWith(
-      ip: freezed == ip
-          ? _value.ip
-          : ip // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Ip &&
+            (identical(other.ip, ip) || other.ip == ip));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, ip);
+
+  @override
+  String toString() {
+    return 'Ip(ip: $ip)';
   }
 }
 
 /// @nodoc
-abstract class _$$IpImplCopyWith<$Res> implements $IpCopyWith<$Res> {
-  factory _$$IpImplCopyWith(_$IpImpl value, $Res Function(_$IpImpl) then) =
-      __$$IpImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $IpCopyWith<$Res> {
+  factory $IpCopyWith(Ip value, $Res Function(Ip) _then) = _$IpCopyWithImpl;
   @useResult
   $Res call({@JsonKey(name: 'ip') String? ip});
 }
 
 /// @nodoc
-class __$$IpImplCopyWithImpl<$Res> extends _$IpCopyWithImpl<$Res, _$IpImpl>
-    implements _$$IpImplCopyWith<$Res> {
-  __$$IpImplCopyWithImpl(_$IpImpl _value, $Res Function(_$IpImpl) _then)
-      : super(_value, _then);
+class _$IpCopyWithImpl<$Res> implements $IpCopyWith<$Res> {
+  _$IpCopyWithImpl(this._self, this._then);
+
+  final Ip _self;
+  final $Res Function(Ip) _then;
 
   /// Create a copy of Ip
   /// with the given fields replaced by the non-null parameter values.
@@ -88,9 +67,9 @@ class __$$IpImplCopyWithImpl<$Res> extends _$IpCopyWithImpl<$Res, _$IpImpl>
   $Res call({
     Object? ip = freezed,
   }) {
-    return _then(_$IpImpl(
+    return _then(_self.copyWith(
       ip: freezed == ip
-          ? _value.ip
+          ? _self.ip
           : ip // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -99,27 +78,34 @@ class __$$IpImplCopyWithImpl<$Res> extends _$IpCopyWithImpl<$Res, _$IpImpl>
 
 /// @nodoc
 @JsonSerializable()
-class _$IpImpl implements _Ip {
-  _$IpImpl({@JsonKey(name: 'ip') this.ip});
-
-  factory _$IpImpl.fromJson(Map<String, dynamic> json) =>
-      _$$IpImplFromJson(json);
+class _Ip implements Ip {
+  _Ip({@JsonKey(name: 'ip') this.ip});
+  factory _Ip.fromJson(Map<String, dynamic> json) => _$IpFromJson(json);
 
   /// IP-адрес.
   @override
   @JsonKey(name: 'ip')
   final String? ip;
 
+  /// Create a copy of Ip
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'Ip(ip: $ip)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$IpCopyWith<_Ip> get copyWith => __$IpCopyWithImpl<_Ip>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$IpToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$IpImpl &&
+            other is _Ip &&
             (identical(other.ip, ip) || other.ip == ip));
   }
 
@@ -127,36 +113,41 @@ class _$IpImpl implements _Ip {
   @override
   int get hashCode => Object.hash(runtimeType, ip);
 
-  /// Create a copy of Ip
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$IpImplCopyWith<_$IpImpl> get copyWith =>
-      __$$IpImplCopyWithImpl<_$IpImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$IpImplToJson(
-      this,
-    );
+  String toString() {
+    return 'Ip(ip: $ip)';
   }
 }
 
-abstract class _Ip implements Ip {
-  factory _Ip({@JsonKey(name: 'ip') final String? ip}) = _$IpImpl;
-
-  factory _Ip.fromJson(Map<String, dynamic> json) = _$IpImpl.fromJson;
-
-  /// IP-адрес.
+/// @nodoc
+abstract mixin class _$IpCopyWith<$Res> implements $IpCopyWith<$Res> {
+  factory _$IpCopyWith(_Ip value, $Res Function(_Ip) _then) = __$IpCopyWithImpl;
   @override
-  @JsonKey(name: 'ip')
-  String? get ip;
+  @useResult
+  $Res call({@JsonKey(name: 'ip') String? ip});
+}
+
+/// @nodoc
+class __$IpCopyWithImpl<$Res> implements _$IpCopyWith<$Res> {
+  __$IpCopyWithImpl(this._self, this._then);
+
+  final _Ip _self;
+  final $Res Function(_Ip) _then;
 
   /// Create a copy of Ip
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$IpImplCopyWith<_$IpImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? ip = freezed,
+  }) {
+    return _then(_Ip(
+      ip: freezed == ip
+          ? _self.ip
+          : ip // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on

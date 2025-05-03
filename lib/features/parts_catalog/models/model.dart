@@ -7,7 +7,7 @@ part 'model.g.dart';
 /// Модель данных для модели автомобиля.
 /// {@endtemplate}
 @freezed
-class Model with _$Model {
+abstract class Model with _$Model {
   /// {@macro model}
   factory Model({
     /// Идентификатор модели.

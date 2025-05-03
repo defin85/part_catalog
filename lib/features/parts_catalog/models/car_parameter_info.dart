@@ -7,7 +7,7 @@ part 'car_parameter_info.g.dart';
 /// Модель данных для информации о параметре автомобиля.
 /// {@endtemplate}
 @freezed
-class CarParameterInfo with _$CarParameterInfo {
+abstract class CarParameterInfo with _$CarParameterInfo {
   /// {@macro car_parameter_info}
   factory CarParameterInfo({
     /// Ключ параметра.
@@ -32,7 +32,7 @@ class CarParameterInfo with _$CarParameterInfo {
 /// Модель данных для значений фильтра автомобиля.
 /// {@endtemplate}
 @freezed
-class CarFilterValues with _$CarFilterValues {
+abstract class CarFilterValues with _$CarFilterValues {
   /// {@macro car_filter_values}
   factory CarFilterValues({
     /// Идентификатор значения.

@@ -9,7 +9,7 @@ part 'schemas_response.g.dart';
 /// Модель данных для ответа со схемами.
 /// {@endtemplate}
 @freezed
-class SchemasResponse with _$SchemasResponse {
+abstract class SchemasResponse with _$SchemasResponse {
   /// {@macro schemas_response}
   factory SchemasResponse({
     /// Группа (может быть null).

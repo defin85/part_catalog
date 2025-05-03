@@ -8,7 +8,7 @@ part 'parts.g.dart';
 /// Модель данных для списка запчастей.
 /// {@endtemplate}
 @freezed
-class Parts with _$Parts {
+abstract class Parts with _$Parts {
   /// {@macro parts}
   factory Parts({
     /// URL изображения группы запчастей.
@@ -32,7 +32,7 @@ class Parts with _$Parts {
 /// Модель данных для группы запчастей.
 /// {@endtemplate}
 @freezed
-class PartsGroup with _$PartsGroup {
+abstract class PartsGroup with _$PartsGroup {
   /// {@macro parts_group}
   factory PartsGroup({
     /// Название запчасти.
@@ -60,7 +60,7 @@ class PartsGroup with _$PartsGroup {
 /// Модель данных для позиции блока с номером на изображении.
 /// {@endtemplate}
 @freezed
-class Position with _$Position {
+abstract class Position with _$Position {
   /// {@macro position}
   factory Position({
     /// Номер на изображении.

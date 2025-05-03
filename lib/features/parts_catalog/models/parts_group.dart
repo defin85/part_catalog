@@ -8,7 +8,7 @@ part 'parts_group.g.dart';
 /// Модель данных для группы запчастей.
 /// {@endtemplate}
 @freezed
-class PartsGroup with _$PartsGroup {
+abstract class PartsGroup with _$PartsGroup {
   /// {@macro parts_group}
   factory PartsGroup({
     /// Название запчасти.

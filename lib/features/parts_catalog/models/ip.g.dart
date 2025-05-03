@@ -6,10 +6,10 @@ part of 'ip.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$IpImpl _$$IpImplFromJson(Map<String, dynamic> json) => _$IpImpl(
+_Ip _$IpFromJson(Map<String, dynamic> json) => _Ip(
       ip: json['ip'] as String?,
     );
 
-Map<String, dynamic> _$$IpImplToJson(_$IpImpl instance) => <String, dynamic>{
+Map<String, dynamic> _$IpToJson(_Ip instance) => <String, dynamic>{
       'ip': instance.ip,
     };

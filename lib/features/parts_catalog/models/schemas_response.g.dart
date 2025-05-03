@@ -6,9 +6,8 @@ part of 'schemas_response.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SchemasResponseImpl _$$SchemasResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$SchemasResponseImpl(
+_SchemasResponse _$SchemasResponseFromJson(Map<String, dynamic> json) =>
+    _SchemasResponse(
       group: json['group'] == null
           ? null
           : Group.fromJson(json['group'] as Map<String, dynamic>),
@@ -17,8 +16,7 @@ _$SchemasResponseImpl _$$SchemasResponseImplFromJson(
           .toList(),
     );
 
-Map<String, dynamic> _$$SchemasResponseImplToJson(
-        _$SchemasResponseImpl instance) =>
+Map<String, dynamic> _$SchemasResponseToJson(_SchemasResponse instance) =>
     <String, dynamic>{
       'group': instance.group,
       'list': instance.list,

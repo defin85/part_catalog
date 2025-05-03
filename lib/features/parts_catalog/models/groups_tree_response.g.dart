@@ -6,9 +6,8 @@ part of 'groups_tree_response.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$GroupsTreeResponseImpl _$$GroupsTreeResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$GroupsTreeResponseImpl(
+_GroupsTreeResponse _$GroupsTreeResponseFromJson(Map<String, dynamic> json) =>
+    _GroupsTreeResponse(
       id: json['id'] as String,
       name: json['name'] as String,
       parentId: json['parentId'] as String?,
@@ -17,8 +16,7 @@ _$GroupsTreeResponseImpl _$$GroupsTreeResponseImplFromJson(
           .toList(),
     );
 
-Map<String, dynamic> _$$GroupsTreeResponseImplToJson(
-        _$GroupsTreeResponseImpl instance) =>
+Map<String, dynamic> _$GroupsTreeResponseToJson(_GroupsTreeResponse instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,

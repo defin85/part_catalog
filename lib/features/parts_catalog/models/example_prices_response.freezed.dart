@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,167 +10,108 @@ part of 'example_prices_response.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-ExamplePricesResponse _$ExamplePricesResponseFromJson(
-    Map<String, dynamic> json) {
-  return _ExamplePricesResponse.fromJson(json);
-}
 
 /// @nodoc
 mixin _$ExamplePricesResponse {
   /// Идентификатор.
   @JsonKey(name: 'id')
-  String? get id => throw _privateConstructorUsedError;
+  String? get id;
 
   /// Название.
   @JsonKey(name: 'title')
-  String? get title => throw _privateConstructorUsedError;
+  String? get title;
 
   /// Код.
   @JsonKey(name: 'code')
-  String? get code => throw _privateConstructorUsedError;
+  String? get code;
 
   /// Бренд.
   @JsonKey(name: 'brand')
-  String? get brand => throw _privateConstructorUsedError;
+  String? get brand;
 
   /// Цена.
   @JsonKey(name: 'price')
-  String? get price => throw _privateConstructorUsedError;
+  String? get price;
 
   /// Количество в корзине.
   @JsonKey(name: 'basketQty')
-  String? get basketQty => throw _privateConstructorUsedError;
+  String? get basketQty;
 
   /// Количество в наличии.
   @JsonKey(name: 'inStockQty')
-  String? get inStockQty => throw _privateConstructorUsedError;
+  String? get inStockQty;
 
   /// Рейтинг.
   @JsonKey(name: 'rating')
-  String? get rating => throw _privateConstructorUsedError;
+  String? get rating;
 
   /// Доставка.
   @JsonKey(name: 'delivery')
-  String? get delivery => throw _privateConstructorUsedError;
+  String? get delivery;
 
   /// Полезная нагрузка (payload).
   @JsonKey(name: 'payload')
-  Map<String, String>? get payload => throw _privateConstructorUsedError;
-
-  /// Serializes this ExamplePricesResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, String>? get payload;
 
   /// Create a copy of ExamplePricesResponse
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ExamplePricesResponseCopyWith<ExamplePricesResponse> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ExamplePricesResponseCopyWith<$Res> {
-  factory $ExamplePricesResponseCopyWith(ExamplePricesResponse value,
-          $Res Function(ExamplePricesResponse) then) =
-      _$ExamplePricesResponseCopyWithImpl<$Res, ExamplePricesResponse>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String? id,
-      @JsonKey(name: 'title') String? title,
-      @JsonKey(name: 'code') String? code,
-      @JsonKey(name: 'brand') String? brand,
-      @JsonKey(name: 'price') String? price,
-      @JsonKey(name: 'basketQty') String? basketQty,
-      @JsonKey(name: 'inStockQty') String? inStockQty,
-      @JsonKey(name: 'rating') String? rating,
-      @JsonKey(name: 'delivery') String? delivery,
-      @JsonKey(name: 'payload') Map<String, String>? payload});
-}
-
-/// @nodoc
-class _$ExamplePricesResponseCopyWithImpl<$Res,
-        $Val extends ExamplePricesResponse>
-    implements $ExamplePricesResponseCopyWith<$Res> {
-  _$ExamplePricesResponseCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ExamplePricesResponse
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $ExamplePricesResponseCopyWith<ExamplePricesResponse> get copyWith =>
+      _$ExamplePricesResponseCopyWithImpl<ExamplePricesResponse>(
+          this as ExamplePricesResponse, _$identity);
+
+  /// Serializes this ExamplePricesResponse to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? id = freezed,
-    Object? title = freezed,
-    Object? code = freezed,
-    Object? brand = freezed,
-    Object? price = freezed,
-    Object? basketQty = freezed,
-    Object? inStockQty = freezed,
-    Object? rating = freezed,
-    Object? delivery = freezed,
-    Object? payload = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      title: freezed == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String?,
-      code: freezed == code
-          ? _value.code
-          : code // ignore: cast_nullable_to_non_nullable
-              as String?,
-      brand: freezed == brand
-          ? _value.brand
-          : brand // ignore: cast_nullable_to_non_nullable
-              as String?,
-      price: freezed == price
-          ? _value.price
-          : price // ignore: cast_nullable_to_non_nullable
-              as String?,
-      basketQty: freezed == basketQty
-          ? _value.basketQty
-          : basketQty // ignore: cast_nullable_to_non_nullable
-              as String?,
-      inStockQty: freezed == inStockQty
-          ? _value.inStockQty
-          : inStockQty // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rating: freezed == rating
-          ? _value.rating
-          : rating // ignore: cast_nullable_to_non_nullable
-              as String?,
-      delivery: freezed == delivery
-          ? _value.delivery
-          : delivery // ignore: cast_nullable_to_non_nullable
-              as String?,
-      payload: freezed == payload
-          ? _value.payload
-          : payload // ignore: cast_nullable_to_non_nullable
-              as Map<String, String>?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is ExamplePricesResponse &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.brand, brand) || other.brand == brand) &&
+            (identical(other.price, price) || other.price == price) &&
+            (identical(other.basketQty, basketQty) ||
+                other.basketQty == basketQty) &&
+            (identical(other.inStockQty, inStockQty) ||
+                other.inStockQty == inStockQty) &&
+            (identical(other.rating, rating) || other.rating == rating) &&
+            (identical(other.delivery, delivery) ||
+                other.delivery == delivery) &&
+            const DeepCollectionEquality().equals(other.payload, payload));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      title,
+      code,
+      brand,
+      price,
+      basketQty,
+      inStockQty,
+      rating,
+      delivery,
+      const DeepCollectionEquality().hash(payload));
+
+  @override
+  String toString() {
+    return 'ExamplePricesResponse(id: $id, title: $title, code: $code, brand: $brand, price: $price, basketQty: $basketQty, inStockQty: $inStockQty, rating: $rating, delivery: $delivery, payload: $payload)';
   }
 }
 
 /// @nodoc
-abstract class _$$ExamplePricesResponseImplCopyWith<$Res>
-    implements $ExamplePricesResponseCopyWith<$Res> {
-  factory _$$ExamplePricesResponseImplCopyWith(
-          _$ExamplePricesResponseImpl value,
-          $Res Function(_$ExamplePricesResponseImpl) then) =
-      __$$ExamplePricesResponseImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $ExamplePricesResponseCopyWith<$Res> {
+  factory $ExamplePricesResponseCopyWith(ExamplePricesResponse value,
+          $Res Function(ExamplePricesResponse) _then) =
+      _$ExamplePricesResponseCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'id') String? id,
@@ -185,13 +127,12 @@ abstract class _$$ExamplePricesResponseImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$ExamplePricesResponseImplCopyWithImpl<$Res>
-    extends _$ExamplePricesResponseCopyWithImpl<$Res,
-        _$ExamplePricesResponseImpl>
-    implements _$$ExamplePricesResponseImplCopyWith<$Res> {
-  __$$ExamplePricesResponseImplCopyWithImpl(_$ExamplePricesResponseImpl _value,
-      $Res Function(_$ExamplePricesResponseImpl) _then)
-      : super(_value, _then);
+class _$ExamplePricesResponseCopyWithImpl<$Res>
+    implements $ExamplePricesResponseCopyWith<$Res> {
+  _$ExamplePricesResponseCopyWithImpl(this._self, this._then);
+
+  final ExamplePricesResponse _self;
+  final $Res Function(ExamplePricesResponse) _then;
 
   /// Create a copy of ExamplePricesResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -209,45 +150,45 @@ class __$$ExamplePricesResponseImplCopyWithImpl<$Res>
     Object? delivery = freezed,
     Object? payload = freezed,
   }) {
-    return _then(_$ExamplePricesResponseImpl(
+    return _then(_self.copyWith(
       id: freezed == id
-          ? _value.id
+          ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String?,
       title: freezed == title
-          ? _value.title
+          ? _self.title
           : title // ignore: cast_nullable_to_non_nullable
               as String?,
       code: freezed == code
-          ? _value.code
+          ? _self.code
           : code // ignore: cast_nullable_to_non_nullable
               as String?,
       brand: freezed == brand
-          ? _value.brand
+          ? _self.brand
           : brand // ignore: cast_nullable_to_non_nullable
               as String?,
       price: freezed == price
-          ? _value.price
+          ? _self.price
           : price // ignore: cast_nullable_to_non_nullable
               as String?,
       basketQty: freezed == basketQty
-          ? _value.basketQty
+          ? _self.basketQty
           : basketQty // ignore: cast_nullable_to_non_nullable
               as String?,
       inStockQty: freezed == inStockQty
-          ? _value.inStockQty
+          ? _self.inStockQty
           : inStockQty // ignore: cast_nullable_to_non_nullable
               as String?,
       rating: freezed == rating
-          ? _value.rating
+          ? _self.rating
           : rating // ignore: cast_nullable_to_non_nullable
               as String?,
       delivery: freezed == delivery
-          ? _value.delivery
+          ? _self.delivery
           : delivery // ignore: cast_nullable_to_non_nullable
               as String?,
       payload: freezed == payload
-          ? _value._payload
+          ? _self.payload
           : payload // ignore: cast_nullable_to_non_nullable
               as Map<String, String>?,
     ));
@@ -256,8 +197,8 @@ class __$$ExamplePricesResponseImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ExamplePricesResponseImpl implements _ExamplePricesResponse {
-  _$ExamplePricesResponseImpl(
+class _ExamplePricesResponse implements ExamplePricesResponse {
+  _ExamplePricesResponse(
       {@JsonKey(name: 'id') this.id,
       @JsonKey(name: 'title') this.title,
       @JsonKey(name: 'code') this.code,
@@ -269,9 +210,8 @@ class _$ExamplePricesResponseImpl implements _ExamplePricesResponse {
       @JsonKey(name: 'delivery') this.delivery,
       @JsonKey(name: 'payload') final Map<String, String>? payload})
       : _payload = payload;
-
-  factory _$ExamplePricesResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ExamplePricesResponseImplFromJson(json);
+  factory _ExamplePricesResponse.fromJson(Map<String, dynamic> json) =>
+      _$ExamplePricesResponseFromJson(json);
 
   /// Идентификатор.
   @override
@@ -332,16 +272,27 @@ class _$ExamplePricesResponseImpl implements _ExamplePricesResponse {
     return EqualUnmodifiableMapView(value);
   }
 
+  /// Create a copy of ExamplePricesResponse
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'ExamplePricesResponse(id: $id, title: $title, code: $code, brand: $brand, price: $price, basketQty: $basketQty, inStockQty: $inStockQty, rating: $rating, delivery: $delivery, payload: $payload)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ExamplePricesResponseCopyWith<_ExamplePricesResponse> get copyWith =>
+      __$ExamplePricesResponseCopyWithImpl<_ExamplePricesResponse>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ExamplePricesResponseToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ExamplePricesResponseImpl &&
+            other is _ExamplePricesResponse &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.code, code) || other.code == code) &&
@@ -372,94 +323,100 @@ class _$ExamplePricesResponseImpl implements _ExamplePricesResponse {
       delivery,
       const DeepCollectionEquality().hash(_payload));
 
-  /// Create a copy of ExamplePricesResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$ExamplePricesResponseImplCopyWith<_$ExamplePricesResponseImpl>
-      get copyWith => __$$ExamplePricesResponseImplCopyWithImpl<
-          _$ExamplePricesResponseImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ExamplePricesResponseImplToJson(
-      this,
-    );
+  String toString() {
+    return 'ExamplePricesResponse(id: $id, title: $title, code: $code, brand: $brand, price: $price, basketQty: $basketQty, inStockQty: $inStockQty, rating: $rating, delivery: $delivery, payload: $payload)';
   }
 }
 
-abstract class _ExamplePricesResponse implements ExamplePricesResponse {
-  factory _ExamplePricesResponse(
-          {@JsonKey(name: 'id') final String? id,
-          @JsonKey(name: 'title') final String? title,
-          @JsonKey(name: 'code') final String? code,
-          @JsonKey(name: 'brand') final String? brand,
-          @JsonKey(name: 'price') final String? price,
-          @JsonKey(name: 'basketQty') final String? basketQty,
-          @JsonKey(name: 'inStockQty') final String? inStockQty,
-          @JsonKey(name: 'rating') final String? rating,
-          @JsonKey(name: 'delivery') final String? delivery,
-          @JsonKey(name: 'payload') final Map<String, String>? payload}) =
-      _$ExamplePricesResponseImpl;
-
-  factory _ExamplePricesResponse.fromJson(Map<String, dynamic> json) =
-      _$ExamplePricesResponseImpl.fromJson;
-
-  /// Идентификатор.
+/// @nodoc
+abstract mixin class _$ExamplePricesResponseCopyWith<$Res>
+    implements $ExamplePricesResponseCopyWith<$Res> {
+  factory _$ExamplePricesResponseCopyWith(_ExamplePricesResponse value,
+          $Res Function(_ExamplePricesResponse) _then) =
+      __$ExamplePricesResponseCopyWithImpl;
   @override
-  @JsonKey(name: 'id')
-  String? get id;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') String? id,
+      @JsonKey(name: 'title') String? title,
+      @JsonKey(name: 'code') String? code,
+      @JsonKey(name: 'brand') String? brand,
+      @JsonKey(name: 'price') String? price,
+      @JsonKey(name: 'basketQty') String? basketQty,
+      @JsonKey(name: 'inStockQty') String? inStockQty,
+      @JsonKey(name: 'rating') String? rating,
+      @JsonKey(name: 'delivery') String? delivery,
+      @JsonKey(name: 'payload') Map<String, String>? payload});
+}
 
-  /// Название.
-  @override
-  @JsonKey(name: 'title')
-  String? get title;
+/// @nodoc
+class __$ExamplePricesResponseCopyWithImpl<$Res>
+    implements _$ExamplePricesResponseCopyWith<$Res> {
+  __$ExamplePricesResponseCopyWithImpl(this._self, this._then);
 
-  /// Код.
-  @override
-  @JsonKey(name: 'code')
-  String? get code;
-
-  /// Бренд.
-  @override
-  @JsonKey(name: 'brand')
-  String? get brand;
-
-  /// Цена.
-  @override
-  @JsonKey(name: 'price')
-  String? get price;
-
-  /// Количество в корзине.
-  @override
-  @JsonKey(name: 'basketQty')
-  String? get basketQty;
-
-  /// Количество в наличии.
-  @override
-  @JsonKey(name: 'inStockQty')
-  String? get inStockQty;
-
-  /// Рейтинг.
-  @override
-  @JsonKey(name: 'rating')
-  String? get rating;
-
-  /// Доставка.
-  @override
-  @JsonKey(name: 'delivery')
-  String? get delivery;
-
-  /// Полезная нагрузка (payload).
-  @override
-  @JsonKey(name: 'payload')
-  Map<String, String>? get payload;
+  final _ExamplePricesResponse _self;
+  final $Res Function(_ExamplePricesResponse) _then;
 
   /// Create a copy of ExamplePricesResponse
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ExamplePricesResponseImplCopyWith<_$ExamplePricesResponseImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = freezed,
+    Object? title = freezed,
+    Object? code = freezed,
+    Object? brand = freezed,
+    Object? price = freezed,
+    Object? basketQty = freezed,
+    Object? inStockQty = freezed,
+    Object? rating = freezed,
+    Object? delivery = freezed,
+    Object? payload = freezed,
+  }) {
+    return _then(_ExamplePricesResponse(
+      id: freezed == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
+      title: freezed == title
+          ? _self.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      code: freezed == code
+          ? _self.code
+          : code // ignore: cast_nullable_to_non_nullable
+              as String?,
+      brand: freezed == brand
+          ? _self.brand
+          : brand // ignore: cast_nullable_to_non_nullable
+              as String?,
+      price: freezed == price
+          ? _self.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as String?,
+      basketQty: freezed == basketQty
+          ? _self.basketQty
+          : basketQty // ignore: cast_nullable_to_non_nullable
+              as String?,
+      inStockQty: freezed == inStockQty
+          ? _self.inStockQty
+          : inStockQty // ignore: cast_nullable_to_non_nullable
+              as String?,
+      rating: freezed == rating
+          ? _self.rating
+          : rating // ignore: cast_nullable_to_non_nullable
+              as String?,
+      delivery: freezed == delivery
+          ? _self.delivery
+          : delivery // ignore: cast_nullable_to_non_nullable
+              as String?,
+      payload: freezed == payload
+          ? _self._payload
+          : payload // ignore: cast_nullable_to_non_nullable
+              as Map<String, String>?,
+    ));
+  }
 }
+
+// dart format on

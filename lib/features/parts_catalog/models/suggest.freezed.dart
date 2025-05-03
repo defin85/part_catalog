@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,92 +10,63 @@ part of 'suggest.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-Suggest _$SuggestFromJson(Map<String, dynamic> json) {
-  return _Suggest.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Suggest {
   /// Идентификатор поиска.
   @JsonKey(name: 'sid')
-  String? get sid => throw _privateConstructorUsedError;
+  String? get sid;
 
   /// Название.
   @JsonKey(name: 'name')
-  String? get name => throw _privateConstructorUsedError;
-
-  /// Serializes this Suggest to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get name;
 
   /// Create a copy of Suggest
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $SuggestCopyWith<Suggest> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $SuggestCopyWith<$Res> {
-  factory $SuggestCopyWith(Suggest value, $Res Function(Suggest) then) =
-      _$SuggestCopyWithImpl<$Res, Suggest>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'sid') String? sid, @JsonKey(name: 'name') String? name});
-}
-
-/// @nodoc
-class _$SuggestCopyWithImpl<$Res, $Val extends Suggest>
-    implements $SuggestCopyWith<$Res> {
-  _$SuggestCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Suggest
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $SuggestCopyWith<Suggest> get copyWith =>
+      _$SuggestCopyWithImpl<Suggest>(this as Suggest, _$identity);
+
+  /// Serializes this Suggest to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? sid = freezed,
-    Object? name = freezed,
-  }) {
-    return _then(_value.copyWith(
-      sid: freezed == sid
-          ? _value.sid
-          : sid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: freezed == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Suggest &&
+            (identical(other.sid, sid) || other.sid == sid) &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sid, name);
+
+  @override
+  String toString() {
+    return 'Suggest(sid: $sid, name: $name)';
   }
 }
 
 /// @nodoc
-abstract class _$$SuggestImplCopyWith<$Res> implements $SuggestCopyWith<$Res> {
-  factory _$$SuggestImplCopyWith(
-          _$SuggestImpl value, $Res Function(_$SuggestImpl) then) =
-      __$$SuggestImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $SuggestCopyWith<$Res> {
+  factory $SuggestCopyWith(Suggest value, $Res Function(Suggest) _then) =
+      _$SuggestCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'sid') String? sid, @JsonKey(name: 'name') String? name});
 }
 
 /// @nodoc
-class __$$SuggestImplCopyWithImpl<$Res>
-    extends _$SuggestCopyWithImpl<$Res, _$SuggestImpl>
-    implements _$$SuggestImplCopyWith<$Res> {
-  __$$SuggestImplCopyWithImpl(
-      _$SuggestImpl _value, $Res Function(_$SuggestImpl) _then)
-      : super(_value, _then);
+class _$SuggestCopyWithImpl<$Res> implements $SuggestCopyWith<$Res> {
+  _$SuggestCopyWithImpl(this._self, this._then);
+
+  final Suggest _self;
+  final $Res Function(Suggest) _then;
 
   /// Create a copy of Suggest
   /// with the given fields replaced by the non-null parameter values.
@@ -104,13 +76,13 @@ class __$$SuggestImplCopyWithImpl<$Res>
     Object? sid = freezed,
     Object? name = freezed,
   }) {
-    return _then(_$SuggestImpl(
+    return _then(_self.copyWith(
       sid: freezed == sid
-          ? _value.sid
+          ? _self.sid
           : sid // ignore: cast_nullable_to_non_nullable
               as String?,
       name: freezed == name
-          ? _value.name
+          ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -119,12 +91,10 @@ class __$$SuggestImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SuggestImpl implements _Suggest {
-  _$SuggestImpl(
-      {@JsonKey(name: 'sid') this.sid, @JsonKey(name: 'name') this.name});
-
-  factory _$SuggestImpl.fromJson(Map<String, dynamic> json) =>
-      _$$SuggestImplFromJson(json);
+class _Suggest implements Suggest {
+  _Suggest({@JsonKey(name: 'sid') this.sid, @JsonKey(name: 'name') this.name});
+  factory _Suggest.fromJson(Map<String, dynamic> json) =>
+      _$SuggestFromJson(json);
 
   /// Идентификатор поиска.
   @override
@@ -136,16 +106,26 @@ class _$SuggestImpl implements _Suggest {
   @JsonKey(name: 'name')
   final String? name;
 
+  /// Create a copy of Suggest
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'Suggest(sid: $sid, name: $name)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$SuggestCopyWith<_Suggest> get copyWith =>
+      __$SuggestCopyWithImpl<_Suggest>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$SuggestToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$SuggestImpl &&
+            other is _Suggest &&
             (identical(other.sid, sid) || other.sid == sid) &&
             (identical(other.name, name) || other.name == name));
   }
@@ -154,43 +134,48 @@ class _$SuggestImpl implements _Suggest {
   @override
   int get hashCode => Object.hash(runtimeType, sid, name);
 
-  /// Create a copy of Suggest
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$SuggestImplCopyWith<_$SuggestImpl> get copyWith =>
-      __$$SuggestImplCopyWithImpl<_$SuggestImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$SuggestImplToJson(
-      this,
-    );
+  String toString() {
+    return 'Suggest(sid: $sid, name: $name)';
   }
 }
 
-abstract class _Suggest implements Suggest {
-  factory _Suggest(
-      {@JsonKey(name: 'sid') final String? sid,
-      @JsonKey(name: 'name') final String? name}) = _$SuggestImpl;
-
-  factory _Suggest.fromJson(Map<String, dynamic> json) = _$SuggestImpl.fromJson;
-
-  /// Идентификатор поиска.
+/// @nodoc
+abstract mixin class _$SuggestCopyWith<$Res> implements $SuggestCopyWith<$Res> {
+  factory _$SuggestCopyWith(_Suggest value, $Res Function(_Suggest) _then) =
+      __$SuggestCopyWithImpl;
   @override
-  @JsonKey(name: 'sid')
-  String? get sid;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'sid') String? sid, @JsonKey(name: 'name') String? name});
+}
 
-  /// Название.
-  @override
-  @JsonKey(name: 'name')
-  String? get name;
+/// @nodoc
+class __$SuggestCopyWithImpl<$Res> implements _$SuggestCopyWith<$Res> {
+  __$SuggestCopyWithImpl(this._self, this._then);
+
+  final _Suggest _self;
+  final $Res Function(_Suggest) _then;
 
   /// Create a copy of Suggest
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$SuggestImplCopyWith<_$SuggestImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? sid = freezed,
+    Object? name = freezed,
+  }) {
+    return _then(_Suggest(
+      sid: freezed == sid
+          ? _self.sid
+          : sid // ignore: cast_nullable_to_non_nullable
+              as String?,
+      name: freezed == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on

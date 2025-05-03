@@ -1,3 +1,4 @@
+// dart format width=80
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
@@ -9,91 +10,57 @@ part of 'model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
-
-Model _$ModelFromJson(Map<String, dynamic> json) {
-  return _Model.fromJson(json);
-}
 
 /// @nodoc
 mixin _$Model {
   /// Идентификатор модели.
   @JsonKey(name: 'id')
-  String get id => throw _privateConstructorUsedError;
+  String get id;
 
   /// Название модели.
   @JsonKey(name: 'name')
-  String get name => throw _privateConstructorUsedError;
+  String get name;
 
   /// URL изображения модели.
   @JsonKey(name: 'img')
-  String? get img => throw _privateConstructorUsedError;
-
-  /// Serializes this Model to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  String? get img;
 
   /// Create a copy of Model
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ModelCopyWith<Model> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ModelCopyWith<$Res> {
-  factory $ModelCopyWith(Model value, $Res Function(Model) then) =
-      _$ModelCopyWithImpl<$Res, Model>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: 'id') String id,
-      @JsonKey(name: 'name') String name,
-      @JsonKey(name: 'img') String? img});
-}
-
-/// @nodoc
-class _$ModelCopyWithImpl<$Res, $Val extends Model>
-    implements $ModelCopyWith<$Res> {
-  _$ModelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Model
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
+  $ModelCopyWith<Model> get copyWith =>
+      _$ModelCopyWithImpl<Model>(this as Model, _$identity);
+
+  /// Serializes this Model to a JSON map.
+  Map<String, dynamic> toJson();
+
   @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? img = freezed,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      img: freezed == img
-          ? _value.img
-          : img // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is Model &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.img, img) || other.img == img));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, name, img);
+
+  @override
+  String toString() {
+    return 'Model(id: $id, name: $name, img: $img)';
   }
 }
 
 /// @nodoc
-abstract class _$$ModelImplCopyWith<$Res> implements $ModelCopyWith<$Res> {
-  factory _$$ModelImplCopyWith(
-          _$ModelImpl value, $Res Function(_$ModelImpl) then) =
-      __$$ModelImplCopyWithImpl<$Res>;
-  @override
+abstract mixin class $ModelCopyWith<$Res> {
+  factory $ModelCopyWith(Model value, $Res Function(Model) _then) =
+      _$ModelCopyWithImpl;
   @useResult
   $Res call(
       {@JsonKey(name: 'id') String id,
@@ -102,12 +69,11 @@ abstract class _$$ModelImplCopyWith<$Res> implements $ModelCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$ModelImplCopyWithImpl<$Res>
-    extends _$ModelCopyWithImpl<$Res, _$ModelImpl>
-    implements _$$ModelImplCopyWith<$Res> {
-  __$$ModelImplCopyWithImpl(
-      _$ModelImpl _value, $Res Function(_$ModelImpl) _then)
-      : super(_value, _then);
+class _$ModelCopyWithImpl<$Res> implements $ModelCopyWith<$Res> {
+  _$ModelCopyWithImpl(this._self, this._then);
+
+  final Model _self;
+  final $Res Function(Model) _then;
 
   /// Create a copy of Model
   /// with the given fields replaced by the non-null parameter values.
@@ -118,17 +84,17 @@ class __$$ModelImplCopyWithImpl<$Res>
     Object? name = null,
     Object? img = freezed,
   }) {
-    return _then(_$ModelImpl(
+    return _then(_self.copyWith(
       id: null == id
-          ? _value.id
+          ? _self.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
       name: null == name
-          ? _value.name
+          ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
       img: freezed == img
-          ? _value.img
+          ? _self.img
           : img // ignore: cast_nullable_to_non_nullable
               as String?,
     ));
@@ -137,14 +103,12 @@ class __$$ModelImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ModelImpl implements _Model {
-  _$ModelImpl(
+class _Model implements Model {
+  _Model(
       {@JsonKey(name: 'id') required this.id,
       @JsonKey(name: 'name') required this.name,
       @JsonKey(name: 'img') this.img});
-
-  factory _$ModelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ModelImplFromJson(json);
+  factory _Model.fromJson(Map<String, dynamic> json) => _$ModelFromJson(json);
 
   /// Идентификатор модели.
   @override
@@ -161,16 +125,26 @@ class _$ModelImpl implements _Model {
   @JsonKey(name: 'img')
   final String? img;
 
+  /// Create a copy of Model
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  String toString() {
-    return 'Model(id: $id, name: $name, img: $img)';
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @pragma('vm:prefer-inline')
+  _$ModelCopyWith<_Model> get copyWith =>
+      __$ModelCopyWithImpl<_Model>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$ModelToJson(
+      this,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ModelImpl &&
+            other is _Model &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.img, img) || other.img == img));
@@ -180,49 +154,55 @@ class _$ModelImpl implements _Model {
   @override
   int get hashCode => Object.hash(runtimeType, id, name, img);
 
-  /// Create a copy of Model
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  @pragma('vm:prefer-inline')
-  _$$ModelImplCopyWith<_$ModelImpl> get copyWith =>
-      __$$ModelImplCopyWithImpl<_$ModelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ModelImplToJson(
-      this,
-    );
+  String toString() {
+    return 'Model(id: $id, name: $name, img: $img)';
   }
 }
 
-abstract class _Model implements Model {
-  factory _Model(
-      {@JsonKey(name: 'id') required final String id,
-      @JsonKey(name: 'name') required final String name,
-      @JsonKey(name: 'img') final String? img}) = _$ModelImpl;
-
-  factory _Model.fromJson(Map<String, dynamic> json) = _$ModelImpl.fromJson;
-
-  /// Идентификатор модели.
+/// @nodoc
+abstract mixin class _$ModelCopyWith<$Res> implements $ModelCopyWith<$Res> {
+  factory _$ModelCopyWith(_Model value, $Res Function(_Model) _then) =
+      __$ModelCopyWithImpl;
   @override
-  @JsonKey(name: 'id')
-  String get id;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'id') String id,
+      @JsonKey(name: 'name') String name,
+      @JsonKey(name: 'img') String? img});
+}
 
-  /// Название модели.
-  @override
-  @JsonKey(name: 'name')
-  String get name;
+/// @nodoc
+class __$ModelCopyWithImpl<$Res> implements _$ModelCopyWith<$Res> {
+  __$ModelCopyWithImpl(this._self, this._then);
 
-  /// URL изображения модели.
-  @override
-  @JsonKey(name: 'img')
-  String? get img;
+  final _Model _self;
+  final $Res Function(_Model) _then;
 
   /// Create a copy of Model
   /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ModelImplCopyWith<_$ModelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  @pragma('vm:prefer-inline')
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+    Object? img = freezed,
+  }) {
+    return _then(_Model(
+      id: null == id
+          ? _self.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      name: null == name
+          ? _self.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      img: freezed == img
+          ? _self.img
+          : img // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
 }
+
+// dart format on
