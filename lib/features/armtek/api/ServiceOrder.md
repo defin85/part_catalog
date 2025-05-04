@@ -1,1194 +1,183 @@
-# ...existing code...
-components:
-  securitySchemes:
-    basicAuth:
-      # ... existing basicAuth schema ...
-  schemas:
-    GenericError:
-      # ... existing GenericError schema ...
-    InvoiceDetailsResponse:
-      # ... existing InvoiceDetailsResponse schema ...
-    ReturnInvoicePositionInput:
-      # ... existing ReturnInvoicePositionInput schema ...
-    CreateReturnInvoiceRequest:
-      # ... existing CreateReturnInvoiceRequest schema ...
-    CreateReturnInvoiceResponse:
-      # ... existing CreateReturnInvoiceResponse schema ...
+# Armtek API: Сервис Заказов (`/ws_order`) - Формализованная информация
 
-    # --- Схемы для Заказов ---
-    OrderItemInput: # Для createOrder
-      type: object
-      required:
-        - PIN
-        - BRAND
-        - KWMENG
-      properties:
-        PIN:
-          type: string
-          maxLength: 10
-          description: Артикул (номер детали)
-        BRAND:
-          type: string
-          maxLength: 50
-          description: Бренд детали
-        ARTSKU:
-          type: string
-          maxLength: 50
-          description: Артикул поставщика (опционально)
-        NAME:
-          type: string
-          maxLength: 100
-          description: Наименование детали (опционально)
-        KWMENG:
-          type: number # Или string? Указано "число ( 10 )"
-          format: float # Или double
-          description: Количество
-        PRICE:
-          type: number # Или string?
-          format: float # Или double
-          description: Цена (опционально)
-        KETDT:
-          type: string
-          format: date # YYYYMMDD
-          description: Желаемая дата поставки для позиции (опционально)
-        NOTE:
-          type: string
-          maxLength: 512
-          description: Примечание к позиции (опционально)
-    CreateOrderRequest:
-      type: object
-      required:
-        - VKORG
-        - KUNRG
-        - ITEMS
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        KUNRG:
-          type: string
-          maxLength: 10
-          description: Плательщик (номер клиента)
-        KUNWE:
-          type: string
-          maxLength: 10
-          description: Грузополучатель (опционально)
-        KONDA:
-          type: string
-          maxLength: 2
-          description: Ценовая группа клиента (опционально)
-        BSTKD:
-          type: string
-          maxLength: 35
-          description: Номер заказа клиента (опционально)
-        KETDT:
-          type: string
-          format: date # YYYYMMDD
-          description: Желаемая дата поставки всего заказа (опционально)
-        PIN: # Выглядит странно на уровне заголовка, возможно для быстрого заказа одной позиции?
-          type: string
-          maxLength: 10
-          description: Артикул (опционально, для быстрого заказа?)
-        BRAND: # Выглядит странно на уровне заголовка
-          type: string
-          maxLength: 50
-          description: Бренд (опционально, для быстрого заказа?)
-        KWMENG: # Выглядит странно на уровне заголовка
-          type: number
-          format: float
-          description: Количество (опционально, для быстрого заказа?)
-        NOTE:
-          type: string
-          maxLength: 512
-          description: Примечание к заказу (опционально)
-        DELIVERY_ADDRESS:
-          type: string
-          maxLength: 255
-          description: Адрес доставки текстом (опционально)
-        DELIVERY_INTERVAL:
-          type: string
-          maxLength: 50
-          description: Интервал доставки текстом (опционально)
-        DELIVERY_METHOD:
-          type: string
-          maxLength: 50
-          description: Способ доставки текстом (опционально)
-        CONTACT_PERSON:
-          type: string
-          maxLength: 50
-          description: Контактное лицо текстом (опционально)
-        CONTACT_PHONE:
-          type: string
-          maxLength: 50
-          description: Контактный телефон текстом (опционально)
-        BACKORDER:
-          type: string
-          maxLength: 1
-          enum: ['X', '']
-          description: Разрешить дозаказ ('X' - да, пусто - нет) (опционально)
-        SUBSTITUTION:
-          type: string
-          maxLength: 1
-          enum: ['X', '']
-          description: Разрешить замену ('X' - да, пусто - нет) (опционально)
-        ITEMS:
-          type: array
-          description: Таблица позиций заказа
-          items:
-            $ref: '#/components/schemas/OrderItemInput'
-    CreateOrderResponse: # Структура ответа неизвестна
-      type: object
-      properties:
-        orderNumber: # Предполагаемое поле
-          type: string
-          description: Номер созданного заказа
-        # ... другие поля ответа
-    OrderDetailsResponse: # Структура ответа для getOrder/getOrder2 (неизвестна, placeholder)
-      type: object
-      properties:
-        HEADER:
-          type: object
-          properties:
-            ORDER:
-              type: string
-              description: Номер заказа
-            # ... другие поля заголовка заказа
-        ITEMS:
-          type: array
-          items:
-            type: object
-            properties:
-              POSNR:
-                type: string
-                description: Номер позиции
-              PIN:
-                type: string
-                description: Артикул
-              BRAND:
-                type: string
-                description: Бренд
-              KWMENG:
-                type: number
-                description: Количество
-              # ... другие поля позиции заказа
-        ABGRU_ITEMS: # Таблица для editOrder
-           type: array
-           items:
-             type: object
-             properties:
-               ABGRU:
-                 type: string
-                 description: Код причины отклонения
-               # ... другие поля
-        # ... другие таблицы и поля в ответе getOrder
-    RefundDetailsResponse: # Структура ответа для getRefund (неизвестна, placeholder)
-      type: object
-      properties:
-        # ... поля ответа
-    EditOrderItemInput: # Для editOrder
-      type: object
-      required:
-        - POSNR
-        - KWMENG
-        - ABGRU
-      properties:
-        POSNR:
-          type: string
-          maxLength: 10
-          description: Номер позиции в заказе для редактирования
-        KWMENG:
-          type: number # Или string?
-          format: float
-          description: Новое количество
-        ABGRU:
-          type: string
-          maxLength: 3
-          description: Код причины отклонения (из getOrder ABGRU_ITEMS)
-        NOTE:
-          type: string
-          maxLength: 512
-          description: Комментарий к изменению (опционально)
-    EditOrderRequest:
-      type: object
-      required:
-        - VKORG
-        - KUNRG
-        - ORDER
-        - POSITION_INPUT
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        KUNRG:
-          type: string
-          maxLength: 10
-          description: Плательщик (номер клиента)
-        ORDER:
-          type: string
-          maxLength: 10
-          description: Номер заказа для редактирования
-        POSITION_INPUT:
-          type: array
-          description: Таблица изменяемых позиций
-          items:
-            $ref: '#/components/schemas/EditOrderItemInput'
-    EditOrderResponse: # Структура ответа неизвестна
-      type: object
-      properties:
-        # ... поля ответа, например, статус операции
-    # ... другие схемы ...
-    Order: # Placeholder, если используется в других местах
-      type: object
-      properties:
-        id:
-          type: string
-        # ... другие поля заказа
-    OrderPosition: # Placeholder, если используется в других местах
-      type: object
-      properties:
-        id:
-          type: string
-        # ... другие поля позиции заказа
-    SearchResult:
-      # ... existing SearchResult schema ...
-    Report:
-      # ... existing Report schema ...
-    UserSetting:
-      # ... existing UserSetting schema ...
-    PingResponse:
-      # ... existing PingResponse schema ...
+**Общие параметры:**
 
-paths:
-  /ws_invoice/getInvoice:
-    # ... existing getInvoice path ...
-  /ws_invoice/createReturnInvoice:
-    # ... existing createReturnInvoice path ...
+*   **Базовый URL:** `http://ws.armtek.ru` (или другой региональный)
+*   **Аутентификация:** Basic Authentication (логин/пароль)
+*   **Формат ответа:** Управляется query-параметром `format` (`json` или `xml`, по умолчанию `json`).
+*   **Базовая структура ответа:**
+    *   `STATUS` (integer): HTTP статус код.
+    *   `MESSAGES` (array): Массив сообщений (`TYPE`, `TEXT`, `DATE`).
+    *   `RESP` (object/array/null): Тело ответа, специфичное для метода.
 
-  # --- Пути для Заказов ---
-  /ws_order/createOrder:
-    post:
-      summary: Создание заказа
-      description: Создает новый заказ клиента с указанными позициями.
-      tags: [Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/CreateOrderRequest'
-          # application/x-www-form-urlencoded: # Возможен и такой вариант
-          #   schema:
-          #     $ref: '#/components/schemas/CreateOrderRequest'
-      responses:
-        '201':
-          description: Заказ успешно создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateOrderResponse'
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+---
 
-  /ws_order/createTestOrder:
-    post:
-      summary: Создание тестового заказа
-      description: Создает тестовый заказ клиента. Параметры и структура идентичны createOrder.
-      tags: [Orders, Testing]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateOrderRequest' # Используем ту же схему
-      responses:
-        '201':
-          description: Тестовый заказ успешно создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateOrderResponse' # Используем ту же схему
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+## 1. Метод `createOrder`
 
-  /ws_order/getOrder:
-    get:
-      summary: Подробная информация по номеру заказа
-      description: Получает детальную информацию по указанному номеру заказа.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Сбытовая организация
-        - name: KUNRG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Номер покупателя (плательщик)
-        - name: ORDER
-          in: query
-          required: true
-          schema:
-            type: string
-            maxLength: 10
-          description: Номер заказа
-        - name: STATUS
-          in: query
-          required: false
-          schema:
-            type: string # '0', '1' или пустая строка
-            enum: ['0', '1', '']
-            # default: '1' # Не указано явно
-          description: Флаг для добавления полного описания статусов позиций (1 - да)
-        - name: EDIT
-          in: query
-          required: false
-          schema:
-            type: string # '0', '1' или пустая строка
-            enum: ['0', '1', '']
-            # default: '1' # Не указано явно
-          description: Флаг "Для изменения" (влияние на ответ неясно)
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Детальная информация по заказу
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse'
-        '404':
-          description: Заказ не найден
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+*   **Назначение:** Создание нового заказа.
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_order/createOrder`
+*   **Параметры запроса (Body - JSON или form-urlencoded):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `KUNWE` (string, *необязательный*): Номер грузополучателя (KUNNR\_WE).
+    *   `KONDA` (string, *необязательный*): Ценовая группа клиента.
+    *   `BSTKD` (string, *необязательный*): Номер заказа клиента.
+    *   `KETDT` (string, *необязательный*): Желаемая дата поставки (формат `YYYYMMDD`).
+    *   `INCOTERMS` (string, *необязательный*): Признак самовывоза (`1` - самовывоз, `0` или пусто - доставка).
+    *   `DELIVERY_ADDRESS` (string, *необязательный*): Адрес доставки (текст).
+    *   `DELIVERY_INTERVAL` (string, *необязательный*): Интервал доставки (текст).
+    *   `DELIVERY_METHOD` (string, *необязательный*): Способ доставки (текст).
+    *   `CONTACT_PERSON` (string, *необязательный*): Контактное лицо (текст).
+    *   `CONTACT_PHONE` (string, *необязательный*): Телефон контактного лица (текст).
+    *   `BACKORDER` (string, *необязательный*): Признак разрешения довоза (`1` - разрешен, `0` или пусто - запрещен).
+    *   `SUBSTITUTION` (string, *необязательный*): Признак разрешения замен (`1` - разрешен, `0` или пусто - запрещен).
+    *   `CHECK_LEVEL` (integer, *необязательный*, по умолчанию `1`): Уровень проверки остатков (`1` - только основной склад, `2` - все склады Armtek, `3` - все склады Armtek + партнеры).
+    *   `ITEMS` (array, **обязательный**): Массив объектов с позициями заказа.
+        *   `PIN` (string, **обязательный**): Артикул.
+        *   `BRAND` (string, **обязательный**): Наименование бренда.
+        *   `KEYZAK` (string, *необязательный*): Код склада Armtek (из ответа сервиса поиска). **Рекомендуется заполнять.**
+        *   `KWMENG` (number/string, **обязательный**): Количество.
+        *   `PRICEMAX` (string, *необязательный*): Максимальная цена.
+        *   `DATEMAX` (string, *необязательный*): Максимальная дата поставки (формат `YYYYMMDD`).
+        *   `NOTE` (string, *необязательный*): Комментарий к позиции.
+        *   `ARTSKU` (string, *необязательный*): Код материала Armtek (MATNR).
+        *   `NAME` (string, *необязательный*): Наименование товара.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `ORDER` (string): Номер созданного заказа Armtek.
 
-  /ws_order/getOrder2:
-    get:
-      summary: Подробная информация по номеру заказа (ver. 2)
-      description: Получает детальную информацию по указанному номеру заказа (версия 2). Параметры идентичны getOrder.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Сбытовая организация
-        - name: KUNRG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Номер покупателя (плательщик)
-        - name: ORDER
-          in: query
-          required: true
-          schema:
-            type: string
-            maxLength: 10
-          description: Номер заказа
-        # STATUS и EDIT не упомянуты для getOrder2, но могут подразумеваться
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Детальная информация по заказу (версия 2)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse' # Предполагаем ту же структуру ответа
-        '404':
-          description: Заказ не найден
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+---
 
-  /ws_order/getRefund:
-    get:
-      summary: Подробная информация по номеру возврата
-      description: Получает детальную информацию по указанному номеру возврата.
-      tags: [Orders, Invoices] # Возвраты связаны и с заказами, и с фактурами
-      parameters:
-        - name: VKORG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Сбытовая организация
-        - name: KUNRG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Номер покупателя (плательщик)
-        - name: RETURN # Уточнено из URL примера
-          in: query
-          required: true
-          schema:
-            type: string
-            # maxLength: Не указан
-          description: Номер возврата
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Детальная информация по возврату
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefundDetailsResponse' # Структура неизвестна
-        '404':
-          description: Возврат не найден
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+## 2. Метод `createTestOrder`
 
-  /ws_order/editOrder:
-    post:
-      summary: Редактирование заказа
-      description: Позволяет редактировать количество и причину отклонения для позиций существующего заказа.
-      tags: [Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/EditOrderRequest'
-      responses:
-        '200': # Или 204 No Content, если ответ пустой
-          description: Заказ успешно отредактирован
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EditOrderResponse' # Структура неизвестна
-        '400':
-          description: Ошибка валидации входных данных или невозможность редактирования
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        '404':
-          description: Заказ не найден
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+*   **Назначение:** Создание тестового заказа (без реального размещения).
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_order/createTestOrder`
+*   **Параметры запроса (Body - JSON или form-urlencoded):** Аналогичны `createOrder`.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `ORDER` (string): Номер созданного тестового заказа Armtek.
 
-  # --- Остальные пути (Ping, Reports, Search, User) остаются как были ---
-  /ping:
-    # ... existing ping path ...
-  /reports:
-    # ... existing reports path ...
-  /reports/orders/positions:
-    # ... existing report path ...
-  /search:
-    # ... existing search path ...
-  /user/settings:
-    # ... existing user settings paths ...
+---
 
-tags:
-  - name: Invoices
-    description: Сервисы, связанные с фактурами и возвратами
-  - name: Orders
-    description: Сервисы, связанные с заказами
-  - name: Testing
-    description: Сервисы для тестирования
-  # ... existing tags ...
-```
+## 3. Метод `getOrder`
 
-**Основные изменения:**
+*   **Назначение:** Получение подробной информации по номеру заказа.
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_order/getOrder`
+*   **Параметры запроса (Query):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `ORDER` (string, **обязательный**): Номер заказа Armtek.
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `HEADER` (object): Заголовок заказа.
+        *   `ORDER` (string): Номер заказа Armtek.
+        *   `ORDER_DATE` (string): Дата создания заказа (YYYYMMDD).
+        *   `ORDER_TIME` (string): Время создания заказа (HHMMSS).
+        *   `ORDER_TYPE` (string): Тип заказа (например, "Отгрузка с ОСНОВНЫХ складов АРМТЕК").
+        *   `ORDER_STATUS` (string): Статус заказа (например, "Создан", "В работе", "Закрыт", "Отклонен").
+        *   `KUNRG` (string): Номер покупателя.
+        *   `KUNRG_TXT` (string): Наименование покупателя.
+        *   `KUNWE` (string): Номер грузополучателя.
+        *   `KUNWE_TXT` (string): Наименование грузополучателя.
+        *   `KUNNR_ZA` (string): Номер адреса доставки/пункта выдачи.
+        *   `ADDRZA` (string): Адрес доставки (текст).
+        *   `PARNRAP` (string): Код создателя заказа.
+        *   `NAMEAP` (string): Наименование создателя заказа.
+        *   `BSTKD` (string): Номер заказа клиента.
+        *   `KETDT` (string): Желаемая дата поставки (YYYYMMDD).
+        *   `INCOTERMS` (string): Признак самовывоза (`1` или `0`).
+        *   `DELIVERY_ADDRESS` (string): Адрес доставки (текст).
+        *   `DELIVERY_INTERVAL` (string): Интервал доставки (текст).
+        *   `DELIVERY_METHOD` (string): Способ доставки (текст).
+        *   `CONTACT_PERSON` (string): Контактное лицо (текст).
+        *   `CONTACT_PHONE` (string): Телефон контактного лица (текст).
+        *   `BACKORDER` (string): Признак разрешения довоза (`1` или `0`).
+        *   `SUBSTITUTION` (string): Признак разрешения замен (`1` или `0`).
+        *   `SUMMA` (number/string): Общая сумма заказа.
+        *   `CURRENCY` (string): Валюта заказа.
+    *   `ITEMS` (array): Массив позиций заказа.
+        *   `POSNR` (string): Номер позиции.
+        *   `PIN` (string): Артикул.
+        *   `BRAND` (string): Бренд.
+        *   `NAME` (string): Наименование.
+        *   `KWMENG` (number/string): Количество заказанное.
+        *   `KWMENG_CONF` (number/string): Количество подтвержденное.
+        *   `PRICE` (number/string): Цена за единицу.
+        *   `SUMMA` (number/string): Сумма по позиции.
+        *   `NOTE` (string): Комментарий к позиции.
+        *   `STATUS` (string): Статус позиции.
+        *   `STATUS_DATE` (string): Дата статуса позиции (YYYYMMDD).
+        *   `STATUS_TIME` (string): Время статуса позиции (HHMMSS).
+        *   `DELIVERY_DATE` (string): Ожидаемая дата поставки (YYYYMMDD).
+        *   `DELIVERY_TIME` (string): Ожидаемое время поставки (HHMMSS).
+        *   `KEYZAK` (string): Код склада Armtek.
+        *   `ARTSKU` (string): Код материала Armtek (MATNR).
+        *   `PRICEMAX` (string): Максимальная цена.
+        *   `DATEMAX` (string): Максимальная дата поставки (YYYYMMDD).
+        *   `VBELN` (string): Номер документа отгрузки (если есть).
+        *   `POSNR_VL` (string): Номер позиции в документе отгрузки.
+        *   `VBELN_VF` (string): Номер документа фактуры (если есть).
+        *   `POSNR_VF` (string): Номер позиции в документе фактуры.
+        *   `ABGRU` (string): Причина отказа.
+        *   `ABGRU_TXT` (string): Описание причины отказа.
 
-1.  **Добавлены пути:** `/ws_order/createOrder`, `/ws_order/createTestOrder`, `/ws_order/getOrder`, `/ws_order/getOrder2`, `/ws_order/getRefund`, `/ws_order/editOrder`.
-2.  **Описаны параметры запроса** (query и body) для каждого нового эндпоинта на основе документации.
-3.  **Добавлены/обновлены схемы** в `components/schemas` для тел запросов (`CreateOrderRequest`, `EditOrderRequest` с вложенными `OrderItemInput`, `EditOrderItemInput`) и ответов (`CreateOrderResponse`, `OrderDetailsResponse`, `RefundDetailsResponse`, `EditOrderResponse`). Структуры ответов в основном являются предположениями.
-4.  **Уточнены типы данных и ограничения** (maxLength), где это было возможно.
-5.  **Добавлены коды ответов** (200, 201, 400, 404, default) с описаниями.
-6.  **Добавлен тег** `Testing` для `createTestOrder`. Тег `Invoices` теперь включает и возвраты (`getRefund`).
+---
 
-**Необходимые уточнения (если возможно):**
+## 4. Метод `getOrder2`
 
-*   Точный базовый URL API.
-*   Структура ответов для всех новых эндпоинтов.
-*   Тип данных для числовых полей (number или string).
-*   Назначение и влияние параметра `EDIT` в `getOrder`.
-*   Назначение полей `PIN`, `BRAND`, `KWMENG` на уровне заголовка в `createOrder`.
-*   Формат передачи данных для POST-запросов (JSON или form-urlencoded).# filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\ArmtekRestApi.md
-# ...existing code...
-components:
-  securitySchemes:
-    basicAuth:
-      # ... existing basicAuth schema ...
-  schemas:
-    GenericError:
-      # ... existing GenericError schema ...
-    InvoiceDetailsResponse:
-      # ... existing InvoiceDetailsResponse schema ...
-    ReturnInvoicePositionInput:
-      # ... existing ReturnInvoicePositionInput schema ...
-    CreateReturnInvoiceRequest:
-      # ... existing CreateReturnInvoiceRequest schema ...
-    CreateReturnInvoiceResponse:
-      # ... existing CreateReturnInvoiceResponse schema ...
+*   **Назначение:** Получение подробной информации по номеру заказа (версия 2, с расшифровкой статусов).
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_order/getOrder2`
+*   **Параметры запроса (Query):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `ORDER` (string, **обязательный**): Номер заказа Armtek.
+    *   `STATUS` (integer, *необязательный*): Флаг получения расшифровки статусов (`1` - получать).
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, object):** Аналогична `getOrder`, но дополнительно содержит:
+    *   `STATUSES` (array, *только если `STATUS=1`*): Массив объектов с расшифровкой статусов позиций.
+        *   `POSNR` (string): Номер позиции.
+        *   `STATUS` (string): Код статуса.
+        *   `STATUS_DATE` (string): Дата статуса (YYYYMMDD).
+        *   `STATUS_TIME` (string): Время статуса (HHMMSS).
+        *   `STATUS_TXT` (string): Описание статуса.
+        *   `KWMENG` (number/string): Количество в этом статусе.
+    *   `ABGRU_ITEMS` (array): Массив объектов с расшифровкой причин отказа.
+        *   `ABGRU` (string): Код причины отказа.
+        *   `TEXT` (string): Описание причины отказа.
 
-    # --- Схемы для Заказов ---
-    OrderItemInput: # Для createOrder
-      type: object
-      required:
-        - PIN
-        - BRAND
-        - KWMENG
-      properties:
-        PIN:
-          type: string
-          maxLength: 10
-          description: Артикул (номер детали)
-        BRAND:
-          type: string
-          maxLength: 50
-          description: Бренд детали
-        ARTSKU:
-          type: string
-          maxLength: 50
-          description: Артикул поставщика (опционально)
-        NAME:
-          type: string
-          maxLength: 100
-          description: Наименование детали (опционально)
-        KWMENG:
-          type: number # Или string? Указано "число ( 10 )"
-          format: float # Или double
-          description: Количество
-        PRICE:
-          type: number # Или string?
-          format: float # Или double
-          description: Цена (опционально)
-        KETDT:
-          type: string
-          format: date # YYYYMMDD
-          description: Желаемая дата поставки для позиции (опционально)
-        NOTE:
-          type: string
-          maxLength: 512
-          description: Примечание к позиции (опционально)
-    CreateOrderRequest:
-      type: object
-      required:
-        - VKORG
-        - KUNRG
-        - ITEMS
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        KUNRG:
-          type: string
-          maxLength: 10
-          description: Плательщик (номер клиента)
-        KUNWE:
-          type: string
-          maxLength: 10
-          description: Грузополучатель (опционально)
-        KONDA:
-          type: string
-          maxLength: 2
-          description: Ценовая группа клиента (опционально)
-        BSTKD:
-          type: string
-          maxLength: 35
-          description: Номер заказа клиента (опционально)
-        KETDT:
-          type: string
-          format: date # YYYYMMDD
-          description: Желаемая дата поставки всего заказа (опционально)
-        PIN: # Выглядит странно на уровне заголовка, возможно для быстрого заказа одной позиции?
-          type: string
-          maxLength: 10
-          description: Артикул (опционально, для быстрого заказа?)
-        BRAND: # Выглядит странно на уровне заголовка
-          type: string
-          maxLength: 50
-          description: Бренд (опционально, для быстрого заказа?)
-        KWMENG: # Выглядит странно на уровне заголовка
-          type: number
-          format: float
-          description: Количество (опционально, для быстрого заказа?)
-        NOTE:
-          type: string
-          maxLength: 512
-          description: Примечание к заказу (опционально)
-        DELIVERY_ADDRESS:
-          type: string
-          maxLength: 255
-          description: Адрес доставки текстом (опционально)
-        DELIVERY_INTERVAL:
-          type: string
-          maxLength: 50
-          description: Интервал доставки текстом (опционально)
-        DELIVERY_METHOD:
-          type: string
-          maxLength: 50
-          description: Способ доставки текстом (опционально)
-        CONTACT_PERSON:
-          type: string
-          maxLength: 50
-          description: Контактное лицо текстом (опционально)
-        CONTACT_PHONE:
-          type: string
-          maxLength: 50
-          description: Контактный телефон текстом (опционально)
-        BACKORDER:
-          type: string
-          maxLength: 1
-          enum: ['X', '']
-          description: Разрешить дозаказ ('X' - да, пусто - нет) (опционально)
-        SUBSTITUTION:
-          type: string
-          maxLength: 1
-          enum: ['X', '']
-          description: Разрешить замену ('X' - да, пусто - нет) (опционально)
-        ITEMS:
-          type: array
-          description: Таблица позиций заказа
-          items:
-            $ref: '#/components/schemas/OrderItemInput'
-    CreateOrderResponse: # Структура ответа неизвестна
-      type: object
-      properties:
-        orderNumber: # Предполагаемое поле
-          type: string
-          description: Номер созданного заказа
-        # ... другие поля ответа
-    OrderDetailsResponse: # Структура ответа для getOrder/getOrder2 (неизвестна, placeholder)
-      type: object
-      properties:
-        HEADER:
-          type: object
-          properties:
-            ORDER:
-              type: string
-              description: Номер заказа
-            # ... другие поля заголовка заказа
-        ITEMS:
-          type: array
-          items:
-            type: object
-            properties:
-              POSNR:
-                type: string
-                description: Номер позиции
-              PIN:
-                type: string
-                description: Артикул
-              BRAND:
-                type: string
-                description: Бренд
-              KWMENG:
-                type: number
-                description: Количество
-              # ... другие поля позиции заказа
-        ABGRU_ITEMS: # Таблица для editOrder
-           type: array
-           items:
-             type: object
-             properties:
-               ABGRU:
-                 type: string
-                 description: Код причины отклонения
-               # ... другие поля
-        # ... другие таблицы и поля в ответе getOrder
-    RefundDetailsResponse: # Структура ответа для getRefund (неизвестна, placeholder)
-      type: object
-      properties:
-        # ... поля ответа
-    EditOrderItemInput: # Для editOrder
-      type: object
-      required:
-        - POSNR
-        - KWMENG
-        - ABGRU
-      properties:
-        POSNR:
-          type: string
-          maxLength: 10
-          description: Номер позиции в заказе для редактирования
-        KWMENG:
-          type: number # Или string?
-          format: float
-          description: Новое количество
-        ABGRU:
-          type: string
-          maxLength: 3
-          description: Код причины отклонения (из getOrder ABGRU_ITEMS)
-        NOTE:
-          type: string
-          maxLength: 512
-          description: Комментарий к изменению (опционально)
-    EditOrderRequest:
-      type: object
-      required:
-        - VKORG
-        - KUNRG
-        - ORDER
-        - POSITION_INPUT
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        KUNRG:
-          type: string
-          maxLength: 10
-          description: Плательщик (номер клиента)
-        ORDER:
-          type: string
-          maxLength: 10
-          description: Номер заказа для редактирования
-        POSITION_INPUT:
-          type: array
-          description: Таблица изменяемых позиций
-          items:
-            $ref: '#/components/schemas/EditOrderItemInput'
-    EditOrderResponse: # Структура ответа неизвестна
-      type: object
-      properties:
-        # ... поля ответа, например, статус операции
-    # ... другие схемы ...
-    Order: # Placeholder, если используется в других местах
-      type: object
-      properties:
-        id:
-          type: string
-        # ... другие поля заказа
-    OrderPosition: # Placeholder, если используется в других местах
-      type: object
-      properties:
-        id:
-          type: string
-        # ... другие поля позиции заказа
-    SearchResult:
-      # ... existing SearchResult schema ...
-    Report:
-      # ... existing Report schema ...
-    UserSetting:
-      # ... existing UserSetting schema ...
-    PingResponse:
-      # ... existing PingResponse schema ...
+---
 
-paths:
-  /ws_invoice/getInvoice:
-    # ... existing getInvoice path ...
-  /ws_invoice/createReturnInvoice:
-    # ... existing createReturnInvoice path ...
+## 5. Метод `getRefund`
 
-  # --- Пути для Заказов ---
-  /ws_order/createOrder:
-    post:
-      summary: Создание заказа
-      description: Создает новый заказ клиента с указанными позициями.
-      tags: [Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/CreateOrderRequest'
-          # application/x-www-form-urlencoded: # Возможен и такой вариант
-          #   schema:
-          #     $ref: '#/components/schemas/CreateOrderRequest'
-      responses:
-        '201':
-          description: Заказ успешно создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateOrderResponse'
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+*   **Назначение:** Получение подробной информации по номеру возврата.
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_order/getRefund`
+*   **Параметры запроса (Query):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `RETURN` (string, **обязательный**): Номер документа возврата.
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, object):** Аналогична `getOrder`, но специфична для документа возврата (требует уточнения структуры по реальному ответу или более детальной документации).
 
-  /ws_order/createTestOrder:
-    post:
-      summary: Создание тестового заказа
-      description: Создает тестовый заказ клиента. Параметры и структура идентичны createOrder.
-      tags: [Orders, Testing]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateOrderRequest' # Используем ту же схему
-      responses:
-        '201':
-          description: Тестовый заказ успешно создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateOrderResponse' # Используем ту же схему
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+---
 
-  /ws_order/getOrder:
-    get:
-      summary: Подробная информация по номеру заказа
-      description: Получает детальную информацию по указанному номеру заказа.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Сбытовая организация
-        - name: KUNRG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Номер покупателя (плательщик)
-        - name: ORDER
-          in: query
-          required: true
-          schema:
-            type: string
-            maxLength: 10
-          description: Номер заказа
-        - name: STATUS
-          in: query
-          required: false
-          schema:
-            type: string # '0', '1' или пустая строка
-            enum: ['0', '1', '']
-            # default: '1' # Не указано явно
-          description: Флаг для добавления полного описания статусов позиций (1 - да)
-        - name: EDIT
-          in: query
-          required: false
-          schema:
-            type: string # '0', '1' или пустая строка
-            enum: ['0', '1', '']
-            # default: '1' # Не указано явно
-          description: Флаг "Для изменения" (влияние на ответ неясно)
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Детальная информация по заказу
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse'
-        '404':
-          description: Заказ не найден
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+## 6. Метод `editOrder`
 
-  /ws_order/getOrder2:
-    get:
-      summary: Подробная информация по номеру заказа (ver. 2)
-      description: Получает детальную информацию по указанному номеру заказа (версия 2). Параметры идентичны getOrder.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Сбытовая организация
-        - name: KUNRG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Номер покупателя (плательщик)
-        - name: ORDER
-          in: query
-          required: true
-          schema:
-            type: string
-            maxLength: 10
-          description: Номер заказа
-        # STATUS и EDIT не упомянуты для getOrder2, но могут подразумеваться
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Детальная информация по заказу (версия 2)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse' # Предполагаем ту же структуру ответа
-        '404':
-          description: Заказ не найден
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+*   **Назначение:** Редактирование существующего заказа (изменение количества, отмена позиций).
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_order/editOrder`
+*   **Параметры запроса (Body - JSON или form-urlencoded):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `ORDER` (string, **обязательный**): Номер заказа Armtek для редактирования.
+    *   `ITEMS` (array, **обязательный**): Массив объектов с позициями для редактирования.
+        *   `POSNR` (string, **обязательный**): Номер позиции в заказе.
+        *   `KWMENG` (number/string, **обязательный**): Новое количество. Если `0`, позиция отменяется.
+        *   `ABGRU` (string, *необязательный*): Код причины отказа (обязателен при `KWMENG=0`). Коды берутся из `getOrder2` -> `ABGRU_ITEMS`.
+        *   `NOTE` (string, *необязательный*): Комментарий к изменению.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `ORDER` (string): Номер отредактированного заказа Armtek (обычно тот же, что и в запросе).
 
-  /ws_order/getRefund:
-    get:
-      summary: Подробная информация по номеру возврата
-      description: Получает детальную информацию по указанному номеру возврата.
-      tags: [Orders, Invoices] # Возвраты связаны и с заказами, и с фактурами
-      parameters:
-        - name: VKORG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Сбытовая организация
-        - name: KUNRG
-          in: query
-          required: true
-          schema:
-            type: string
-          description: Номер покупателя (плательщик)
-        - name: RETURN # Уточнено из URL примера
-          in: query
-          required: true
-          schema:
-            type: string
-            # maxLength: Не указан
-          description: Номер возврата
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Детальная информация по возврату
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RefundDetailsResponse' # Структура неизвестна
-        '404':
-          description: Возврат не найден
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  /ws_order/editOrder:
-    post:
-      summary: Редактирование заказа
-      description: Позволяет редактировать количество и причину отклонения для позиций существующего заказа.
-      tags: [Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/EditOrderRequest'
-      responses:
-        '200': # Или 204 No Content, если ответ пустой
-          description: Заказ успешно отредактирован
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EditOrderResponse' # Структура неизвестна
-        '400':
-          description: Ошибка валидации входных данных или невозможность редактирования
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        '404':
-          description: Заказ не найден
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  # --- Остальные пути (Ping, Reports, Search, User) остаются как были ---
-  /ping:
-    # ... existing ping path ...
-  /reports:
-    # ... existing reports path ...
-  /reports/orders/positions:
-    # ... existing report path ...
-  /search:
-    # ... existing search path ...
-  /user/settings:
-    # ... existing user settings paths ...
-
-tags:
-  - name: Invoices
-    description: Сервисы, связанные с фактурами и возвратами
-  - name: Orders
-    description: Сервисы, связанные с заказами
-  - name: Testing
-    description: Сервисы для тестирования
-  # ... existing tags ...
-```
-
-**Основные изменения:**
-
-1.  **Добавлены пути:** `/ws_order/createOrder`, `/ws_order/createTestOrder`, `/ws_order/getOrder`, `/ws_order/getOrder2`, `/ws_order/getRefund`, `/ws_order/editOrder`.
-2.  **Описаны параметры запроса** (query и body) для каждого нового эндпоинта на основе документации.
-3.  **Добавлены/обновлены схемы** в `components/schemas` для тел запросов (`CreateOrderRequest`, `EditOrderRequest` с вложенными `OrderItemInput`, `EditOrderItemInput`) и ответов (`CreateOrderResponse`, `OrderDetailsResponse`, `RefundDetailsResponse`, `EditOrderResponse`). Структуры ответов в основном являются предположениями.
-4.  **Уточнены типы данных и ограничения** (maxLength), где это было возможно.
-5.  **Добавлены коды ответов** (200, 201, 400, 404, default) с описаниями.
-6.  **Добавлен тег** `Testing` для `createTestOrder`. Тег `Invoices` теперь включает и возвраты (`getRefund`).
-
-**Необходимые уточнения (если возможно):**
-
-*   Точный базовый URL API.
-*   Структура ответов для всех новых эндпоинтов.
-*   Тип данных для числовых полей (number или string).
-*   Назначение и влияние параметра `EDIT` в `getOrder`.
-*   Назначение полей `PIN`, `BRAND`, `KWMENG` на уровне заголовка в `createOrder`.
-*   Формат передачи данных для POST-запросов (JSON или form-urlencoded).
+---

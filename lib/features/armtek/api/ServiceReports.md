@@ -1,630 +1,113 @@
-# ...existing code...
-components:
-  securitySchemes:
-    basicAuth:
-      # ... existing basicAuth schema ...
-  schemas:
-    GenericError:
-      # ... existing GenericError schema ...
-    InvoiceDetailsResponse:
-      # ... existing InvoiceDetailsResponse schema ...
-    ReturnInvoicePositionInput:
-      # ... existing ReturnInvoicePositionInput schema ...
-    CreateReturnInvoiceRequest:
-      # ... existing CreateReturnInvoiceRequest schema ...
-    CreateReturnInvoiceResponse:
-      # ... existing CreateReturnInvoiceResponse schema ...
-    OrderItemInput:
-      # ... existing OrderItemInput schema ...
-    CreateOrderRequest:
-      # ... existing CreateOrderRequest schema ...
-    CreateOrderResponse:
-      # ... existing CreateOrderResponse schema ...
-    OrderDetailsResponse:
-      # ... existing OrderDetailsResponse schema ...
-    RefundDetailsResponse:
-      # ... existing RefundDetailsResponse schema ...
-    EditOrderItemInput:
-      # ... existing EditOrderItemInput schema ...
-    EditOrderRequest:
-      # ... existing EditOrderRequest schema ...
-    EditOrderResponse:
-      # ... existing EditOrderResponse schema ...
-    Order:
-      # ... existing Order schema ...
-    OrderPosition:
-      # ... existing OrderPosition schema ...
-    SearchResult:
-      # ... existing SearchResult schema ...
-    UserSetting:
-      # ... existing UserSetting schema ...
-    PingResponse:
-      # ... existing PingResponse schema ...
+# Armtek API: Сервис Отчетов (`/ws_reports`) - Формализованная информация
 
-    # --- Схемы для Отчетов ---
-    ReportRequestBase: # Базовая схема для запросов отчетов
-      type: object
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        KUNNR_RG:
-          type: string
-          maxLength: 10
-          description: Плательщик (номер клиента)
-        SCRDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Дата создания С (по умолчанию текущая)
-          example: '20170105'
-        ECRDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Дата создания ПО (по умолчанию текущая)
-          example: '20170105'
-        SDLDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Поставка товара С (Формат YYYYMMDD)
-          example: '20170105'
-        EDLDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Поставка товара ПО (Формат YYYYMMDD)
-          example: '20170105'
-        TYPEZK_SALE:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Включить заказы продаж (1 - да)
-        TYPEZK_RETN:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Включить возвраты и количественные разницы (1 - да)
-        KURR_LOGIN:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Фильтровать заказы по текущему логину (1 - да)
-      required: # Обязательные поля не указаны явно, предполагаем основные
-        - VKORG
-        - KUNNR_RG
+**Общие параметры:**
 
-    ReportResponseBase: # Базовая схема для ответов отчетов (структура DATA неизвестна)
-      type: object
-      properties:
-        DATA:
-          type: array
-          description: Таблица результатов отчета
-          items:
-            type: object # Конкретные поля неизвестны
-            properties:
-              # Примерные поля на основе getOrderPositionsReportByDate
-              PIN: { type: string }
-              BRAND: { type: string }
-              NAME: { type: string }
-              KWMENG: { type: number }
-              PRICE: { type: number }
-              # ... другие поля из таблицы DATA
-      # required: # Неизвестно
+*   **Базовый URL:** `http://ws.armtek.ru` (или другой региональный)
+*   **Аутентификация:** Basic Authentication (логин/пароль)
+*   **Формат ответа:** Управляется query-параметром `format` (`json` или `xml`, по умолчанию `json`).
+*   **Базовая структура ответа:**
+    *   `STATUS` (integer): HTTP статус код.
+    *   `MESSAGES` (array): Массив сообщений (`TYPE`, `TEXT`, `DATE`).
+    *   `RESP` (object/array/null): Тело ответа, специфичное для метода.
 
-    # Схемы для конкретных отчетов (если нужны специфичные поля)
-    OrderReportRequest:
-      allOf:
-        - $ref: '#/components/schemas/ReportRequestBase'
-        # Дополнительные поля, если есть
+---
 
-    OrderReportResponse:
-      allOf:
-        - $ref: '#/components/schemas/ReportResponseBase'
-        # Дополнительные поля, если есть
+## 1. Метод `getOrderReportByDate`
 
-    OrderPositionsReportRequest:
-      allOf:
-        - $ref: '#/components/schemas/ReportRequestBase'
-        # Дополнительные поля, если есть
+*   **Назначение:** Получение отчета по заказам (заголовкам) за интервал времени.
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_reports/getOrderReportByDate`
+*   **Параметры запроса (Body - JSON или form-urlencoded):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `SDLDATE` (string, **обязательный**): Дата начала периода (формат `YYYYMMDD`).
+    *   `EDLDATE` (string, **обязательный**): Дата окончания периода (формат `YYYYMMDD`).
+    *   `TYPEZK_SALE` (string, *необязательный*, '0' или '1'): Включить заказы продаж (по умолчанию `1` - да).
+    *   `TYPEZK_RETN` (string, *необязательный*, '0' или '1'): Включить возвраты и количественные разницы (по умолчанию `1` - да).
+    *   `KURR_LOGIN` (string, *необязательный*, '0' или '1'): Фильтровать заказы по текущему логину (по умолчанию `0` - нет).
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `DATA` (array): Массив объектов с данными по заголовкам заказов. Поля аналогичны `HEADER` из ответа `getOrder` сервиса `/ws_order`:
+        *   `ORDER` (string): Номер заказа Armtek.
+        *   `ORDER_TYPE` (string): Тип заказа.
+        *   `ORDER_DATE` (string): Дата создания заказа (YYYYMMDD).
+        *   `ORDER_TIME` (string): Время создания заказа (HHMMSS).
+        *   `ORDER_STATUS` (string): Статус заказа.
+        *   `KUNRG` (string): Номер покупателя.
+        *   `KUNRG_TXT` (string): Наименование покупателя.
+        *   `KUNWE` (string): Номер грузополучателя.
+        *   `KUNWE_TXT` (string): Наименование грузополучателя.
+        *   `KUNNR_ZA` (string): Номер адреса доставки/пункта выдачи.
+        *   `ADDRZA` (string): Адрес доставки (текст).
+        *   `PARNRAP` (string): Код создателя заказа.
+        *   `NAMEAP` (string): Наименование создателя заказа.
+        *   `BSTKD` (string): Номер заказа клиента.
+        *   `KETDT` (string): Желаемая дата поставки (YYYYMMDD).
+        *   `INCOTERMS` (string): Признак самовывоза (`1` или `0`).
+        *   `DELIVERY_ADDRESS` (string): Адрес доставки (текст).
+        *   `DELIVERY_INTERVAL` (string): Интервал доставки (текст).
+        *   `DELIVERY_METHOD` (string): Способ доставки (текст).
+        *   `CONTACT_PERSON` (string): Контактное лицо (текст).
+        *   `CONTACT_PHONE` (string): Телефон контактного лица (текст).
+        *   `BACKORDER` (string): Признак разрешения довоза (`1` или `0`).
+        *   `SUBSTITUTION` (string): Признак разрешения замен (`1` или `0`).
+        *   `SUMMA` (number/string): Общая сумма заказа.
+        *   `CURRENCY` (string): Валюта заказа.
+        *   *...и другие поля заголовка заказа.*
+    *   `INF` (array): Массив с суммарной информацией по выборке.
+        *   `SUM` (string/number): Общая сумма по заказам в выборке.
+        *   `CURRENCY` (string): Валюта.
+        *   `NUM` (string/integer): Количество уникальных номеров заказов в выборке.
 
-    OrderPositionsReportResponse:
-      allOf:
-        - $ref: '#/components/schemas/ReportResponseBase'
-        # Дополнительные поля, если есть
+---
 
-    OrderPositionsReportRequestV2:
-      allOf:
-        - $ref: '#/components/schemas/ReportRequestBase'
-        # Дополнительные поля для V2, если есть
+## 2. Метод `getOrderPositionsReportByDate`
 
-    OrderPositionsReportResponseV2:
-      allOf:
-        - $ref: '#/components/schemas/ReportResponseBase'
-        # Дополнительные поля для V2, если есть
+*   **Назначение:** Получение отчета по позициям заказов за интервал времени.
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_reports/getOrderPositionsReportByDate`
+*   **Параметры запроса (Body - JSON или form-urlencoded):** Аналогичны `getOrderReportByDate`.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `DATA` (array): Массив объектов с данными по позициям заказов. Поля аналогичны `ITEMS` из ответа `getOrder` сервиса `/ws_order`:
+        *   `ORDER` (string): Номер заказа Armtek.
+        *   `POSNR` (string): Номер позиции.
+        *   `PIN` (string): Артикул.
+        *   `BRAND` (string): Бренд.
+        *   `NAME` (string): Наименование.
+        *   `KWMENG` (number/string): Количество заказанное.
+        *   `KWMENG_CONF` (number/string): Количество подтвержденное.
+        *   `PRICE` (number/string): Цена за единицу.
+        *   `SUMMA` (number/string): Сумма по позиции.
+        *   `NOTE` (string): Комментарий к позиции.
+        *   `STATUS` (string): Статус позиции.
+        *   `STATUS_DATE` (string): Дата статуса позиции (YYYYMMDD).
+        *   `STATUS_TIME` (string): Время статуса позиции (HHMMSS).
+        *   `DELIVERY_DATE` (string): Ожидаемая дата поставки (YYYYMMDD).
+        *   `DELIVERY_TIME` (string): Ожидаемое время поставки (HHMMSS).
+        *   `KEYZAK` (string): Код склада Armtek.
+        *   `ARTSKU` (string): Код материала Armtek (MATNR).
+        *   `PRICEMAX` (string): Максимальная цена.
+        *   `DATEMAX` (string): Максимальная дата поставки (YYYYMMDD).
+        *   `VBELN` (string): Номер документа отгрузки (если есть).
+        *   `POSNR_VL` (string): Номер позиции в документе отгрузки.
+        *   `VBELN_VF` (string): Номер документа фактуры (если есть).
+        *   `POSNR_VF` (string): Номер позиции в документе фактуры.
+        *   `ABGRU` (string): Причина отказа.
+        *   `ABGRU_TXT` (string): Описание причины отказа.
+        *   *...и другие поля позиции заказа.*
+    *   `INF` (array): Массив с суммарной информацией по выборке (аналогично `getOrderReportByDate`).
 
-paths:
-  /ws_invoice/getInvoice:
-    # ... existing getInvoice path ...
-  /ws_invoice/createReturnInvoice:
-    # ... existing createReturnInvoice path ...
-  /ws_order/createOrder:
-    # ... existing createOrder path ...
-  /ws_order/createTestOrder:
-    # ... existing createTestOrder path ...
-  /ws_order/getOrder:
-    # ... existing getOrder path ...
-  /ws_order/getOrder2:
-    # ... existing getOrder2 path ...
-  /ws_order/getRefund:
-    # ... existing getRefund path ...
-  /ws_order/editOrder:
-    # ... existing editOrder path ...
-  /ws_ping/index:
-    # ... existing ping path ...
+---
 
-  # --- Пути для Отчетов ---
-  /ws_reports/getOrderReportByDate:
-    post:
-      summary: Отчет по заказам за интервал времени
-      description: Получает отчет по заказам за указанный интервал времени и с учетом других фильтров.
-      tags: [Reporting, Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/OrderReportRequest'
-          # application/x-www-form-urlencoded: # Возможен и такой вариант
-          #   schema:
-          #     $ref: '#/components/schemas/OrderReportRequest'
-      responses:
-        '200':
-          description: Данные отчета по заказам
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderReportResponse' # Структура DATA неизвестна
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+## 3. Метод `getOrderPositionsReportByDate2`
 
-  /ws_reports/getOrderPositionsReportByDate:
-    post:
-      summary: Отчет по заказам в разрезе позиций за интервал времени
-      description: Получает отчет по позициям заказов за указанный интервал времени и с учетом других фильтров.
-      tags: [Reporting, Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderPositionsReportRequest'
-      responses:
-        '200':
-          description: Данные отчета по позициям заказов
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderPositionsReportResponse' # Структура DATA неизвестна
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+*   **Назначение:** Получение отчета по позициям заказов за интервал времени (версия 2).
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_reports/getOrderPositionsReportByDate2`
+*   **Параметры запроса (Body - JSON или form-urlencoded):** Аналогичны `getOrderReportByDate`.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `DATA` (array): Массив объектов с данными по позициям заказов. Поля аналогичны `getOrderPositionsReportByDate`, возможно, с добавлением поля `STATCRED` (Блокировано по кредиту).
+        *   *...все поля из `getOrderPositionsReportByDate`...*
+        *   `STATCRED` (string): Статус блокировки по кредиту.
+    *   `INF` (array): Массив с суммарной информацией по выборке (аналогично `getOrderReportByDate`).
 
-  /ws_reports/getOrderPositionsReportByDate2:
-    post:
-      summary: Отчет по заказам в разрезе позиций за интервал времени (ver. 2)
-      description: Получает отчет по позициям заказов за указанный интервал времени (версия 2). Параметры запроса аналогичны первой версии.
-      tags: [Reporting, Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderPositionsReportRequestV2' # Используем V2 схему запроса
-      responses:
-        '200':
-          description: Данные отчета по позициям заказов (версия 2)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderPositionsReportResponseV2' # Используем V2 схему ответа
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  # --- Остальные пути (Search, User) остаются как были ---
-  /search:
-    # ... existing search path ...
-  /user/settings:
-    # ... existing user settings paths ...
-
-tags:
-  - name: Invoices
-    description: Сервисы, связанные с фактурами и возвратами
-  - name: Orders
-    description: Сервисы, связанные с заказами
-  - name: System
-    description: Сервисы состояния и статуса системы
-  - name: Reporting
-    description: Сервисы, связанные с отчетностью
-  - name: Testing
-    description: Сервисы для тестирования
-  # ... existing tags ...
-```
-
-**Основные изменения:**
-
-1.  **Добавлены пути:** `/ws_reports/getOrderReportByDate`, `/ws_reports/getOrderPositionsReportByDate`, `/ws_reports/getOrderPositionsReportByDate2`. Все используют метод POST.
-2.  **Добавлены схемы запросов:** Создана базовая схема `ReportRequestBase` с общими параметрами (VKORG, KUNNR_RG, даты, фильтры). На ее основе созданы схемы для конкретных отчетов (`OrderReportRequest`, `OrderPositionsReportRequest`, `OrderPositionsReportRequestV2`), хотя в данном случае они не добавляют специфичных полей.
-3.  **Добавлены схемы ответов:** Создана базовая схема `ReportResponseBase`, которая включает массив `DATA`. Конкретная структура объектов внутри `DATA` неизвестна, поэтому она оставлена как `type: object`. На ее основе созданы схемы для конкретных ответов (`OrderReportResponse`, `OrderPositionsReportResponse`, `OrderPositionsReportResponseV2`).
-4.  **Описаны параметры запроса:** Для каждого пути указан `requestBody` со ссылкой на соответствующую схему запроса. Добавлен опциональный query-параметр `format`.
-5.  **Описаны ответы:** Добавлены ответы `200`, `400` и `default` со ссылками на соответствующие схемы.
-6.  **Обновлены теги:** Убедились, что используется тег `Reporting`.# filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\ArmtekRestApi.md
-# ...existing code...
-components:
-  securitySchemes:
-    basicAuth:
-      # ... existing basicAuth schema ...
-  schemas:
-    GenericError:
-      # ... existing GenericError schema ...
-    InvoiceDetailsResponse:
-      # ... existing InvoiceDetailsResponse schema ...
-    ReturnInvoicePositionInput:
-      # ... existing ReturnInvoicePositionInput schema ...
-    CreateReturnInvoiceRequest:
-      # ... existing CreateReturnInvoiceRequest schema ...
-    CreateReturnInvoiceResponse:
-      # ... existing CreateReturnInvoiceResponse schema ...
-    OrderItemInput:
-      # ... existing OrderItemInput schema ...
-    CreateOrderRequest:
-      # ... existing CreateOrderRequest schema ...
-    CreateOrderResponse:
-      # ... existing CreateOrderResponse schema ...
-    OrderDetailsResponse:
-      # ... existing OrderDetailsResponse schema ...
-    RefundDetailsResponse:
-      # ... existing RefundDetailsResponse schema ...
-    EditOrderItemInput:
-      # ... existing EditOrderItemInput schema ...
-    EditOrderRequest:
-      # ... existing EditOrderRequest schema ...
-    EditOrderResponse:
-      # ... existing EditOrderResponse schema ...
-    Order:
-      # ... existing Order schema ...
-    OrderPosition:
-      # ... existing OrderPosition schema ...
-    SearchResult:
-      # ... existing SearchResult schema ...
-    UserSetting:
-      # ... existing UserSetting schema ...
-    PingResponse:
-      # ... existing PingResponse schema ...
-
-    # --- Схемы для Отчетов ---
-    ReportRequestBase: # Базовая схема для запросов отчетов
-      type: object
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        KUNNR_RG:
-          type: string
-          maxLength: 10
-          description: Плательщик (номер клиента)
-        SCRDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Дата создания С (по умолчанию текущая)
-          example: '20170105'
-        ECRDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Дата создания ПО (по умолчанию текущая)
-          example: '20170105'
-        SDLDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Поставка товара С (Формат YYYYMMDD)
-          example: '20170105'
-        EDLDATE:
-          type: string
-          format: date # YYYYMMDD
-          description: Поставка товара ПО (Формат YYYYMMDD)
-          example: '20170105'
-        TYPEZK_SALE:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Включить заказы продаж (1 - да)
-        TYPEZK_RETN:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Включить возвраты и количественные разницы (1 - да)
-        KURR_LOGIN:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Фильтровать заказы по текущему логину (1 - да)
-      required: # Обязательные поля не указаны явно, предполагаем основные
-        - VKORG
-        - KUNNR_RG
-
-    ReportResponseBase: # Базовая схема для ответов отчетов (структура DATA неизвестна)
-      type: object
-      properties:
-        DATA:
-          type: array
-          description: Таблица результатов отчета
-          items:
-            type: object # Конкретные поля неизвестны
-            properties:
-              # Примерные поля на основе getOrderPositionsReportByDate
-              PIN: { type: string }
-              BRAND: { type: string }
-              NAME: { type: string }
-              KWMENG: { type: number }
-              PRICE: { type: number }
-              # ... другие поля из таблицы DATA
-      # required: # Неизвестно
-
-    # Схемы для конкретных отчетов (если нужны специфичные поля)
-    OrderReportRequest:
-      allOf:
-        - $ref: '#/components/schemas/ReportRequestBase'
-        # Дополнительные поля, если есть
-
-    OrderReportResponse:
-      allOf:
-        - $ref: '#/components/schemas/ReportResponseBase'
-        # Дополнительные поля, если есть
-
-    OrderPositionsReportRequest:
-      allOf:
-        - $ref: '#/components/schemas/ReportRequestBase'
-        # Дополнительные поля, если есть
-
-    OrderPositionsReportResponse:
-      allOf:
-        - $ref: '#/components/schemas/ReportResponseBase'
-        # Дополнительные поля, если есть
-
-    OrderPositionsReportRequestV2:
-      allOf:
-        - $ref: '#/components/schemas/ReportRequestBase'
-        # Дополнительные поля для V2, если есть
-
-    OrderPositionsReportResponseV2:
-      allOf:
-        - $ref: '#/components/schemas/ReportResponseBase'
-        # Дополнительные поля для V2, если есть
-
-paths:
-  /ws_invoice/getInvoice:
-    # ... existing getInvoice path ...
-  /ws_invoice/createReturnInvoice:
-    # ... existing createReturnInvoice path ...
-  /ws_order/createOrder:
-    # ... existing createOrder path ...
-  /ws_order/createTestOrder:
-    # ... existing createTestOrder path ...
-  /ws_order/getOrder:
-    # ... existing getOrder path ...
-  /ws_order/getOrder2:
-    # ... existing getOrder2 path ...
-  /ws_order/getRefund:
-    # ... existing getRefund path ...
-  /ws_order/editOrder:
-    # ... existing editOrder path ...
-  /ws_ping/index:
-    # ... existing ping path ...
-
-  # --- Пути для Отчетов ---
-  /ws_reports/getOrderReportByDate:
-    post:
-      summary: Отчет по заказам за интервал времени
-      description: Получает отчет по заказам за указанный интервал времени и с учетом других фильтров.
-      tags: [Reporting, Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/OrderReportRequest'
-          # application/x-www-form-urlencoded: # Возможен и такой вариант
-          #   schema:
-          #     $ref: '#/components/schemas/OrderReportRequest'
-      responses:
-        '200':
-          description: Данные отчета по заказам
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderReportResponse' # Структура DATA неизвестна
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  /ws_reports/getOrderPositionsReportByDate:
-    post:
-      summary: Отчет по заказам в разрезе позиций за интервал времени
-      description: Получает отчет по позициям заказов за указанный интервал времени и с учетом других фильтров.
-      tags: [Reporting, Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderPositionsReportRequest'
-      responses:
-        '200':
-          description: Данные отчета по позициям заказов
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderPositionsReportResponse' # Структура DATA неизвестна
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  /ws_reports/getOrderPositionsReportByDate2:
-    post:
-      summary: Отчет по заказам в разрезе позиций за интервал времени (ver. 2)
-      description: Получает отчет по позициям заказов за указанный интервал времени (версия 2). Параметры запроса аналогичны первой версии.
-      tags: [Reporting, Orders]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OrderPositionsReportRequestV2' # Используем V2 схему запроса
-      responses:
-        '200':
-          description: Данные отчета по позициям заказов (версия 2)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderPositionsReportResponseV2' # Используем V2 схему ответа
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  # --- Остальные пути (Search, User) остаются как были ---
-  /search:
-    # ... existing search path ...
-  /user/settings:
-    # ... existing user settings paths ...
-
-tags:
-  - name: Invoices
-    description: Сервисы, связанные с фактурами и возвратами
-  - name: Orders
-    description: Сервисы, связанные с заказами
-  - name: System
-    description: Сервисы состояния и статуса системы
-  - name: Reporting
-    description: Сервисы, связанные с отчетностью
-  - name: Testing
-    description: Сервисы для тестирования
-  # ... existing tags ...
-```
-
-**Основные изменения:**
-
-1.  **Добавлены пути:** `/ws_reports/getOrderReportByDate`, `/ws_reports/getOrderPositionsReportByDate`, `/ws_reports/getOrderPositionsReportByDate2`. Все используют метод POST.
-2.  **Добавлены схемы запросов:** Создана базовая схема `ReportRequestBase` с общими параметрами (VKORG, KUNNR_RG, даты, фильтры). На ее основе созданы схемы для конкретных отчетов (`OrderReportRequest`, `OrderPositionsReportRequest`, `OrderPositionsReportRequestV2`), хотя в данном случае они не добавляют специфичных полей.
-3.  **Добавлены схемы ответов:** Создана базовая схема `ReportResponseBase`, которая включает массив `DATA`. Конкретная структура объектов внутри `DATA` неизвестна, поэтому она оставлена как `type: object`. На ее основе созданы схемы для конкретных ответов (`OrderReportResponse`, `OrderPositionsReportResponse`, `OrderPositionsReportResponseV2`).
-4.  **Описаны параметры запроса:** Для каждого пути указан `requestBody` со ссылкой на соответствующую схему запроса. Добавлен опциональный query-параметр `format`.
-5.  **Описаны ответы:** Добавлены ответы `200`, `400` и `default` со ссылками на соответствующие схемы.
-6.  **Обновлены теги:** Убедились, что используется тег `Reporting`.
+---

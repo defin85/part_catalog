@@ -1,36 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart'; // Для сброса БД (оставим пока)
+import 'package:part_catalog/core/providers/core_providers.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/features/core/entity_core_data.dart';
 // --- Обновленные импорты ---
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
+import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
 import 'package:part_catalog/features/references/vehicles/services/car_service.dart'; // Содержит CarWithOwnerModel
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
-import 'package:part_catalog/features/references/clients/services/client_service.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
-import 'package:part_catalog/core/utils/logger_config.dart'; // Используем настроенный логгер
 import 'package:part_catalog/core/utils/log_messages.dart';
 import 'dart:async'; // Для Timer и Future
 import 'package:collection/collection.dart';
+// --- Импорт провайдеров ---
+import 'package:part_catalog/features/references/vehicles/providers/car_providers.dart';
+import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
+import 'package:uuid/uuid.dart'; // Для clientServiceProvider и appLoggerProvider
 
-class CarsScreen extends StatefulWidget {
+// Преобразуем в ConsumerStatefulWidget
+class CarsScreen extends ConsumerStatefulWidget {
   const CarsScreen({super.key});
 
   @override
-  State<CarsScreen> createState() => _CarsScreenState();
+  ConsumerState<CarsScreen> createState() => _CarsScreenState();
 }
 
-class _CarsScreenState extends State<CarsScreen> {
-  final _carService = locator<CarService>();
-  final _clientService = locator<ClientService>();
-  // Используем настроенный логгер для автомобилей
-  final _logger = AppLoggers.vehiclesLogger;
-  bool _isDbError = false;
+// Преобразуем State в ConsumerState
+class _CarsScreenState extends ConsumerState<CarsScreen> {
+  // Удаляем прямые зависимости, будем использовать ref
+  // final _carService = locator<CarService>();
+  // final _clientService = locator<ClientService>();
+  late final Logger _logger; // Инициализируем в initState
+  // bool _isDbError = false; // Управляется через AsyncValue
 
-  // Фильтр по UUID клиента
-  String? _selectedClientUuid;
+  // Фильтр по UUID клиента (теперь управляется через Notifier)
+  // String? _selectedClientUuid;
 
   // Состояние для выбранного автомобиля (композитор) в десктоп режиме
   CarModelComposite? _selectedCar;
+
+  @override
+  void initState() {
+    super.initState();
+    _logger = ref.read(vehiclesLoggerProvider); // Инициализация логгера
+  }
 
   // Определяем, является ли устройство десктопом
   bool _isDesktop(BuildContext context) {
@@ -48,51 +63,29 @@ class _CarsScreenState extends State<CarsScreen> {
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
+    // Получаем текущий фильтр из Notifier'а (если нужно отображать его где-то)
+    // final currentFilterUuid = ref.watch(carsNotifierProvider.select((state) => state.value?.clientFilterUuid)); // Пример, если бы фильтр был в состоянии
 
-    if (_isDbError) {
-      // Логика отображения ошибки БД остается прежней
-      return Scaffold(
-        appBar: AppBar(title: Text(t.vehicles.screenTitle)),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(t.vehicles.databaseError),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-                  try {
-                    // Логика сброса БД (если она все еще нужна)
-                    // await locator<AppDatabase>().resetDatabase();
-                    // Пересоздаем зависимости, если нужно
-                    // setupLocator(locator<AppDatabase>());
-                    setState(() {
-                      _isDbError = false;
-                    });
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(content: Text(t.vehicles.resetDatabaseSuccess)),
-                    );
-                  } catch (e, s) {
-                    _logger.e(LogMessages.databaseResetError,
-                        error: e, stackTrace: s);
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              '${LogMessages.databaseResetError}: ${e.toString()}')),
-                    );
-                  }
-                },
-                child: Text(t.vehicles.resetDatabase),
-              )
-            ],
-          ),
-        ),
-      );
-    }
+    // Получаем состояние списка автомобилей
+    final carsAsyncValue = ref.watch(carsNotifierProvider);
+
+    // Обработка ошибки БД перенесена в .when()
 
     final isDesktop = _isDesktop(context);
     final isLargeScreen = _isLargeScreen(context);
+
+    // Получаем текущий UUID фильтра для UI
+    // Мы не можем напрямую получить _clientFilterUuid из Notifier'а,
+    // поэтому будем хранить его локально в State для UI целей (Dropdown, иконка фильтра)
+    // или передавать его как параметр в build/провайдеры, если это возможно.
+    // Проще всего - читать его из Notifier'а при необходимости действий.
+    // Для отображения текущего значения в Dropdown/иконке - храним локально.
+    // Но лучше, если Notifier будет предоставлять это значение.
+    // Пока оставим локальное управление для UI фильтра.
+
+    // Получаем текущий UUID фильтра для UI через публичный геттер Notifier'а
+    String? currentClientFilterUuid =
+        ref.watch(carsNotifierProvider.notifier).currentClientFilterUuid;
 
     if (isDesktop && isLargeScreen) {
       // --- Десктопный макет (Row) ---
@@ -101,11 +94,14 @@ class _CarsScreenState extends State<CarsScreen> {
           title: Text(t.vehicles.screenTitle),
           actions: [
             // Кнопка сброса фильтра
-            if (_selectedClientUuid != null)
+            if (currentClientFilterUuid != null)
               IconButton(
                 icon: const Icon(Icons.filter_alt_off),
-                onPressed: () => setState(() => _selectedClientUuid = null),
-                tooltip: t.core.filterOff, // Используем ключ из core
+                onPressed: () {
+                  ref.read(carsNotifierProvider.notifier).setClientFilter(null);
+                  setState(() => _selectedCar = null); // Сброс деталей
+                },
+                tooltip: t.core.filterOff,
               ),
             // Кнопка добавления
             IconButton(
@@ -123,12 +119,13 @@ class _CarsScreenState extends State<CarsScreen> {
               child: Column(
                 children: [
                   // Виджет фильтра по клиентам
-                  _buildClientFilter(),
+                  _buildClientFilter(
+                      currentClientFilterUuid), // Передаем текущий фильтр
                   const Divider(),
                   // Список автомобилей
                   Expanded(
                     child: _buildCarsList(
-                      // Передаем выбранный UUID для подсветки
+                      carsAsyncValue: carsAsyncValue, // Передаем AsyncValue
                       selectedCarUuid: _selectedCar?.uuid,
                       onCarSelected: (car) {
                         setState(() {
@@ -148,7 +145,6 @@ class _CarsScreenState extends State<CarsScreen> {
                   ? Center(child: Text(t.vehicles.selectVehiclePrompt))
                   : Padding(
                       padding: const EdgeInsets.all(16.0),
-                      // Передаем выбранный композитор
                       child: _buildCarDetails(_selectedCar!),
                     ),
             ),
@@ -161,18 +157,20 @@ class _CarsScreenState extends State<CarsScreen> {
         appBar: AppBar(
           title: Text(t.vehicles.screenTitle),
           actions: [
-            // Кнопка фильтра (можно вынести в отдельный виджет или экран)
+            // Кнопка фильтра
             IconButton(
-              icon: Icon(_selectedClientUuid == null
+              icon: Icon(currentClientFilterUuid == null
                   ? Icons.filter_alt_outlined
                   : Icons.filter_alt),
-              onPressed: _showClientFilterDialog,
+              onPressed: () => _showClientFilterDialog(
+                  currentClientFilterUuid), // Передаем текущий фильтр
               tooltip: t.core.filter,
             ),
           ],
         ),
-        // Список автомобилей, при нажатии открывается редактирование
+        // Список автомобилей
         body: _buildCarsList(
+          carsAsyncValue: carsAsyncValue, // Передаем AsyncValue
           onCarSelected: (car) => _editCar(car),
         ),
         floatingActionButton: FloatingActionButton(
@@ -184,23 +182,19 @@ class _CarsScreenState extends State<CarsScreen> {
   }
 
   // --- Виджет фильтра по клиентам (для десктопа) ---
-  Widget _buildClientFilter() {
+  Widget _buildClientFilter(String? currentFilterUuid) {
     final t = Translations.of(context);
+    // Используем ref.watch для получения списка клиентов
+    final clientsAsyncValue = ref.watch(clientsForFilterProvider);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      // Используем FutureBuilder для однократной загрузки списка клиентов
-      child: FutureBuilder<List<ClientModelComposite>>(
-        future: _clientService.getAllClients(), // Получаем всех клиентов
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final clients = snapshot.data ?? [];
-          // Добавляем опцию "Все клиенты"
+      child: clientsAsyncValue.when(
+        data: (clients) {
           final items = [
             DropdownMenuItem<String?>(
               value: null,
-              child: Text(t.core.all), // Ключ для "Все"
+              child: Text(t.core.all),
             ),
             ...clients.map((client) => DropdownMenuItem<String?>(
                   value: client.uuid,
@@ -209,21 +203,37 @@ class _CarsScreenState extends State<CarsScreen> {
           ];
 
           return DropdownButtonFormField<String?>(
-            value: _selectedClientUuid,
+            value: currentFilterUuid, // Используем переданное значение
             decoration: InputDecoration(
-              labelText: t.clients.client, // Используем ключ из clients
+              labelText: t.clients.client,
               border: const OutlineInputBorder(),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
             items: items,
             onChanged: (value) {
+              // Вызываем метод Notifier'а для установки фильтра
+              ref.read(carsNotifierProvider.notifier).setClientFilter(value);
               setState(() {
-                _selectedClientUuid = value;
                 _selectedCar =
                     null; // Сбрасываем выбор машины при смене фильтра
               });
             },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) {
+          _logger.e("Error loading clients for filter",
+              error: error, stackTrace: stack);
+          // Можно показать сообщение об ошибке или пустой Dropdown
+          return DropdownButtonFormField<String?>(
+            decoration: InputDecoration(
+              labelText: t.clients.client,
+              border: const OutlineInputBorder(),
+              errorText: t.core.errorLoadingData(error: ''),
+            ),
+            items: const [],
+            onChanged: null,
           );
         },
       ),
@@ -231,48 +241,45 @@ class _CarsScreenState extends State<CarsScreen> {
   }
 
   // --- Диалог фильтра по клиентам (для мобильных) ---
-  Future<void> _showClientFilterDialog() async {
-    // Получаем t *до* await
+  Future<void> _showClientFilterDialog(String? currentFilterUuid) async {
     final t = Translations.of(context);
-    // Проверяем mounted *до* await, если планируем использовать context после него
-    if (!mounted) return;
+    // Получаем список клиентов через ref.read (однократно)
+    final clientsAsyncValue = await ref.read(clientsForFilterProvider.future);
+    // Обработка ошибки загрузки клиентов (если нужна)
+    // if (clientsAsyncValue is AsyncError) { ... }
 
-    final clients = await _clientService.getAllClients(); // Загружаем клиентов
+    final clients = clientsAsyncValue; // Предполагаем успешную загрузку
 
-    // Проверяем mounted *после* await, перед использованием context для showDialog
     if (!mounted) return;
 
     final String? result = await showDialog<String?>(
-      context: context, // context все еще нужен для showDialog
+      context: context,
       builder: (dialogContext) => AlertDialog(
-        // Используем новый context из builder
-        title: Text(t.core.filterByClient), // Используем сохраненный t
+        title: Text(t.core.filterByClient),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
             shrinkWrap: true,
             children: [
               ListTile(
-                title: Text(t.core.all), // Используем сохраненный t
+                title: Text(t.core.all),
                 leading: Radio<String?>(
                   value: null,
-                  groupValue: _selectedClientUuid,
-                  // Используем dialogContext для Navigator
+                  groupValue:
+                      currentFilterUuid, // Используем переданное значение
                   onChanged: (value) => Navigator.of(dialogContext).pop(value),
                 ),
-                // Используем dialogContext для Navigator
                 onTap: () => Navigator.of(dialogContext).pop(null),
               ),
               ...clients.map((client) => ListTile(
                     title: Text(client.displayName),
                     leading: Radio<String?>(
                       value: client.uuid,
-                      groupValue: _selectedClientUuid,
-                      // Используем dialogContext для Navigator
+                      groupValue:
+                          currentFilterUuid, // Используем переданное значение
                       onChanged: (value) =>
                           Navigator.of(dialogContext).pop(value),
                     ),
-                    // Используем dialogContext для Navigator
                     onTap: () => Navigator.of(dialogContext).pop(client.uuid),
                   )),
             ],
@@ -280,20 +287,18 @@ class _CarsScreenState extends State<CarsScreen> {
         ),
         actions: [
           TextButton(
-            // Используем dialogContext для Navigator
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(_selectedClientUuid),
-            child: Text(t.vehicles.cancel), // Используем сохраненный t
+            onPressed: () => Navigator.of(dialogContext).pop(
+                currentFilterUuid), // Возвращаем текущее значение при отмене
+            child: Text(t.vehicles.cancel),
           ),
         ],
       ),
     );
 
     // Применяем выбранный фильтр, если он изменился
-    // Проверка mounted здесь не обязательна, т.к. setState уже имеет встроенную проверку
-    if (result != _selectedClientUuid) {
+    if (result != currentFilterUuid) {
+      ref.read(carsNotifierProvider.notifier).setClientFilter(result);
       setState(() {
-        _selectedClientUuid = result;
         _selectedCar = null; // Сбрасываем выбор машины
       });
     }
@@ -301,58 +306,26 @@ class _CarsScreenState extends State<CarsScreen> {
 
   // --- Виджет для отображения списка автомобилей ---
   Widget _buildCarsList({
+    required AsyncValue<List<CarWithOwnerModel>>
+        carsAsyncValue, // Принимаем AsyncValue
     required Function(CarModelComposite) onCarSelected,
-    String? selectedCarUuid, // UUID для подсветки в десктопном режиме
+    String? selectedCarUuid,
   }) {
     final t = Translations.of(context);
     final isDesktop = _isDesktop(context);
 
-    // Используем StreamBuilder для получения CarWithOwnerModel
-    return StreamBuilder<List<CarWithOwnerModel>>(
-      // Получаем поток всех машин с владельцами
-      stream: _carService.watchCarsWithOwners(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          // Обработка ошибок остается прежней
-          if (snapshot.error.toString().contains('no such table')) {
-            _logger.e('${LogMessages.dbTableMissingError}: ${snapshot.error}',
-                error: snapshot.error, stackTrace: snapshot.stackTrace);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() {
-                  _isDbError = true;
-                });
-              }
-            });
-            return const SizedBox.shrink(); // Не показываем ошибку сразу
-          }
-          _logger.e(LogMessages.dataLoadingError,
-              error: snapshot.error, stackTrace: snapshot.stackTrace);
+    // Используем .when для обработки состояний AsyncValue
+    return carsAsyncValue.when(
+      data: (cars) {
+        // Фильтрация больше не нужна здесь, она в Notifier'е
+        if (cars.isEmpty) {
+          // Получаем текущий фильтр для текста
+          final currentFilter =
+              ref.read(carsNotifierProvider.notifier).currentClientFilterUuid;
           return Center(
-            child: Text(
-              t.core.errorLoadingData(error: snapshot.error.toString()),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          );
-        }
-
-        // Фильтруем список на клиенте, если выбран UUID клиента
-        final allCarsWithOwner = snapshot.data ?? [];
-        final filteredCars = _selectedClientUuid == null
-            ? allCarsWithOwner
-            : allCarsWithOwner
-                .where((cwo) => cwo.owner.uuid == _selectedClientUuid)
-                .toList();
-
-        if (filteredCars.isEmpty) {
-          return Center(
-            child: Text(_selectedClientUuid == null
+            child: Text(currentFilter == null
                 ? t.vehicles.emptyList
-                : t.vehicles.noCarsAvailable), // Разные тексты
+                : t.vehicles.noCarsAvailable),
           );
         }
 
@@ -366,29 +339,24 @@ class _CarsScreenState extends State<CarsScreen> {
                 DataColumn(label: Text(t.vehicles.model)),
                 DataColumn(label: Text(t.vehicles.owner)),
                 DataColumn(label: Text(t.vehicles.licensePlate)),
-                // DataColumn(label: Text(t.common.edit)), // Убрали колонку Edit
               ],
-              rows: filteredCars.map((carWithOwner) {
-                final car = carWithOwner.car; // CarModelComposite
-                final owner = carWithOwner.owner; // ClientModelComposite
+              rows: cars.map((carWithOwner) {
+                final car = carWithOwner.car;
+                final owner = carWithOwner.owner;
                 final isSelected = car.uuid == selectedCarUuid;
 
                 return DataRow(
                   selected: isSelected,
                   onSelectChanged: (selected) {
                     if (selected ?? false) {
-                      onCarSelected(car); // Передаем композитор машины
+                      onCarSelected(car);
                     }
                   },
                   cells: [
                     DataCell(Text(car.make)),
                     DataCell(Text(car.model)),
-                    DataCell(Text(owner.displayName)), // Имя владельца
-                    DataCell(Text(car.displayLicensePlate)), // Гос. номер
-                    // DataCell(IconButton( // Убрали кнопку Edit
-                    //   icon: Icon(Icons.edit, size: 18),
-                    //   onPressed: () => onCarSelected(car),
-                    // )),
+                    DataCell(Text(owner.displayName)),
+                    DataCell(Text(car.displayLicensePlate)),
                   ],
                 );
               }).toList(),
@@ -397,71 +365,31 @@ class _CarsScreenState extends State<CarsScreen> {
         } else {
           // --- ListView для мобильных ---
           return ListView.builder(
-            itemCount: filteredCars.length,
+            itemCount: cars.length,
             itemBuilder: (context, index) {
-              final carWithOwner = filteredCars[index];
+              final carWithOwner = cars[index];
               final car = carWithOwner.car;
               final owner = carWithOwner.owner;
 
               return Dismissible(
-                key: Key(car.uuid), // Используем UUID
+                key: Key(car.uuid),
                 background: Container(
-                  color: Colors.red,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error, // Цвет фона ошибки из темы
                   alignment: Alignment.centerRight,
                   padding: const EdgeInsets.only(right: 20.0),
-                  child: const Icon(Icons.delete, color: Colors.white),
+                  child: Icon(
+                    Icons.delete,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onError, // Цвет иконки на фоне ошибки
+                  ),
                 ),
                 direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) async {
-                  return await _confirmDelete(car); // Передаем композитор
-                },
-                onDismissed: (direction) async {
-                  // Сохраняем ScaffoldMessengerState
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-                  try {
-                    await _carService.deleteCar(car.uuid);
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                        content: Text(t.vehicles.deleted(
-                            make: car.make, model: car.model)), // Локализация
-                        action: SnackBarAction(
-                          label: t.common.undo, // Локализация
-                          onPressed: () async {
-                            // Сохраняем ScaffoldMessengerState для undo
-                            final undoMessenger = ScaffoldMessenger.of(context);
-                            try {
-                              await _carService.restoreCar(car.uuid);
-                            } catch (e, s) {
-                              _logger.e(
-                                  LogMessages.carRestoreError
-                                      .replaceAll('{uuid}', car.uuid),
-                                  error: e,
-                                  stackTrace: s);
-                              undoMessenger.showSnackBar(
-                                SnackBar(
-                                    content: Text(t.vehicles.restoreError(
-                                        error: e
-                                            .toString()))), // Используем ключ с параметром
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                    );
-                  } catch (e, s) {
-                    _logger.e(
-                        LogMessages.carDeleteError
-                            .replaceAll('{uuid}', car.uuid),
-                        error: e,
-                        stackTrace: s);
-                    scaffoldMessenger.showSnackBar(
-                      SnackBar(
-                          content: Text(t.vehicles.deleteError(
-                              error: e
-                                  .toString()))), // Используем ключ с параметром
-                    );
-                  }
-                },
+                confirmDismiss: (direction) => _confirmDelete(car),
+                onDismissed: (direction) =>
+                    _deleteCar(car), // Вызываем новый метод
                 child: Card(
                   margin: const EdgeInsets.symmetric(
                       horizontal: 8.0, vertical: 4.0),
@@ -471,7 +399,7 @@ class _CarsScreenState extends State<CarsScreen> {
                         '${t.vehicles.owner}: ${owner.displayName}\n${t.vehicles.vin}: ${car.vin}'),
                     isThreeLine: true,
                     trailing: Text(car.displayLicensePlate),
-                    onTap: () => onCarSelected(car), // Передаем композитор
+                    onTap: () => onCarSelected(car),
                   ),
                 ),
               );
@@ -479,12 +407,82 @@ class _CarsScreenState extends State<CarsScreen> {
           );
         }
       },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stackTrace) {
+        // Обработка ошибки БД
+        if (error.toString().contains('no such table')) {
+          _logger.e('${LogMessages.dbTableMissingError}: $error',
+              error: error, stackTrace: stackTrace);
+          // Показываем UI для сброса БД
+          return _buildDbErrorUI(t); // Выносим в отдельный метод
+        }
+        _logger.e(LogMessages.dataLoadingError,
+            error: error, stackTrace: stackTrace);
+        return Center(
+          child: Text(
+            t.core.errorLoadingData(error: error.toString()),
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        );
+      },
+    );
+  }
+
+  // --- UI для ошибки БД ---
+  Widget _buildDbErrorUI(Translations t) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(t.vehicles.databaseError),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () async {
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              try {
+                // Логика сброса БД
+                final db = locator<AppDatabase>();
+                await db.resetDatabase();
+                // Пересоздаем зависимости
+                locator.unregister<AppDatabase>();
+                locator.registerSingleton<AppDatabase>(AppDatabase());
+                // Инвалидируем провайдеры Riverpod
+                ref.invalidate(carServiceProvider);
+                ref.invalidate(
+                    clientServiceProvider); // Если CarService от него зависит
+                ref.invalidate(carsNotifierProvider);
+                ref.invalidate(clientsForFilterProvider);
+                // Не нужно делать setState, Riverpod обновит UI
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text(t.vehicles.resetDatabaseSuccess)),
+                  );
+                }
+              } catch (e, s) {
+                _logger.e(LogMessages.databaseResetError,
+                    error: e, stackTrace: s);
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            '${LogMessages.databaseResetError}: ${e.toString()}')),
+                  );
+                }
+              }
+            },
+            child: Text(t.vehicles.resetDatabase),
+          )
+        ],
+      ),
     );
   }
 
   // --- Виджет для отображения детальной информации об автомобиле ---
   Widget _buildCarDetails(CarModelComposite car) {
     final t = Translations.of(context);
+    // Получаем клиента через ref.watch или FutureProvider
+    final clientAsyncValue = ref.watch(
+        clientProvider(car.clientId)); // Предполагаем наличие clientProvider
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,11 +491,10 @@ class _CarsScreenState extends State<CarsScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              // Обернули Text в Expanded
               child: Text(
-                car.displayName, // Используем displayName из композитора
+                car.displayName,
                 style: Theme.of(context).textTheme.headlineSmall,
-                overflow: TextOverflow.ellipsis, // Добавили overflow
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             Row(
@@ -512,31 +509,19 @@ class _CarsScreenState extends State<CarsScreen> {
                   icon: const Icon(Icons.delete),
                   tooltip: t.common.delete,
                   onPressed: () async {
+                    // Сохраняем context-зависимые значения ДО await
+                    final bool isDesktop = _isDesktop(context);
+                    final bool isLarge = _isLargeScreen(context);
+
+                    // Асинхронный вызов
                     final confirmed = await _confirmDelete(car);
+
+                    // Проверяем mounted ПОСЛЕ await
                     if (confirmed && mounted) {
-                      // Сохраняем ScaffoldMessengerState
-                      final scaffoldMessenger = ScaffoldMessenger.of(context);
-                      try {
-                        await _carService.deleteCar(car.uuid);
-                        setState(() {
-                          _selectedCar = null; // Убираем детали после удаления
-                        });
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                              content: Text(t.vehicles
-                                  .deleted(make: car.make, model: car.model))),
-                        );
-                      } catch (e, s) {
-                        _logger.e(
-                            LogMessages.carDeleteError
-                                .replaceAll('{uuid}', car.uuid),
-                            error: e,
-                            stackTrace: s);
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  t.vehicles.deleteError(error: e.toString()))),
-                        );
+                      _deleteCar(car); // Вызываем метод удаления
+                      // Сбрасываем детали в десктопном режиме, используя сохраненные значения
+                      if (isDesktop && isLarge) {
+                        setState(() => _selectedCar = null);
                       }
                     }
                   },
@@ -546,86 +531,66 @@ class _CarsScreenState extends State<CarsScreen> {
           ],
         ),
         const Divider(),
-        // Используем FutureBuilder для загрузки владельца по clientId из car
-        FutureBuilder<ClientModelComposite?>(
-          future: _clientService.getClientByUuid(car.clientId),
-          builder: (context, snapshot) {
-            final client = snapshot.data;
-            return ListTile(
-              title: Text(t.vehicles.owner),
-              subtitle: Text(snapshot.connectionState == ConnectionState.waiting
-                  ? t.common.loading
-                  : client?.displayName ?? t.clients.clientNotFound),
-              leading: const Icon(Icons.person),
-            );
-          },
+        // Используем .when для отображения клиента
+        clientAsyncValue.when(
+            data: (client) => ListTile(
+                  title: Text(t.vehicles.owner),
+                  subtitle:
+                      Text(client?.displayName ?? t.clients.clientNotFound),
+                  leading: const Icon(Icons.person),
+                ),
+            loading: () => ListTile(
+                  title: Text(t.vehicles.owner),
+                  subtitle: Text(t.common.loading),
+                  leading: const Icon(Icons.person),
+                ),
+            error: (e, s) {
+              _logger.e('Error loading client details for car ${car.uuid}',
+                  error: e, stackTrace: s);
+              return ListTile(
+                title: Text(t.vehicles.owner),
+                subtitle: Text(t.core.errorLoadingData(
+                    error: e.toString())), // Показываем ошибку
+                leading:
+                    const Icon(Icons.error, color: Colors.red), // Иконка ошибки
+              );
+            }),
+        ListTile(
+          title: Text(t.vehicles.vin),
+          subtitle: Text(car.vin),
+          leading: const Icon(Icons.confirmation_number),
         ),
-        if (car.year > 0)
-          ListTile(
-            title: Text(t.vehicles.year),
-            subtitle: Text(car.year.toString()),
-            leading: const Icon(Icons.date_range),
-          ),
-        if (car.vin.isNotEmpty)
-          ListTile(
-            title: Text(t.vehicles.vin),
-            subtitle: Text(car.vin),
-            leading: const Icon(Icons.pin),
-            onTap: () {
-              // Копирование VIN в буфер обмена
-              // Clipboard.setData(ClipboardData(text: car.vin));
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   SnackBar(content: Text(t.core.copiedToClipboard(value: 'VIN'))),
-              // );
-            },
-          ),
-        if (car.licensePlate?.isNotEmpty == true)
-          ListTile(
-            title: Text(t.vehicles.licensePlate),
-            subtitle: Text(car.licensePlate!),
-            leading: const Icon(Icons.app_registration),
-          ),
-        if (car.additionalInfo?.isNotEmpty == true)
+        ListTile(
+          title: Text(t.vehicles.licensePlate),
+          subtitle: Text(car.displayLicensePlate),
+          leading: const Icon(Icons.badge),
+        ),
+        ListTile(
+          title: Text(t.vehicles.year),
+          subtitle: Text(car.year.toString()),
+          leading: const Icon(Icons.calendar_today),
+        ),
+        // Используем collection if
+        if (car.additionalInfo?.isNotEmpty ??
+            false) // Проверка на null и пустоту
           ListTile(
             title: Text(t.vehicles.additionalInfo),
-            subtitle: Text(car.additionalInfo!),
+            subtitle:
+                Text(car.additionalInfo!), // Безопасно из-за проверки выше
             leading: const Icon(Icons.info_outline),
-          ),
+            isThreeLine: true,
+          ), // Или ничего не отображаем, если null или пусто
         const Divider(),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(t.vehicles.carHistory,
               style: Theme.of(context).textTheme.titleMedium),
         ),
-        // --- Интеграция со списком заказ-нарядов ---
         Expanded(
           child: Center(
             child: Text(t.vehicles.orderHistoryComingSoon),
           ),
-          // Пример интеграции (потребует OrderService и OrderListWidget)
-          // StreamBuilder<List<OrderModelComposite>>(
-          //   stream: locator<OrderService>().watchOrdersByCar(car.uuid),
-          //   builder: (context, snapshot) {
-          //     if (snapshot.connectionState == ConnectionState.waiting) {
-          //       return Center(child: CircularProgressIndicator());
-          //     }
-          //     if (snapshot.hasError) {
-          //       return Center(child: Text('Error loading orders'));
-          //     }
-          //     final orders = snapshot.data ?? [];
-          //     if (orders.isEmpty) {
-          //       return Center(child: Text('No orders found for this vehicle'));
-          //     }
-          //     // return OrderListWidget(orders: orders); // Ваш виджет списка заказов
-          //     return ListView.builder( // Заглушка
-          //       itemCount: orders.length,
-          //       itemBuilder: (context, index) => ListTile(
-          //         title: Text('Order ${orders[index].code}'),
-          //         subtitle: Text(orders[index].status.name), // Пример
-          //       ),
-          //     );
-          //   },
-          // ),
+          // TODO: ... интеграция с заказ-нарядами ...
         ),
       ],
     );
@@ -633,394 +598,541 @@ class _CarsScreenState extends State<CarsScreen> {
 
   // --- Метод для подтверждения удаления автомобиля ---
   Future<bool> _confirmDelete(CarModelComposite car) async {
+    // Получаем BuildContext, так как метод вызывается из build-контекста
+    final currentContext = context;
+    final t = Translations.of(currentContext); // Используем currentContext
+
+    // Показываем диалог подтверждения
+    final confirmed = await showDialog<bool>(
+      context: currentContext, // Передаем context
+      builder: (BuildContext dialogContext) {
+        // Передаем builder
+        return AlertDialog(
+          title: Text(t.vehicles.deleteConfirmTitle),
+          content: Text(t.vehicles.deleteConfirmMessage(
+            make: car.make,
+            model: car.model,
+            vin: car.vin,
+          )), // Используем ключ confirmDeleteMessage
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false), // Отмена
+              child: Text(t.vehicles.cancel),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(true), // Подтверждение
+              child: Text(t.common.delete),
+            ),
+          ],
+        );
+      },
+    );
+    // Возвращаем результат (true, если подтверждено, false или null, если отменено)
+    return confirmed ?? false;
+  }
+
+  // --- Метод удаления (вызывается из onDismissed и _buildCarDetails) ---
+  Future<void> _deleteCar(CarModelComposite car) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = Translations.of(context);
-    return await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(t.vehicles.deleteConfirmTitle),
-              content: Text(t.vehicles
-                  .deleteConfirmMessage(make: car.make, model: car.model)),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(t.vehicles.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(t.common.delete),
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
+    final carUuid = car.uuid; // Сохраняем для Snackbar
+    final carName = '${car.make} ${car.model}';
+
+    try {
+      // Вызываем метод Notifier'а
+      await ref.read(carsNotifierProvider.notifier).deleteCar(carUuid);
+
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(t.vehicles.deleted(make: car.make, model: car.model)),
+            action: SnackBarAction(
+              label: t.common.undo,
+              onPressed: () =>
+                  _restoreCar(carUuid, carName), // Передаем UUID и имя
+            ),
+          ),
+        );
+      }
+    } catch (e, s) {
+      _logger.e(LogMessages.carDeleteError.replaceAll('{uuid}', carUuid),
+          error: e, stackTrace: s);
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(t.vehicles.deleteError(error: e.toString()))),
+        );
+      }
+    }
+  }
+
+  // --- Метод восстановления ---
+  Future<void> _restoreCar(String carUuid, String carName) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final t = Translations.of(context);
+    try {
+      await ref.read(carsNotifierProvider.notifier).restoreCar(carUuid);
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+              content: Text(
+                  t.vehicles.restored(name: carName))), // Нужен ключ restored
+        );
+      }
+    } catch (e, s) {
+      _logger.e(LogMessages.carRestoreError.replaceAll('{uuid}', carUuid),
+          error: e, stackTrace: s);
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text(t.vehicles.restoreError(error: e.toString()))),
+        );
+      }
+    }
   }
 
   // --- Методы добавления/редактирования ---
   Future<void> _addCar() async {
-    // Показываем диалог, получаем новый композитор
-    final newCarComposite = await _showCarDialog(context);
+    final t = Translations.of(context);
+    // Передаем ref в диалог
+    final newCarComposite = await _showCarDialog(context, ref: ref);
     if (newCarComposite != null && mounted) {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       try {
-        await _carService.addCar(newCarComposite);
-        // Опционально: показать сообщение об успехе
+        // Вызываем метод Notifier'а
+        await ref.read(carsNotifierProvider.notifier).addCar(newCarComposite);
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(SnackBar(
+              content: Text(t.vehicles.added(
+                  name: newCarComposite.displayName)))); // Нужен ключ added
+        }
       } catch (e, stackTrace) {
         _logger.e(LogMessages.carAddError, error: e, stackTrace: stackTrace);
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-              content: Text(
-                  t.vehicles.addError(error: e.toString()))), // Локализация
-        );
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text(t.vehicles.addError(error: e.toString()))),
+          );
+        }
       }
     }
   }
 
   Future<void> _editCar(CarModelComposite car) async {
-    // Показываем диалог с текущим композитором
-    final updatedCarComposite = await _showCarDialog(context, car: car);
+    final t = Translations.of(context);
+    // Передаем ref и текущий композитор в диалог
+    final updatedCarComposite =
+        await _showCarDialog(context, car: car, ref: ref);
     if (updatedCarComposite != null && mounted) {
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       try {
-        await _carService.updateCar(updatedCarComposite);
+        // Вызываем метод Notifier'а
+        await ref
+            .read(carsNotifierProvider.notifier)
+            .updateCar(updatedCarComposite);
         // Обновляем выбранный автомобиль в десктопном режиме
         if (_selectedCar != null &&
             _selectedCar!.uuid == updatedCarComposite.uuid) {
           setState(() => _selectedCar = updatedCarComposite);
         }
-        // Опционально: показать сообщение об успехе
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(SnackBar(
+              content: Text(t.vehicles.updated(
+                  name:
+                      updatedCarComposite.displayName)))); // Нужен ключ updated
+        }
       } catch (e, stackTrace) {
         _logger.e(LogMessages.carUpdateError.replaceAll('{uuid}', car.uuid),
             error: e, stackTrace: stackTrace);
-        scaffoldMessenger.showSnackBar(
-          SnackBar(
-              content: Text(
-                  t.vehicles.updateError(error: e.toString()))), // Локализация
-        );
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+                content: Text(t.vehicles.updateError(error: e.toString()))),
+          );
+        }
       }
     }
   }
 
   // --- Диалог добавления/редактирования автомобиля ---
+  // Добавляем required WidgetRef ref
   Future<CarModelComposite?> _showCarDialog(BuildContext context,
-      {CarModelComposite? car}) async {
+      {CarModelComposite? car, required WidgetRef ref}) async {
     final t = Translations.of(context);
     final bool isEditing = car != null;
 
     // Контроллеры
     final makeController = TextEditingController(text: car?.make ?? '');
-    final modelController = TextEditingController(text: car?.model ?? '');
-    final yearController = TextEditingController(
-      // Сначала проверяем car, затем car.year
-      text: (car != null && car.year > 0) ? car.year.toString() : '',
-    );
+    final modelController =
+        TextEditingController(text: car?.model ?? ''); // Добавлено
+    final yearController =
+        TextEditingController(text: car?.year.toString() ?? ''); // Добавлено
     final vinController = TextEditingController(text: car?.vin ?? '');
     final licensePlateController =
-        TextEditingController(text: car?.licensePlate ?? '');
+        TextEditingController(text: car?.licensePlate ?? ''); // Добавлено
     final additionalInfoController =
-        TextEditingController(text: car?.additionalInfo ?? '');
+        TextEditingController(text: car?.additionalInfo ?? ''); // Добавлено
 
     // Состояние диалога
     ClientModelComposite? selectedClient;
     String? selectedClientUuid = car?.clientId;
     List<ClientModelComposite> clients = [];
     bool isLoading = true;
-    String? vinError; // Ошибка для VIN
+    String? vinError;
+    bool vinCheckLoading = false; // Для индикатора проверки VIN
 
     final formKey = GlobalKey<FormState>();
+    Timer? vinDebounce; // Дебаунс для проверки VIN
 
     // Функция для валидации VIN на уникальность (асинхронная)
+    // Используем isVinUniqueProvider
     Future<void> validateVinUniqueness(String vin) async {
       if (vin.length != 17) {
-        // Проверка длины остается синхронной
         setState(() {
+          // setState из StatefulBuilder
           vinError = t.vehicles.vinRequirement;
+          vinCheckLoading = false;
         });
         return;
       }
-      // TODO: Добавить метод в CarService/CarDao для проверки уникальности VIN
-      // bool isUnique = await _carService.isVinUnique(vin, excludeUuid: car?.uuid);
-      bool isUnique = true; // Заглушка
+
       setState(() {
-        vinError = isUnique ? null : t.vehicles.vinNotUnique; // Новый ключ
+        // setState из StatefulBuilder
+        vinCheckLoading = true;
+        vinError = null; // Сбрасываем предыдущую ошибку
       });
+
+      try {
+        // Используем ref для доступа к провайдеру
+        final isUnique = await ref.read(isVinUniqueProvider(
+          vin: vin,
+          excludeUuid: car?.uuid,
+        ).future);
+
+        // Проверяем mounted перед setStateDialog (хотя он внутри StatefulBuilder)
+        if (mounted) {
+          setState(() {
+            // setState из StatefulBuilder
+            vinError = isUnique ? null : t.vehicles.vinNotUnique;
+            vinCheckLoading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            // setState из StatefulBuilder
+            vinError = t.vehicles.vinCheckError; // Ключ для ошибки проверки
+            vinCheckLoading = false;
+          });
+        }
+        _logger.e('Error checking VIN uniqueness', error: e);
+      }
     }
 
     // Инициализация: загрузка клиентов и начальная валидация VIN
-    Future<void> initializeDialog() async {
-      // --- Получаем зависимые от контекста объекты ДО await ---
-      // Получаем Navigator и ScaffoldMessenger из контекста диалога,
-      // так как initializeDialog вызывается внутри builder диалога.
-      // Используем context, переданный в _showCarDialog, т.к. он стабилен
-      // на момент вызова initializeDialog (хотя сам диалог может быть закрыт).
+    Future<void> initializeDialog(StateSetter setStateDialog) async {
       final navigator = Navigator.of(context);
       final scaffoldMessenger = ScaffoldMessenger.of(context);
-      // t уже получен в _showCarDialog, передавать его не нужно, он доступен
 
       try {
-        clients = await _clientService.getAllClients();
+        // Получаем клиентов через ref
+        clients = await ref.read(clientsForFilterProvider.future);
         if (selectedClientUuid != null) {
-          // Используем firstWhereOrNull из пакета collection
           selectedClient =
               clients.firstWhereOrNull((c) => c.uuid == selectedClientUuid);
         }
         if (isEditing && vinController.text.isNotEmpty) {
-          await validateVinUniqueness(
-              vinController.text); // Валидация VIN при редактировании
+          // Вызываем валидацию через локальную функцию, которая использует setStateDialog
+          await validateVinUniqueness(vinController.text);
         }
       } catch (error, stackTrace) {
         _logger.e(LogMessages.dataLoadingError,
             error: error, stackTrace: stackTrace);
-        // --- Используем захваченные объекты ПОСЛЕ await ---
-        // Проверяем mounted для State виджета CarsScreen
         if (mounted) {
-          navigator.pop(); // Используем захваченный navigator
+          navigator.pop();
           scaffoldMessenger.showSnackBar(
-            // Используем захваченный scaffoldMessenger
             SnackBar(
-                content: Text(t.core.errorLoadingData(
-                    error:
-                        error.toString()))), // Используем t из внешней функции
+                content:
+                    Text(t.core.errorLoadingData(error: error.toString()))),
           );
         }
       } finally {
-        // Проверяем mounted для State виджета CarsScreen перед вызовом setState
+        // Используем setStateDialog для обновления состояния диалога
         if (mounted) {
-          // setState здесь безопасен, он принадлежит State диалога (StatefulBuilder)
-          // и будет работать, пока диалог открыт.
-          // Но если initializeDialog вызывается из _CarsScreenState,
-          // то проверка mounted относится к _CarsScreenState.
-          // В данном коде setState вызывается из StatefulBuilder диалога,
-          // поэтому проверка mounted относится к _CarsScreenState, что не совсем верно.
-          // Однако, если диалог закрыт, StatefulBuilder тоже уничтожен.
-          // Оставим setState как есть, т.к. он внутри StatefulBuilder.
-          // Если бы setState был напрямую в _CarsScreenState, проверка mounted была бы обязательна.
-          setState(() {
+          // Проверка mounted для _CarsScreenState
+          setStateDialog(() {
             isLoading = false;
           });
         }
       }
     }
 
+    // Очистка debounce таймера при закрытии диалога
+    void disposeDialog() {
+      vinDebounce?.cancel();
+    }
+
     return showDialog<CarModelComposite>(
       context: context,
-      barrierDismissible: false, // Запретить закрытие по тапу вне диалога
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            // Переименовали setState в setStateDialog для ясности
             // Вызываем инициализацию один раз
             if (isLoading) {
-              // Используем addPostFrameCallback для вызова async функции после build
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                initializeDialog();
+                // Передаем setState диалога в initializeDialog
+                initializeDialog(setState);
               });
             }
 
             // Определяем, валидна ли форма
             bool isFormValid = (formKey.currentState?.validate() ?? false) &&
                 selectedClient != null &&
-                vinError == null; // Проверяем и ошибку VIN
+                vinError == null &&
+                !vinCheckLoading; // Проверяем и загрузку VIN
 
-            return AlertDialog(
-              title: Text(isEditing ? t.vehicles.edit : t.vehicles.add),
-              content: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      // Обертка для прокрутки
-                      child: Form(
-                        key: formKey,
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min, // Сжимаем колонку
-                          children: <Widget>[
-                            // --- Выбор клиента ---
-                            DropdownButtonFormField<ClientModelComposite>(
-                              value: selectedClient,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.owner,
-                                border: const OutlineInputBorder(),
+            return PopScope(
+              // Используем PopScope для очистки таймера
+              canPop: !isLoading, // Нельзя закрыть во время загрузки
+              onPopInvokedWithResult: (bool didPop, dynamic result) {
+                if (didPop) {
+                  disposeDialog();
+                }
+              },
+              child: AlertDialog(
+                title: Text(isEditing ? t.vehicles.edit : t.vehicles.add),
+                content: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : SingleChildScrollView(
+                        child: Form(
+                          key: formKey,
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              // --- Выбор клиента ---
+                              DropdownButtonFormField<ClientModelComposite>(
+                                value: selectedClient,
+                                decoration: InputDecoration(
+                                  labelText: t.clients.client,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                items: clients.map((client) {
+                                  return DropdownMenuItem<ClientModelComposite>(
+                                    value: client,
+                                    child: Text(client.displayName),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    // Используем setState диалога
+                                    selectedClient = value;
+                                    selectedClientUuid = value?.uuid;
+                                  });
+                                },
+                                validator: (value) => value == null
+                                    ? t.clients.clientRequired
+                                    : null,
                               ),
-                              items: clients
-                                  .map((client) =>
-                                      DropdownMenuItem<ClientModelComposite>(
-                                        value: client,
-                                        child: Text(client.displayName),
-                                      ))
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedClient = value;
-                                  selectedClientUuid = value?.uuid;
-                                });
-                              },
-                              validator: (value) => value == null
-                                  ? t.clients.clientRequired // Новый ключ
-                                  : null,
-                            ),
-                            const SizedBox(height: 16),
-                            // --- Марка ---
-                            TextFormField(
-                              controller: makeController,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.make,
-                                hintText: t.vehicles.makeHint,
-                                border: const OutlineInputBorder(),
+                              const SizedBox(height: 16),
+                              // --- Марка ---
+                              TextFormField(
+                                controller: makeController,
+                                decoration: InputDecoration(
+                                  labelText: t.vehicles.make,
+                                  hintText: t.vehicles.makeHint,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                validator: (value) =>
+                                    (value == null || value.isEmpty)
+                                        ? t.vehicles.requiredField
+                                        : null,
                               ),
-                              validator: (value) =>
-                                  value == null || value.isEmpty
-                                      ? t.vehicles.requiredField
-                                      : null,
-                            ),
-                            const SizedBox(height: 16),
-                            // --- Модель ---
-                            TextFormField(
-                              controller: modelController,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.model,
-                                hintText: t.vehicles.modelHint,
-                                border: const OutlineInputBorder(),
+                              const SizedBox(height: 16),
+                              // --- Модель ---
+                              TextFormField(
+                                controller: modelController,
+                                decoration: InputDecoration(
+                                  labelText: t.vehicles.model,
+                                  hintText: t.vehicles.modelHint,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                validator: (value) =>
+                                    (value == null || value.isEmpty)
+                                        ? t.vehicles.requiredField
+                                        : null,
                               ),
-                              validator: (value) =>
-                                  value == null || value.isEmpty
-                                      ? t.vehicles.requiredField
-                                      : null,
-                            ),
-                            const SizedBox(height: 16),
-                            // --- Год ---
-                            TextFormField(
-                              controller: yearController,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.year,
-                                hintText: t.vehicles.yearHint,
-                                border: const OutlineInputBorder(),
+                              const SizedBox(height: 16),
+                              // --- Год ---
+                              TextFormField(
+                                controller: yearController,
+                                decoration: InputDecoration(
+                                  labelText: t.vehicles.year,
+                                  hintText: t.vehicles.yearHint,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return t.vehicles.requiredField;
+                                  }
+                                  final year = int.tryParse(value);
+                                  if (year == null ||
+                                      year < 1900 ||
+                                      year > DateTime.now().year + 1) {
+                                    return t.vehicles.invalidYear;
+                                  }
+                                  return null;
+                                },
                               ),
-                              keyboardType: TextInputType.number,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return t.vehicles.requiredField;
-                                }
-                                final year = int.tryParse(value);
-                                if (year == null ||
-                                    year < 1900 ||
-                                    year > DateTime.now().year + 1) {
-                                  return t.vehicles.invalidYear;
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            // --- VIN ---
-                            TextFormField(
-                              controller: vinController,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.vin,
-                                hintText: t.vehicles.vinHint,
-                                border: const OutlineInputBorder(),
-                                errorText: vinError, // Отображение ошибки VIN
+                              const SizedBox(height: 16),
+                              // --- VIN ---
+                              TextFormField(
+                                controller: vinController,
+                                decoration: InputDecoration(
+                                  labelText: t.vehicles.vin,
+                                  hintText: t.vehicles.vinHint,
+                                  border: const OutlineInputBorder(),
+                                  errorText: vinError,
+                                  // Индикатор загрузки для VIN
+                                  suffixIcon: vinCheckLoading
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(10.0),
+                                          child: SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2.0)),
+                                        )
+                                      : (vinError != null
+                                          ? const Icon(Icons.error,
+                                              color: Colors.red)
+                                          : null),
+                                ),
+                                maxLength: 17,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                onChanged: (value) {
+                                  // Дебаунс для проверки VIN
+                                  vinDebounce?.cancel();
+                                  vinDebounce =
+                                      Timer(const Duration(milliseconds: 400),
+                                          () async {
+                                    // Вызываем валидацию через локальную функцию
+                                    await validateVinUniqueness(value);
+                                    // Обновляем состояние кнопки после проверки
+                                    setState(
+                                        () {}); // Используем setState диалога
+                                  });
+                                  // Обновляем состояние кнопки сразу
+                                  setState(
+                                      () {}); // Используем setState диалога
+                                },
+                                validator: (value) {
+                                  // Валидатор для VIN (длина)
+                                  if (value == null || value.isEmpty) {
+                                    return t.vehicles.requiredField;
+                                  }
+                                  if (value.length != 17) {
+                                    return t.vehicles.vinRequirement;
+                                  }
+                                  // Ошибка уникальности обрабатывается через vinError
+                                  return null;
+                                },
                               ),
-                              maxLength: 17, // Ограничение длины
-                              textCapitalization: TextCapitalization.characters,
-                              onChanged: (value) async {
-                                // Асинхронная валидация при изменении
-                                await validateVinUniqueness(value);
-                              },
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return t.vehicles.requiredField;
-                                }
-                                if (value.length != 17) {
-                                  return t.vehicles.vinRequirement;
-                                }
-                                // Дополнительная валидация символов VIN (опционально)
-                                // if (!RegExp(r'^[A-HJ-NPR-Z0-9]{17}$').hasMatch(value)) {
-                                //   return 'Недопустимые символы в VIN';
-                                // }
-                                return null; // Ошибка уникальности обрабатывается через errorText
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            // --- Гос. номер ---
-                            TextFormField(
-                              controller: licensePlateController,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.licensePlate,
-                                hintText: t.vehicles.licensePlateHint,
-                                border: const OutlineInputBorder(),
+                              const SizedBox(height: 16),
+                              // --- Гос. номер ---
+                              TextFormField(
+                                controller:
+                                    licensePlateController, // Теперь определен
+                                decoration: InputDecoration(
+                                  labelText: t.vehicles.licensePlate,
+                                  hintText: t.vehicles.licensePlateHint,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                // TODO: Валидатор для гос. номера (опционально)
                               ),
-                              // Валидатор опционален
-                            ),
-                            const SizedBox(height: 16),
-                            // --- Доп. информация ---
-                            TextFormField(
-                              controller: additionalInfoController,
-                              decoration: InputDecoration(
-                                labelText: t.vehicles.additionalInfo,
-                                hintText: t.vehicles.additionalInfoHint,
-                                border: const OutlineInputBorder(),
+                              const SizedBox(height: 16),
+                              // --- Доп. информация ---
+                              TextFormField(
+                                controller:
+                                    additionalInfoController, // Теперь определен
+                                decoration: InputDecoration(
+                                  labelText: t.vehicles.additionalInfo,
+                                  hintText: t.vehicles.additionalInfoHint,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                maxLines: 3,
                               ),
-                              maxLines: 3,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(null),
-                  child: Text(t.vehicles.cancel),
-                ),
-                // Кнопка Сохранить активна только если форма валидна
-                ElevatedButton(
-                  onPressed: isFormValid
-                      ? () {
-                          // Создаем или обновляем композитор
-                          final now = DateTime.now();
-                          final make = makeController.text;
-                          final model = modelController.text;
-                          final year = int.parse(yearController.text);
-                          final vin = vinController.text;
-                          final licensePlate = licensePlateController.text;
-                          final additionalInfo = additionalInfoController.text;
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      disposeDialog(); // Очищаем таймер при отмене
+                      Navigator.of(context).pop(null);
+                    },
+                    child: Text(t.vehicles.cancel),
+                  ),
+                  ElevatedButton(
+                    onPressed: isFormValid
+                        ? () {
+                            // Создаем или обновляем композитор
+                            final now = DateTime.now();
+                            final EntityCoreData
+                                coreData; // Объявляем переменную
+                            if (isEditing) {
+                              coreData = car.coreData.copyWith(
+                                modifiedAt: now, // Используем modifiedAt
+                                // displayName можно обновить здесь или в композиторе, если нужно
+                              );
+                            } else {
+                              // Используем стандартный конструктор EntityCoreData
+                              coreData = EntityCoreData(
+                                uuid:
+                                    const Uuid().v4(), // Генерируем UUID здесь
+                                code: vinController
+                                    .text, // Используем VIN как код по умолчанию
+                                displayName:
+                                    '${makeController.text} ${modelController.text}',
+                                createdAt: now,
+                                modifiedAt: now, // Устанавливаем modifiedAt
+                                isDeleted: false,
+                                deletedAt: null,
+                              );
+                            }
 
-                          CarModelComposite resultCar;
-                          if (isEditing) {
-                            // Обновляем существующий композитор
-                            resultCar = car
-                                .withMake(make)
-                                .withModel(model)
-                                .withYear(year)
-                                .withVin(vin) // Обновит и code, если нужно
-                                .withLicensePlate(licensePlate.isNotEmpty
-                                    ? licensePlate
-                                    : null)
-                                .withAdditionalInfo(additionalInfo.isNotEmpty
-                                    ? additionalInfo
-                                    : null)
-                                .withOwner(selectedClient!.uuid)
-                                .withModifiedDate(now);
-                          } else {
-                            // Создаем новый композитор
-                            resultCar = CarModelComposite.create(
-                              code: vin, // Используем VIN как код по умолчанию
-                              make: make,
-                              model: model,
-                              year: year,
-                              vin: vin,
-                              clientId: selectedClient!.uuid,
-                              licensePlate:
-                                  licensePlate.isNotEmpty ? licensePlate : null,
-                              additionalInfo: additionalInfo.isNotEmpty
-                                  ? additionalInfo
-                                  : null,
+                            final carSpecificData = CarSpecificData(
+                              clientId: selectedClient!
+                                  .uuid, // selectedClient не может быть null из-за isFormValid
+                              make: makeController.text,
+                              model: modelController.text,
+                              year: int.parse(yearController
+                                  .text), // Безопасно из-за валидатора
+                              vin: vinController.text,
+                              licensePlate: licensePlateController.text,
+                              additionalInfo: additionalInfoController.text,
                             );
+
+                            // Передаем coreData и carSpecificData позиционно
+                            final resultCar = CarModelComposite.fromData(
+                              coreData,
+                              carSpecificData,
+                            );
+
+                            disposeDialog(); // Очищаем таймер при сохранении
+                            Navigator.of(context).pop(resultCar);
                           }
-                          Navigator.of(context).pop(resultCar);
-                        }
-                      : null, // Делаем кнопку неактивной
-                  child: Text(t.vehicles.save),
-                ),
-              ],
+                        : null, // Кнопка неактивна, если форма невалидна
+                    child: Text(t.vehicles.save),
+                  ),
+                ],
+              ),
             );
           },
         );

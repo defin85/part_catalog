@@ -194,22 +194,17 @@ class ClientModelComposite implements IReferenceEntity {
 
   // --- Методы для иммутабельного обновления ---
 
-  /// Возвращает новый экземпляр с обновленным типом.
-  ClientModelComposite withType(ClientType newType) {
+  /// Возвращает новый экземпляр с обновленными базовыми данными.
+  /// Принимает функцию, которая получает текущий coreData и возвращает новый.
+  ClientModelComposite copyWithCoreData(
+      EntityCoreData Function(EntityCoreData core) update) {
+    final newCoreData = update(coreData);
+    // Убедимся, что дата модификации обновлена, если не обновлена вручную
+    final finalCoreData = newCoreData.modifiedAt == coreData.modifiedAt
+        ? newCoreData.copyWith(modifiedAt: DateTime.now())
+        : newCoreData;
     return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
-      clientData.copyWith(type: newType),
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
-  }
-
-  /// Возвращает новый экземпляр с обновленным именем/названием.
-  ClientModelComposite withName(String newName) {
-    return ClientModelComposite._(
-      coreData.copyWith(displayName: newName, modifiedAt: DateTime.now()),
+      finalCoreData,
       clientData,
       parentId: parentId,
       isFolder: isFolder,
@@ -218,11 +213,14 @@ class ClientModelComposite implements IReferenceEntity {
     );
   }
 
-  /// Возвращает новый экземпляр с обновленной контактной информацией.
-  ClientModelComposite withContactInfo(String newContactInfo) {
+  /// Возвращает новый экземпляр с обновленными специфичными данными клиента.
+  /// Принимает функцию, которая получает текущий clientData и возвращает новый.
+  ClientModelComposite copyWithClientData(
+      ClientSpecificData Function(ClientSpecificData client) update) {
     return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
-      clientData.copyWith(contactInfo: newContactInfo),
+      coreData.copyWith(
+          modifiedAt: DateTime.now()), // Обновляем дату модификации
+      update(clientData),
       parentId: parentId,
       isFolder: isFolder,
       ancestorIds: ancestorIds,
@@ -230,62 +228,53 @@ class ClientModelComposite implements IReferenceEntity {
     );
   }
 
+  /// Возвращает новый экземпляр с обновленным типом.
+  ClientModelComposite withType(ClientType newType) {
+    return copyWithClientData((client) => client.copyWith(type: newType));
+  }
+
+  /// Возвращает новый экземпляр с обновленным именем/названием.
+  ClientModelComposite withName(String newName) {
+    return copyWithCoreData((core) => core.copyWith(displayName: newName));
+  }
+
+  /// Возвращает новый экземпляр с обновленной контактной информацией.
+  ClientModelComposite withContactInfo(String newContactInfo) {
+    return copyWithClientData(
+        (client) => client.copyWith(contactInfo: newContactInfo));
+  }
+
   /// Возвращает новый экземпляр с обновленной дополнительной информацией.
   ClientModelComposite withAdditionalInfo(String? newAdditionalInfo) {
-    return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
-      clientData.copyWith(additionalInfo: newAdditionalInfo),
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
+    return copyWithClientData(
+        (client) => client.copyWith(additionalInfo: newAdditionalInfo));
   }
 
   /// Возвращает новый экземпляр, помеченный как удаленный.
   ClientModelComposite markAsDeleted() {
     if (isDeleted) return this;
     final now = DateTime.now();
-    return ClientModelComposite._(
-      coreData.copyWith(
+    return copyWithCoreData((core) => core.copyWith(
           isDeleted: true,
           modifiedAt: now,
-          deletedAt: now), // Устанавливаем deletedAt
-      clientData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
+          deletedAt: now, // Устанавливаем deletedAt
+        ));
   }
 
   /// Возвращает новый экземпляр, восстановленный из удаленных.
   ClientModelComposite restore() {
     if (!isDeleted) return this;
-    return ClientModelComposite._(
-      coreData.copyWith(
+    return copyWithCoreData((core) => core.copyWith(
           isDeleted: false,
           modifiedAt: DateTime.now(),
-          deletedAt: null), // Сбрасываем deletedAt
-      clientData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
+          deletedAt: null, // Сбрасываем deletedAt
+        ));
   }
 
   /// Возвращает новый экземпляр с обновленной датой модификации.
   /// Используется перед сохранением.
   ClientModelComposite withModifiedDate(DateTime modifiedDate) {
-    return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: modifiedDate),
-      clientData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
+    return copyWithCoreData((core) => core.copyWith(modifiedAt: modifiedDate));
   }
 
   // --- Методы для иммутабельного обновления из IReferenceEntity ---

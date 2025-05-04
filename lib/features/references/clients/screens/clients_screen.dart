@@ -1,60 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/core/database/database.dart'; // Для сброса БД
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/core/providers/core_providers.dart';
 import 'package:part_catalog/core/service_locator.dart';
 // Импортируем бизнес-модель (композитор)
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
 import 'package:part_catalog/features/references/clients/models/client_type.dart';
+// Импортируем провайдеры
+import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 // Импортируем сервисы для обновления в service_locator при сбросе БД
 import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
 import 'package:logger/logger.dart';
-import 'package:part_catalog/core/utils/logger_config.dart'; // Используем настроенный логгер
 import 'package:part_catalog/core/utils/log_messages.dart';
-import 'package:rxdart/rxdart.dart'; // Для debounce
 import 'dart:async'; // Для Timer
 
-class ClientsScreen extends StatefulWidget {
+// Преобразуем в ConsumerStatefulWidget
+class ClientsScreen extends ConsumerStatefulWidget {
   const ClientsScreen({super.key});
 
   @override
-  State<ClientsScreen> createState() => _ClientsScreenState();
+  ConsumerState<ClientsScreen> createState() => _ClientsScreenState();
 }
 
-class _ClientsScreenState extends State<ClientsScreen> {
-  // Получаем сервис через locator (или Provider, если настроен)
-  final ClientService _clientService = locator<ClientService>();
-  final Logger _logger =
-      AppLoggers.clientsLogger; // Используем настроенный логгер
-  bool _isDbError = false;
+// Преобразуем State в ConsumerState
+class _ClientsScreenState extends ConsumerState<ClientsScreen> {
+  // Удаляем прямое получение сервиса, будем использовать ref
+  // final ClientService _clientService = locator<ClientService>();
+
+  // Объявляем логгер как late final и инициализируем в initState
+  late final Logger _logger;
+
+  // Удаляем _isDbError, состояние ошибки будет в AsyncValue
+  // bool _isDbError = false;
   final TextEditingController _searchController = TextEditingController();
-  final _searchSubject = BehaviorSubject<String?>.seeded(null);
-  StreamSubscription? _searchSubscription;
+  // Удаляем BehaviorSubject и подписку
+  // final _searchSubject = BehaviorSubject<String?>.seeded(null);
+  // StreamSubscription? _searchSubscription;
   Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
+    // Инициализируем логгер здесь, где ref доступен
+    _logger = ref.read(clientsLoggerProvider);
     _searchController.addListener(_onSearchChanged);
-    // Подписка на изменения поиска с debounce
-    _searchSubscription = _searchSubject
-        .debounceTime(const Duration(milliseconds: 300))
-        .listen((query) {
-      // Здесь можно было бы вызывать поиск, если бы он был асинхронным
-      // и не зависел от StreamBuilder. В данном случае просто обновляем UI.
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    // Удаляем подписку на BehaviorSubject
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
-    _searchSubject.close();
-    _searchSubscription?.cancel();
     _debounce?.cancel();
+    // Удаляем закрытие BehaviorSubject и отмену подписки
     super.dispose();
   }
 
@@ -62,49 +62,22 @@ class _ClientsScreenState extends State<ClientsScreen> {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       final query = _searchController.text;
-      // Обновляем BehaviorSubject, который вызовет setState в listener'е
-      if (_searchSubject.value != query) {
-        _searchSubject.add(query.isEmpty ? null : query);
-      }
+      // Вызываем метод поиска у Notifier'а
+      ref.read(clientsNotifierProvider.notifier).searchClients(query);
     });
   }
 
-  Stream<List<ClientModelComposite>> _getClientStream() {
-    final query = _searchSubject.value;
-    if (query == null || query.isEmpty) {
-      return _clientService.watchClients();
-    } else {
-      // Для поиска используем Future, обернутый в Stream
-      // Это не идеально для реактивности, но проще для текущей структуры
-      // В идеале, поиск тоже должен быть Stream в сервисе/репозитории
-      return Stream.fromFuture(_clientService.searchClients(query));
-    }
-  }
+  // Удаляем _getClientStream, будем использовать ref.watch(clientsNotifierProvider)
 
   @override
   Widget build(BuildContext context) {
-    // Получаем локализованные строки один раз в build
     final t = context.t;
+    // Получаем состояние списка клиентов через ref.watch
+    final clientsAsyncValue = ref.watch(clientsNotifierProvider);
 
-    if (_isDbError) {
-      return Scaffold(
-        appBar: AppBar(title: Text(t.core.error)),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(t.core.dataLoadingError),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () =>
-                    _resetDatabase(context), // Выносим в отдельный метод
-                child: Text(t.core.resetDatabase),
-              )
-            ],
-          ),
-        ),
-      );
-    }
+    // Обработка ошибки БД (если она приводит к ошибке в Notifier)
+    // Можно сделать более специфично, проверяя тип ошибки в .when()
+    // if (_isDbError) { ... } - Удаляем этот блок
 
     return Scaffold(
       appBar: AppBar(
@@ -115,9 +88,16 @@ class _ClientsScreenState extends State<ClientsScreen> {
             onPressed: () {
               showSearch(
                 context: context,
-                delegate: ClientSearchDelegate(_clientService, _editClient),
+                // Передаем ref в делегат
+                delegate: ClientSearchDelegate(ref, _editClient),
               );
             },
+          ),
+          // Кнопка сброса БД (можно оставить или перенести в настройки)
+          IconButton(
+            icon: const Icon(Icons.delete_forever, color: Colors.red),
+            tooltip: t.core.resetDatabase,
+            onPressed: () => _showResetConfirmation(context),
           ),
         ],
       ),
@@ -136,7 +116,10 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
-                          // _onSearchChanged(); // Вызываем, чтобы обновить BehaviorSubject
+                          // Вызываем поиск с пустой строкой
+                          ref
+                              .read(clientsNotifierProvider.notifier)
+                              .searchClients(null);
                         },
                       )
                     : null,
@@ -147,47 +130,12 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
           // Список клиентов
           Expanded(
-            child: StreamBuilder<List<ClientModelComposite>>(
-              // Используем _getClientStream для получения нужного потока
-              stream: _getClientStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting &&
-                    _searchSubject.value == null) {
-                  // Показываем индикатор только при первой загрузке
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  _logger.e(LogMessages.dataLoadingError,
-                      error: snapshot.error, stackTrace: snapshot.stackTrace);
-                  // Проверяем ошибку БД
-                  if (snapshot.error.toString().contains('no such table')) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _isDbError = true;
-                        });
-                      }
-                    });
-                    return const SizedBox
-                        .shrink(); // Не показываем ошибку, пока перерисовывается
-                  }
-                  // Показываем ошибку загрузки данных
-                  return Center(
-                    child: Text(
-                      t.core.errorLoadingData(error: snapshot.error.toString()),
-                      style:
-                          TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                  );
-                }
-
-                final clients = snapshot.data ?? [];
-
+            // Используем .when для обработки состояний AsyncValue
+            child: clientsAsyncValue.when(
+              data: (clients) {
                 if (clients.isEmpty) {
                   return Center(
-                    child: Text(_searchSubject.value == null ||
-                            _searchSubject.value!.isEmpty
+                    child: Text(_searchController.text.isEmpty
                         ? t.clients.emptyList
                         : t.clients.noClientsFound),
                   );
@@ -210,9 +158,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       ),
                       direction: DismissDirection.endToStart,
                       confirmDismiss: (direction) =>
-                          _confirmDeletion(context, client), // Выносим в метод
+                          _confirmDeletion(context, client),
                       onDismissed: (direction) =>
-                          _deleteClient(context, client), // Выносим в метод
+                          _deleteClient(context, client),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: _getClientTypeColor(client.type),
@@ -221,7 +169,6 @@ class _ClientsScreenState extends State<ClientsScreen> {
                             color: Colors.white,
                           ),
                         ),
-                        // Используем поля из ClientModelComposite
                         title: Text(client.displayName),
                         subtitle:
                             Text('${client.code} · ${client.contactInfo}'),
@@ -232,13 +179,43 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   },
                 );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) {
+                _logger.e(LogMessages.dataLoadingError,
+                    error: error, stackTrace: stackTrace);
+                // Проверяем ошибку БД (если она специфична)
+                if (error.toString().contains('no such table')) {
+                  // Можно показать кнопку сброса прямо здесь
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(t.core.dataLoadingError),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () => _resetDatabase(context),
+                          child: Text(t.core.resetDatabase),
+                        )
+                      ],
+                    ),
+                  );
+                }
+                // Показываем общую ошибку загрузки данных
+                return Center(
+                  child: Text(
+                    t.core.errorLoadingData(error: error.toString()),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addClient,
-        tooltip: t.clients.add, // Добавляем tooltip
+        tooltip: t.clients.add,
         child: const Icon(Icons.add),
       ),
     );
@@ -246,9 +223,37 @@ class _ClientsScreenState extends State<ClientsScreen> {
 
   // --- Методы для действий ---
 
+  Future<void> _showResetConfirmation(BuildContext context) async {
+    final t = context.t;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(t.core.confirmResetDatabaseTitle),
+          content: Text(t.core.confirmResetDatabaseMessage),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(t.common.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(t.core.resetDatabase,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _resetDatabase(context);
+    }
+  }
+
   Future<void> _resetDatabase(BuildContext context) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final t = context.t; // Получаем локализацию
+    final t = context.t;
 
     try {
       final db = locator<AppDatabase>();
@@ -259,18 +264,21 @@ class _ClientsScreenState extends State<ClientsScreen> {
       locator.registerSingleton<AppDatabase>(AppDatabase());
 
       locator.unregister<ClientService>();
-      locator.unregister<CarService>(); // Пример, если есть другие сервисы
+      locator.unregister<CarService>();
       locator.registerLazySingleton<ClientService>(
           () => ClientService(locator<AppDatabase>()));
       locator.registerLazySingleton<CarService>(
           () => CarService(locator<AppDatabase>()));
 
+      // Инвалидируем провайдеры Riverpod
+      ref.invalidate(clientServiceProvider);
+      ref.invalidate(clientsNotifierProvider);
+      // Инвалидируйте другие связанные провайдеры, если они есть
+
       if (mounted) {
-        setState(() {
-          _isDbError = false;
-        });
         scaffoldMessenger
             .showSnackBar(SnackBar(content: Text(t.core.resetDatabaseSuccess)));
+        // Не нужно делать setState, Riverpod обновит UI
       }
     } catch (e, s) {
       _logger.e(LogMessages.databaseResetError, error: e, stackTrace: s);
@@ -287,19 +295,16 @@ class _ClientsScreenState extends State<ClientsScreen> {
     return await showDialog<bool>(
           context: context,
           builder: (BuildContext dialogContext) {
-            // Используем dialogContext
             return AlertDialog(
               title: Text(t.common.confirmDeletion),
               content: Text(t.clients.confirmDelete(name: client.displayName)),
               actions: <Widget>[
                 TextButton(
-                  onPressed: () => Navigator.of(dialogContext)
-                      .pop(false), // Используем dialogContext
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
                   child: Text(t.common.cancel),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.of(dialogContext)
-                      .pop(true), // Используем dialogContext
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
                   child: Text(t.common.delete,
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.error)),
@@ -308,30 +313,35 @@ class _ClientsScreenState extends State<ClientsScreen> {
             );
           },
         ) ??
-        false; // Возвращаем false если диалог закрыт без выбора
+        false;
   }
 
   Future<void> _deleteClient(
       BuildContext context, ClientModelComposite client) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = context.t;
-    final clientUuid = client.uuid; // Сохраняем UUID для Snackbar action
+    final clientUuid = client.uuid;
+    final displayName = client.displayName; // Сохраняем для Snackbar
 
     try {
-      await _clientService.deleteClient(clientUuid);
+      // Вызываем метод Notifier'а
+      await ref.read(clientsNotifierProvider.notifier).deleteClient(clientUuid);
+
+      // Показываем Snackbar об успехе с отменой
       if (mounted) {
         scaffoldMessenger.showSnackBar(
           SnackBar(
-            content: Text(t.clients.clientDeleted(name: client.displayName)),
+            content: Text(t.clients.clientDeleted(name: displayName)),
             action: SnackBarAction(
               label: t.common.undo,
-              onPressed: () =>
-                  _restoreClient(context, clientUuid), // Передаем UUID
+              onPressed: () => _restoreClient(
+                  context, clientUuid, displayName), // Передаем UUID и имя
             ),
           ),
         );
       }
     } catch (e, s) {
+      // Ошибки теперь обрабатываются здесь, т.к. Notifier их пробрасывает
       _logger.e(LogMessages.clientDeleteError.replaceAll('{uuid}', clientUuid),
           error: e, stackTrace: s);
       if (mounted) {
@@ -342,17 +352,19 @@ class _ClientsScreenState extends State<ClientsScreen> {
     }
   }
 
-  Future<void> _restoreClient(BuildContext context, String clientUuid) async {
+  Future<void> _restoreClient(
+      BuildContext context, String clientUuid, String displayName) async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = context.t;
 
     try {
-      await _clientService.restoreClient(clientUuid);
+      // Вызываем метод Notifier'а
+      await ref
+          .read(clientsNotifierProvider.notifier)
+          .restoreClient(clientUuid);
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(
-              content:
-                  Text(t.clients.clientRestored)), // Имя здесь недоступно легко
+          SnackBar(content: Text(t.clients.clientRestored(name: displayName))),
         );
       }
     } catch (e, s) {
@@ -370,15 +382,19 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = context.t;
 
-    // Показываем диалог и ждем результат (ClientModelComposite или null)
-    final newClient = await _showClientDialog(context);
+    // Показываем диалог и ждем результат
+    // Передаем ref в диалог
+    final newClient = await _showClientDialog(context, ref: ref);
     if (newClient != null) {
       try {
-        await _clientService.addClient(newClient);
-        // Опционально: показать сообщение об успехе
-        // if (mounted) {
-        //   scaffoldMessenger.showSnackBar(SnackBar(content: Text('Клиент ${newClient.displayName} добавлен')));
-        // }
+        // Вызываем метод Notifier'а
+        await ref.read(clientsNotifierProvider.notifier).addClient(newClient);
+        // Сообщение об успехе можно показать здесь
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(SnackBar(
+              content:
+                  Text(t.clients.clientAdded(name: newClient.displayName))));
+        }
       } catch (e, s) {
         _logger.e(LogMessages.clientAddError, error: e, stackTrace: s);
         if (mounted) {
@@ -394,15 +410,21 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = context.t;
 
-    // Показываем диалог с существующим клиентом
-    final updatedClient = await _showClientDialog(context, client: client);
+    // Показываем диалог с существующим клиентом, передаем ref
+    final updatedClient =
+        await _showClientDialog(context, client: client, ref: ref);
     if (updatedClient != null) {
       try {
-        await _clientService.updateClient(updatedClient);
-        // Опционально: показать сообщение об успехе
-        // if (mounted) {
-        //   scaffoldMessenger.showSnackBar(SnackBar(content: Text('Клиент ${updatedClient.displayName} обновлен')));
-        // }
+        // Вызываем метод Notifier'а
+        await ref
+            .read(clientsNotifierProvider.notifier)
+            .updateClient(updatedClient);
+        // Сообщение об успехе
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(SnackBar(
+              content: Text(
+                  t.clients.clientUpdated(name: updatedClient.displayName))));
+        }
       } catch (e, s) {
         _logger.e(
             LogMessages.clientUpdateError.replaceAll('{uuid}', client.uuid),
@@ -420,7 +442,6 @@ class _ClientsScreenState extends State<ClientsScreen> {
   // --- Вспомогательные методы ---
 
   Color _getClientTypeColor(ClientType type) {
-    // ... (реализация как в оригинале)
     switch (type) {
       case ClientType.physical:
         return Colors.blue;
@@ -434,7 +455,6 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 
   IconData _getClientTypeIcon(ClientType type) {
-    // ... (реализация как в оригинале)
     switch (type) {
       case ClientType.physical:
         return Icons.person;
@@ -448,13 +468,13 @@ class _ClientsScreenState extends State<ClientsScreen> {
   }
 
   /// Показывает диалог для добавления/редактирования клиента.
-  /// Работает с [ClientModelComposite].
+  /// Принимает [WidgetRef] для доступа к провайдерам.
   Future<ClientModelComposite?> _showClientDialog(BuildContext context,
-      {ClientModelComposite? client}) async {
-    final t = context.t; // Получаем локализацию
+      {ClientModelComposite? client, required WidgetRef ref}) async {
+    // Добавляем ref
+    final t = context.t;
     final bool isEditing = client != null;
 
-    // Используем данные из ClientModelComposite
     final nameController = TextEditingController(text: client?.displayName);
     final codeController = TextEditingController(text: client?.code);
     final contactInfoController =
@@ -464,46 +484,65 @@ class _ClientsScreenState extends State<ClientsScreen> {
     ClientType selectedType = client?.type ?? ClientType.physical;
 
     final formKey = GlobalKey<FormState>();
-    bool isCodeUnique = true; // Флаг для асинхронной валидации кода
+    // Локальное состояние для асинхронной валидации кода
+    bool codeCheckLoading = false;
+    bool isCodeUnique = true;
 
     return showDialog<ClientModelComposite>(
       context: context,
-      // barrierDismissible: false, // Запретить закрытие по тапу вне диалога
       builder: (BuildContext dialogContext) {
-        // Используем dialogContext
         return StatefulBuilder(builder: (context, setStateDialog) {
-          // Используем setStateDialog
-
-          // Асинхронная валидация уникальности кода
+          // Асинхронная валидация уникальности кода с использованием isClientCodeUniqueProvider
           Future<void> checkCodeUniqueness(String value) async {
             if (value.isNotEmpty && value != client?.code) {
-              final unique = await _clientService.isCodeUnique(value,
-                  excludeUuid: client?.uuid);
-              if (mounted) {
-                // Проверяем mounted перед вызовом setStateDialog
-                setStateDialog(() {
-                  isCodeUnique = unique;
-                });
+              setStateDialog(() {
+                codeCheckLoading = true; // Показываем индикатор
+                isCodeUnique = true; // Сбрасываем предыдущую ошибку
+              });
+              try {
+                // Используем ref для доступа к провайдеру
+                final unique = await ref.read(isClientCodeUniqueProvider(
+                  code: value,
+                  excludeUuid: client?.uuid,
+                ).future);
+                if (mounted) {
+                  // Проверяем mounted перед setStateDialog
+                  setStateDialog(() {
+                    isCodeUnique = unique;
+                    codeCheckLoading = false;
+                  });
+                }
+              } catch (e) {
+                if (mounted) {
+                  setStateDialog(() {
+                    isCodeUnique = false; // Считаем не уникальным при ошибке
+                    codeCheckLoading = false;
+                  });
+                }
+                // Логируем ошибку проверки
+                _logger.e('Error checking code uniqueness', error: e);
               }
             } else {
               if (mounted) {
                 setStateDialog(() {
                   isCodeUnique = true;
-                }); // Считаем уникальным, если пустой или не изменился
+                  codeCheckLoading = false;
+                });
               }
             }
           }
 
           // Валидация всей формы
           bool validateFullForm() {
-            return (formKey.currentState?.validate() ?? false) && isCodeUnique;
+            return (formKey.currentState?.validate() ?? false) &&
+                isCodeUnique &&
+                !codeCheckLoading;
           }
 
           return AlertDialog(
             title: Text(isEditing ? t.clients.edit : t.clients.add),
             content: Form(
               key: formKey,
-              // onChanged: () => setStateDialog(() {}), // Обновляем состояние для кнопки Save/Add
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -525,8 +564,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                               Icon(_getClientTypeIcon(type),
                                   color: _getClientTypeColor(type), size: 20),
                               const SizedBox(width: 8),
-                              Text(_getClientTypeDisplayName(
-                                  context, type)), // Локализованное имя
+                              Text(_getClientTypeDisplayName(context, type)),
                             ],
                           ),
                         );
@@ -550,19 +588,39 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         labelText: t.clients.code,
                         prefixIcon: const Icon(Icons.qr_code),
                         border: const OutlineInputBorder(),
+                        // Показываем индикатор загрузки или ошибку
+                        suffixIcon: codeCheckLoading
+                            ? const Padding(
+                                padding: EdgeInsets.all(10.0),
+                                child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2.0)),
+                              )
+                            : (!isCodeUnique
+                                ? const Icon(Icons.error, color: Colors.red)
+                                : null),
                         errorText:
                             !isCodeUnique ? t.clients.codeNotUnique : null,
+                        // Убираем errorMaxLines, т.к. используем suffixIcon для индикации ошибки
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return t.clients.codeRequired;
                         }
-                        // Дополнительная проверка isCodeUnique здесь не нужна, т.к. errorText используется
                         return null;
                       },
                       onChanged: (value) async {
-                        await checkCodeUniqueness(value);
-                        // Триггерим перерисовку для обновления состояния кнопки Save/Add
+                        // Добавляем debounce для проверки кода
+                        _debounce?.cancel();
+                        _debounce =
+                            Timer(const Duration(milliseconds: 400), () async {
+                          await checkCodeUniqueness(value);
+                          // Обновляем состояние кнопки после проверки
+                          setStateDialog(() {});
+                        });
+                        // Обновляем состояние кнопки сразу при изменении
                         setStateDialog(() {});
                       },
                       textInputAction: TextInputAction.next,
@@ -587,8 +645,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         }
                         return null;
                       },
-                      onChanged: (_) =>
-                          setStateDialog(() {}), // Обновляем состояние кнопки
+                      onChanged: (_) => setStateDialog(() {}),
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 16),
@@ -608,8 +665,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         }
                         return null;
                       },
-                      onChanged: (_) =>
-                          setStateDialog(() {}), // Обновляем состояние кнопки
+                      onChanged: (_) => setStateDialog(() {}),
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 16),
@@ -624,9 +680,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                         border: const OutlineInputBorder(),
                       ),
                       maxLines: 2,
-                      // Валидатор не нужен, поле опциональное
-                      onChanged: (_) =>
-                          setStateDialog(() {}), // Обновляем состояние кнопки
+                      onChanged: (_) => setStateDialog(() {}),
                     ),
                   ],
                 ),
@@ -634,46 +688,39 @@ class _ClientsScreenState extends State<ClientsScreen> {
             ),
             actions: <Widget>[
               TextButton(
-                onPressed: () => Navigator.of(dialogContext)
-                    .pop(), // Используем dialogContext
+                onPressed: () => Navigator.of(dialogContext).pop(),
                 child: Text(t.common.cancel),
               ),
               TextButton(
-                // Делаем кнопку неактивной, если форма невалидна
                 onPressed: validateFullForm()
                     ? () {
-                        // Создаем или обновляем ClientModelComposite
                         final result = isEditing
                             ? client
-                                .withName(nameController.text.trim())
-                                .withContactInfo(
-                                    contactInfoController.text.trim())
-                                .withType(selectedType)
-                                .withAdditionalInfo(
-                                    additionalInfoController.text.trim().isEmpty
-                                        ? null
-                                        : additionalInfoController.text.trim())
-                                // .withCode(codeController.text.trim()) // Метод withCode не реализован в композиторе, код обновляется через coreData.copyWith
-                                // Правильнее обновить coreData и clientData и создать новый композитор
                                 .copyWithCoreData(
-                                  code: codeController.text.trim(),
-                                  displayName: nameController.text.trim(),
-                                  modifiedAt: DateTime.now(),
+                                  // Используем лямбда-функцию для обновления coreData
+                                  (core) => core.copyWith(
+                                    code: codeController.text.trim(),
+                                    displayName: nameController.text.trim(),
+                                    modifiedAt: DateTime.now(),
+                                  ),
                                 )
                                 .copyWithClientData(
-                                  type: selectedType,
-                                  contactInfo:
-                                      contactInfoController.text.trim(),
-                                  additionalInfo: additionalInfoController.text
-                                          .trim()
-                                          .isEmpty
-                                      ? null
-                                      : additionalInfoController.text.trim(),
+                                  // Используем лямбда-функцию для обновления clientData
+                                  (clientSpecific) => clientSpecific.copyWith(
+                                    type: selectedType,
+                                    contactInfo:
+                                        contactInfoController.text.trim(),
+                                    additionalInfo: additionalInfoController
+                                            .text
+                                            .trim()
+                                            .isEmpty
+                                        ? null
+                                        : additionalInfoController.text.trim(),
+                                  ),
                                 )
                             : ClientModelComposite.create(
                                 code: codeController.text.trim(),
-                                name:
-                                    nameController.text.trim(), // Передаем name
+                                name: nameController.text.trim(),
                                 type: selectedType,
                                 contactInfo: contactInfoController.text.trim(),
                                 additionalInfo:
@@ -681,10 +728,9 @@ class _ClientsScreenState extends State<ClientsScreen> {
                                         ? null
                                         : additionalInfoController.text.trim(),
                               );
-                        Navigator.of(dialogContext)
-                            .pop(result); // Используем dialogContext
+                        Navigator.of(dialogContext).pop(result);
                       }
-                    : null, // Кнопка неактивна
+                    : null,
                 child: Text(isEditing ? t.common.save : t.common.add),
               ),
             ],
@@ -713,27 +759,29 @@ class _ClientsScreenState extends State<ClientsScreen> {
 // --- Делегат поиска ---
 
 /// Делегат для поиска клиентов с помощью search delegate
-/// Работает с [ClientModelComposite].
 class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
-  final ClientService _clientService;
-  final Function(ClientModelComposite)
-      _onClientSelected; // Функция обратного вызова при выборе
+  // Принимаем WidgetRef вместо ClientService
+  final WidgetRef ref;
+  final Function(ClientModelComposite) _onClientSelected;
 
-  ClientSearchDelegate(this._clientService, this._onClientSelected);
+  ClientSearchDelegate(this.ref, this._onClientSelected);
+
+  // Получаем логгер через ref
+  Logger get _logger => ref.read(clientsLoggerProvider);
 
   @override
-  String get searchFieldLabel => t.clients.search; // Используем глобальный t
+  String get searchFieldLabel => t.clients.search;
 
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
-      if (query.isNotEmpty) // Показываем кнопку очистки только если есть текст
+      if (query.isNotEmpty)
         IconButton(
           icon: const Icon(Icons.clear),
-          tooltip: t.common.clear, // Добавляем tooltip
+          tooltip: t.common.clear,
           onPressed: () {
             query = '';
-            showSuggestions(context); // Показываем пустые подсказки
+            showSuggestions(context);
           },
         ),
     ];
@@ -743,22 +791,22 @@ class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
   Widget buildLeading(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
-      tooltip: MaterialLocalizations.of(context)
-          .backButtonTooltip, // Стандартный tooltip
+      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
       onPressed: () {
-        close(context, null); // Закрываем поиск без результата
+        close(context, null);
       },
     );
   }
 
-  // Результаты поиска (когда пользователь нажимает Enter)
+  // Результаты поиска
   @override
   Widget buildResults(BuildContext context) {
-    // Используем FutureBuilder для асинхронного поиска
+    // Используем FutureBuilder и получаем сервис через ref.read
     return FutureBuilder<List<ClientModelComposite>>(
-      future: _clientService.searchClients(query), // Вызываем поиск в сервисе
+      // Вызываем поиск через сервис, полученный из провайдера
+      future: ref.read(clientServiceProvider).searchClients(query),
       builder: (context, snapshot) {
-        final t = context.t; // Получаем локализацию
+        final t = context.t;
 
         if (query.isEmpty) {
           return Center(child: Text(t.clients.startTyping));
@@ -769,11 +817,8 @@ class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
         }
 
         if (snapshot.hasError) {
-          // Логируем ошибку
-          AppLoggers.clientsLogger.e(
-              LogMessages.clientSearchError.replaceAll('{query}', query),
-              error: snapshot.error,
-              stackTrace: snapshot.stackTrace);
+          _logger.e(LogMessages.clientSearchError.replaceAll('{query}', query),
+              error: snapshot.error, stackTrace: snapshot.stackTrace);
           return Center(
             child: Text(
               t.core.errorLoadingData(error: snapshot.error.toString()),
@@ -788,7 +833,6 @@ class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
           return Center(child: Text(t.clients.noClientsFound));
         }
 
-        // Отображаем найденных клиентов
         return ListView.separated(
           itemCount: clients.length,
           separatorBuilder: (context, index) => const Divider(height: 1),
@@ -803,8 +847,8 @@ class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
               title: Text(client.displayName),
               subtitle: Text('${client.code} · ${client.contactInfo}'),
               onTap: () {
-                close(context, client); // Закрываем поиск с выбранным клиентом
-                _onClientSelected(client); // Вызываем колбэк
+                close(context, client);
+                _onClientSelected(client);
               },
             );
           },
@@ -816,15 +860,14 @@ class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
   // Подсказки во время ввода
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Можно показывать недавние поиски или просто результаты
-    // Пока просто вызываем buildResults
     if (query.isEmpty) {
       return Center(child: Text(context.t.clients.startTyping));
     }
+    // Можно добавить логику показа недавних запросов или сразу результаты
     return buildResults(context);
   }
 
-  // --- Вспомогательные методы для иконок/цветов (дублируются из _ClientsScreenState) ---
+  // --- Вспомогательные методы для иконок/цветов ---
   Color _getClientTypeColor(ClientType type) {
     switch (type) {
       case ClientType.physical:
@@ -852,53 +895,6 @@ class ClientSearchDelegate extends SearchDelegate<ClientModelComposite?> {
   }
 }
 
-// Добавление методов copyWith в ClientModelComposite для удобства обновления
-// (Это нужно добавить в сам файл client_model_composite.dart)
-extension ClientModelCompositeCopyWith on ClientModelComposite {
-  ClientModelComposite copyWithCoreData({
-    String? uuid,
-    String? code,
-    String? displayName,
-    DateTime? createdAt,
-    DateTime? modifiedAt,
-    DateTime? deletedAt,
-    bool? isDeleted,
-  }) {
-    return ClientModelComposite.fromData(
-      coreData.copyWith(
-        uuid: uuid ?? this.uuid,
-        code: code ?? this.code,
-        displayName: displayName ?? this.displayName,
-        createdAt: createdAt ?? this.createdAt,
-        modifiedAt: modifiedAt ?? this.modifiedAt,
-        deletedAt: deletedAt ?? this.deletedAt,
-        // isDeleted вычисляется из deletedAt, но можно передать для явности
-        isDeleted: isDeleted ?? (deletedAt != null ? true : this.isDeleted),
-      ),
-      clientData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
-  }
-
-  ClientModelComposite copyWithClientData({
-    ClientType? type,
-    String? contactInfo,
-    String? additionalInfo,
-  }) {
-    return ClientModelComposite.fromData(
-      coreData,
-      clientData.copyWith(
-        type: type ?? this.type,
-        contactInfo: contactInfo ?? this.contactInfo,
-        additionalInfo: additionalInfo ?? this.additionalInfo,
-      ),
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
-    );
-  }
-}
+// Удаляем расширение ClientModelCompositeCopyWith, т.к. оно уже должно быть
+// в файле client_model_composite.dart или сгенерировано @freezed, если используется.
+// Если его там нет, его нужно добавить в соответствующий файл.

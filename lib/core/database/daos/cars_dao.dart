@@ -161,6 +161,36 @@ class CarsDao extends DatabaseAccessor<AppDatabase> with _$CarsDaoMixin {
     return _mapToCarFullData(carItem, clientItem.uuid); // Передаем UUID клиента
   }
 
+  /// Находит автомобиль по VIN (возвращает полную модель данных CarFullData).
+  ///
+  /// По умолчанию ищет только активные (не удаленные) автомобили.
+  /// Если [includeDeleted] установлен в true, вернет и мягко удаленный автомобиль.
+  Future<CarFullData?> getCarByVin(String vin,
+      {bool includeDeleted = false}) async {
+    _logger.d('Getting car by VIN: "$vin", includeDeleted: $includeDeleted');
+    // Используем JOIN для получения UUID клиента
+    final query = select(carsItems).join([
+      innerJoin(clientsItems, clientsItems.id.equalsExp(carsItems.clientId))
+    ])
+      ..where(carsItems.vin.equals(vin)); // Ищем по VIN
+
+    // Добавляем условие на deletedAt только если не нужно включать удаленные
+    if (!includeDeleted) {
+      query.where(carsItems.deletedAt.isNull());
+    }
+
+    final row = await query.getSingleOrNull();
+    if (row == null) {
+      _logger.w('Car with VIN "$vin" not found.');
+      return null;
+    }
+
+    final carItem = row.readTable(carsItems);
+    final clientItem = row.readTable(clientsItems);
+    _logger.d('Found car with VIN "$vin", UUID: ${carItem.uuid}');
+    return _mapToCarFullData(carItem, clientItem.uuid); // Передаем UUID клиента
+  }
+
   /// Добавляет новый автомобиль. Принимает @freezed модели.
   Future<int> insertCar(EntityCoreData core, CarSpecificData specific) async {
     // Получаем int ID клиента по его UUID для внешнего ключа

@@ -1,544 +1,65 @@
-# ...existing code...
-components:
-  # ... existing securitySchemes ...
-  schemas:
-    # ... existing BaseResponse, ResponseMessage ...
-    GenericErrorResponse:
-      # ... existing GenericErrorResponse schema ...
-    RateLimitErrorResponse:
-      # ... existing RateLimitErrorResponse schema ...
+# Armtek API: Сервис Заказов (`/ws_order`) - Метод `getOrder2` (ver. 1.1.7)
 
-    # --- Схемы для Заказов (Обновления) ---
-    OrderStatusDetail: # Новая схема для элемента массива STATUSES
-      type: object
-      properties:
-        POSROOT:
-          type: string
-          maxLength: 10
-          description: Номер корневой позиции (для связанных позиций при перезаказе)
-        SUPPLIER:
-          type: string
-          # maxLength: Не указан
-          description: Код склада партнера (если статус относится к партнеру)
-        DateDelNew:
-          type: string
-          # format: date-time ? (YYYYMMDDHHMMSS)
-          description: Дата/время последнего события по товару в формате ГГГГММДДЧЧММСС
-        SubStatus:
-          type: string
-          maxLength: 10
-          enum: [WayQuan, Planned, Waiting, Confirmed, Shipped]
-          description: >
-            Субстатус:
-            * WayQuan - товар в пути между пунктами логистической цепочки
-            * Planned - запланировано к закупке у партнера
-            * Waiting - ожидание подтверждения от партнера
-            * Confirmed - партнер подтвердил отгрузку
-            * Shipped - партнер отгрузил товар в адрес АРМТЕК
-        Werks:
-          type: string
-          maxLength: 4
-          description: Код склада АРМТЕК (если статус относится к складу АРМТЕК)
-        WerksName:
-          type: string
-          # maxLength: Не указан
-          description: Наименование склада АРМТЕК
-        LsegETP:
-          type: string
-          # maxLength: Не указан
-          description: Текстовое пояснение состояния товара (например, "На приемке", "Ожидаем прибытия от поставщика")
+**Общие параметры:**
 
-    OrderItemDetail: # Схема для элемента массива ITEMS (возможно, используется и в getOrder)
-      type: object
-      properties:
-        POSNR:
-          type: string
-          maxLength: 10
-          description: Номер позиции в заказе
-        PIN:
-          type: string
-          description: Артикул
-        BRAND:
-          type: string
-          description: Бренд
-        KWMENG: # Текущее количество к поставке
-          type: number # Или string?
-          description: Количество к поставке (может быть уменьшено при невозможности полной поставки)
-        ORDERED: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Изначально заказанное количество (не меняется, хранится в родительской позиции при перезаказе)
-        REJECTED: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Общее отклоненное количество (не может быть поставлено)
-        PROCESSING: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество в процессе обработки (на складах партнера или АРМТЕК)
-        Ready: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, готовое к отгрузке на складе отгрузки
-        Delivered: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, отгруженное клиенту
-        InvoiceNum: # Добавлено поле
-          type: string
-          # maxLength: Не указан
-          description: Номер накладной (если отгружено)
-        InvoiceDate: # Добавлено поле
-          type: string
-          format: date # YYYYMMDD ?
-          description: Дата накладной (если отгружено)
-        ClientRefusal: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, от которого клиент отказался при доставке
-        ReadyToIssue: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, готовое к выдаче (при самовывозе)
-        Issued: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, выданное клиенту (при самовывозе)
-        # ... другие существующие поля позиции заказа ...
+*   **Базовый URL:** `http://ws.armtek.ru` (или другой региональный)
+*   **Аутентификация:** Basic Authentication (логин/пароль)
+*   **Формат ответа:** Управляется query-параметром `format` (`json` или `xml`, по умолчанию `json`).
+*   **Базовая структура ответа:**
+    *   `STATUS` (integer): HTTP статус код.
+    *   `MESSAGES` (array): Массив сообщений (`TYPE`, `TEXT`, `DATE`).
+    *   `RESP` (object/array/null): Тело ответа, специфичное для метода.
 
-    OrderDetailsResponse: # Обновляем схему ответа для getOrder/getOrder2
-      allOf:
-        - $ref: '#/components/schemas/BaseResponse'
-        - type: object
-          properties:
-            RESP: # Переопределяем RESP
-              type: object
-              properties:
-                HEADER:
-                  type: object
-                  properties:
-                    ORDER: # Добавлено поле из описания
-                      type: string
-                      maxLength: 10
-                      description: Номер заказа
-                    # ... другие поля заголовка заказа
-                ITEMS:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/OrderItemDetail' # Используем детализированную схему
-                ABGRU_ITEMS: # Таблица для editOrder
-                   type: array
-                   items:
-                     type: object
-                     properties:
-                       ABGRU:
-                         type: string
-                         description: Код причины отклонения
-                       # ... другие поля
-                STATUSES: # Новая структура, добавляемая при STATUS=1
-                  type: array
-                  description: Расшифровка статусов позиций (доступно при STATUS=1)
-                  items:
-                    type: array # Вложенный массив? Или объект? Документация неясна ("новая сложная структура (вложенные массивы): STATUSES"). Предполагаем массив объектов.
-                    items:
-                      $ref: '#/components/schemas/OrderStatusDetail'
-                # ... другие таблицы и поля в ответе getOrder
+---
 
-    # ... остальные схемы ...
+## Метод `getOrder2`
 
-paths:
-  # ... existing paths ...
+*   **Назначение:** Получение подробной информации по номеру заказа с возможностью получения расшифровки статусов позиций.
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_order/getOrder2`
+*   **Параметры запроса (Query):**
+    *   `VKORG` (string, **обязательный**): Сбытовая организация.
+    *   `KUNRG` (string, **обязательный**): Номер покупателя (KUNNR\_RG).
+    *   `ORDER` (string, **обязательный**): Номер заказа Armtek.
+    *   `STATUS` (integer, *необязательный*): Флаг получения расшифровки статусов (`1` - получать, по умолчанию не передается).
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `HEADER` (object): Заголовок заказа. Поля аналогичны методу `getOrder`.
+        *   *... (ORDER, ORDER_DATE, ORDER_TIME, ORDER_TYPE, ORDER_STATUS, KUNRG, KUNRG_TXT, KUNWE, KUNWE_TXT, KUNNR_ZA, ADDRZA, PARNRAP, NAMEAP, BSTKD, KETDT, INCOTERMS, DELIVERY_ADDRESS, DELIVERY_INTERVAL, DELIVERY_METHOD, CONTACT_PERSON, CONTACT_PHONE, BACKORDER, SUBSTITUTION, SUMMA, CURRENCY, ...) ...*
+    *   `ITEMS` (array): Массив позиций заказа. Поля аналогичны методу `getOrder`.
+        *   *... (POSNR, PIN, BRAND, NAME, KWMENG, KWMENG_CONF, PRICE, SUMMA, NOTE, STATUS, STATUS_DATE, STATUS_TIME, DELIVERY_DATE, DELIVERY_TIME, KEYZAK, ARTSKU, PRICEMAX, DATEMAX, VBELN, POSNR_VL, VBELN_VF, POSNR_VF, ABGRU, ABGRU_TXT, ...) ...*
+        *   `KWMENG_ORIG` (number/string): Исходное заказанное количество (может отличаться от `KWMENG` при частичной поставке со складов партнеров).
+        *   `REJECTED` (number/string): Общее отклоненное количество, которое не будет поставлено.
+        *   `PROCESSING` (number/string): Количество в процессе обработки (на складах партнера и/или Armtek).
+        *   `READY` (number/string): Количество, готовое к отгрузке клиенту на складе отгрузки.
+        *   `DELIVERED` (number/string): Количество, уже отгруженное клиенту.
+        *   `InvoiceNum` (string): Номер фактуры (если отгружено).
+        *   `InvoiceDate` (string): Дата фактуры (YYYYMMDD).
+        *   `InvoicePos` (string): Номер позиции в фактуре.
+        *   `REFUSED` (number/string): Количество, от которого клиент отказался при доставке.
+        *   `ReadyToIssue` (number/string): Количество, готовое к выдаче (при самовывозе).
+        *   `Issued` (number/string): Количество, выданное клиенту (при самовывозе).
+    *   `STATUSES` (array, *только если `STATUS=1`*): Массив объектов с расшифровкой статусов позиций.
+        *   `ORDER` (string, max 10): Номер заказа.
+        *   `POSNR` (string, max 10): Номер позиции в заказе.
+        *   `POSROOT` (string, max 10): Номер корневой позиции (для перезаказанных позиций).
+        *   `SUPPLIER` (string, max 10): Код партнера (если позиция со склада партнера).
+        *   `SUPPLIER_NAME` (string, max 100): Наименование партнера.
+        *   `WERKS` (string, max 4): Код склада Armtek (если статус относится к складу Armtek).
+        *   `WERKS_NAME` (string, max 100): Наименование склада Armtek.
+        *   `LSEG` (string, max 10): Код сегмента логистики.
+        *   `LSEG_ETP` (string, max 100): Описание сегмента логистики (например, "На приемке", "В пути на склад отгрузки", "Ожидаем прибытия от поставщика").
+        *   `DATECR` (string, max 14): Дата/время создания записи статуса (ГГГГММДДЧЧММСС).
+        *   `DATECH` (string, max 14): Дата/время изменения записи статуса (ГГГГММДДЧЧММСС).
+        *   `DATEDEL` (string, max 14): Дата/время ожидаемой поставки (ГГГГММДДЧЧММСС).
+        *   `DATEDELNEW` (string, max 14): Дата/время последнего события по товару (ГГГГММДДЧЧММСС).
+        *   `SUBSTATUS` (string, max 10): Субстатус позиции:
+            *   `WayQuan`: Товар в пути между пунктами логистической цепочки Armtek.
+            *   `Planned`: Запланировано к закупке у партнера.
+            *   `Waiting`: Ожидание подтверждения от партнера.
+            *   `Confirmed`: Партнер подтвердил готовность отгрузить.
+            *   `Shipped`: Партнер отгрузил товар в адрес Armtek.
+        *   `KWMENG` (number/string): Количество в данном субстатусе.
+    *   `ABGRU_ITEMS` (array): Массив объектов с расшифровкой причин отказа (поля `ABGRU`, `TEXT`). Поля аналогичны методу `getOrder`.
 
-  /ws_order/getOrder:
-    get:
-      summary: Подробная информация по номеру заказа
-      description: Получает детальную информацию по указанному номеру заказа. Может включать расшифровку статусов при STATUS=1.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          # ...
-        - name: KUNRG
-          # ...
-        - name: ORDER
-          # ...
-        - name: STATUS # Уточняем описание
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: ['0', '1', '']
-          description: >
-            Флаг для добавления расшифровки статусов позиций.
-            1 - добавить структуру STATUSES с детальной расшифровкой.
-            0 или пусто - без расшифровки.
-        - name: EDIT
-          # ...
-        - name: format
-          # ...
-      responses:
-        '200':
-          description: Детальная информация по заказу
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse' # Используем обновленную схему
-        '401':
-          description: Ошибка авторизации
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        '404':
-          description: Заказ не найден
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-
-  /ws_order/getOrder2:
-    get:
-      summary: Подробная информация по номеру заказа (ver. 2)
-      description: >
-        Получает детальную информацию по указанному номеру заказа (версия 2).
-        Отличается от getOrder в основном структурой ответа при использовании параметра STATUS=1,
-        который добавляет детализированную расшифровку статусов в структуру STATUSES.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          # ...
-        - name: KUNRG
-          # ...
-        - name: ORDER
-          # ...
-        - name: STATUS # Добавляем параметр STATUS, так как он ключевой для getOrder2
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: ['0', '1', '']
-          description: >
-            Флаг для добавления расшифровки статусов позиций.
-            1 - добавить структуру STATUSES с детальной расшифровкой.
-            0 или пусто - без расшифровки.
-        # EDIT не упомянут для getOrder2
-        - name: format
-          # ...
-      responses:
-        '200':
-          description: Детальная информация по заказу (версия 2)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse' # Используем ту же обновленную схему ответа
-        '401':
-          description: Ошибка авторизации
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        '404':
-          description: Заказ не найден
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-
-  # ... остальные пути ...
-```
-
-**Основные изменения:**
-
-1.  **Добавлена схема `OrderStatusDetail`:** Описывает поля, входящие в расшифровку статуса (`POSROOT`, `SUPPLIER`, `DateDelNew`, `SubStatus`, `Werks`, `WerksName`, `LsegETP`).
-2.  **Создана/Обновлена схема `OrderItemDetail`:** Включены новые поля, описывающие количество на разных стадиях (`ORDERED`, `REJECTED`, `PROCESSING`, `Ready`, `Delivered`, `ClientRefusal`, `ReadyToIssue`, `Issued`), а также поля накладной (`InvoiceNum`, `InvoiceDate`). Эта схема используется в `OrderDetailsResponse`.
-3.  **Обновлена схема `OrderDetailsResponse`:**
-    *   В `RESP.HEADER` добавлено поле `ORDER`.
-    *   В `RESP.ITEMS` теперь используется ссылка на `OrderItemDetail`.
-    *   Добавлено опциональное поле `RESP.STATUSES` (массив массивов или массив объектов `OrderStatusDetail` - выбрал массив объектов для большей структурированности), которое появляется при `STATUS=1`.
-4.  **Обновлен путь `/ws_order/getOrder`:** Уточнено описание параметра `STATUS`. Ссылка на ответ теперь указывает на обновленную `OrderDetailsResponse`. Добавлены ответы 401/404 со ссылкой на `GenericErrorResponse`.
-5.  **Обновлен путь `/ws_order/getOrder2`:**
-    *   Добавлено более подробное описание, подчеркивающее роль `STATUS=1` и структуры `STATUSES`.
-    *   Добавлен параметр `STATUS`, так как он является ключевым отличием/особенностью этого эндпоинта согласно документации.
-    *   Ссылка на ответ указывает на ту же обновленную `OrderDetailsResponse`.
-    *   Добавлены ответы 401/404 со ссылкой на `GenericErrorResponse`.
-
-**Неясности:**
-
-*   Точная структура `STATUSES` (массив объектов или массив массивов). Выбрана структура массива объектов.
-*   Типы данных для полей количества (`ORDERED`, `REJECTED` и т.д.) - указаны как "строка (20)", но логичнее было бы число. Оставлены как `string` согласно документации, но это может потребовать уточнения.
-*   Присутствуют ли новые поля (`ORDERED`, `REJECTED` и т.д.) в ответе `getOrder` или только в `getOrder2` (или только при `STATUS=1`). Пока добавлены в общую схему `OrderItemDetail`, используемую обеими версиями.# filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\ArmtekRestApi.md
-# ...existing code...
-components:
-  # ... existing securitySchemes ...
-  schemas:
-    # ... existing BaseResponse, ResponseMessage ...
-    GenericErrorResponse:
-      # ... existing GenericErrorResponse schema ...
-    RateLimitErrorResponse:
-      # ... existing RateLimitErrorResponse schema ...
-
-    # --- Схемы для Заказов (Обновления) ---
-    OrderStatusDetail: # Новая схема для элемента массива STATUSES
-      type: object
-      properties:
-        POSROOT:
-          type: string
-          maxLength: 10
-          description: Номер корневой позиции (для связанных позиций при перезаказе)
-        SUPPLIER:
-          type: string
-          # maxLength: Не указан
-          description: Код склада партнера (если статус относится к партнеру)
-        DateDelNew:
-          type: string
-          # format: date-time ? (YYYYMMDDHHMMSS)
-          description: Дата/время последнего события по товару в формате ГГГГММДДЧЧММСС
-        SubStatus:
-          type: string
-          maxLength: 10
-          enum: [WayQuan, Planned, Waiting, Confirmed, Shipped]
-          description: >
-            Субстатус:
-            * WayQuan - товар в пути между пунктами логистической цепочки
-            * Planned - запланировано к закупке у партнера
-            * Waiting - ожидание подтверждения от партнера
-            * Confirmed - партнер подтвердил отгрузку
-            * Shipped - партнер отгрузил товар в адрес АРМТЕК
-        Werks:
-          type: string
-          maxLength: 4
-          description: Код склада АРМТЕК (если статус относится к складу АРМТЕК)
-        WerksName:
-          type: string
-          # maxLength: Не указан
-          description: Наименование склада АРМТЕК
-        LsegETP:
-          type: string
-          # maxLength: Не указан
-          description: Текстовое пояснение состояния товара (например, "На приемке", "Ожидаем прибытия от поставщика")
-
-    OrderItemDetail: # Схема для элемента массива ITEMS (возможно, используется и в getOrder)
-      type: object
-      properties:
-        POSNR:
-          type: string
-          maxLength: 10
-          description: Номер позиции в заказе
-        PIN:
-          type: string
-          description: Артикул
-        BRAND:
-          type: string
-          description: Бренд
-        KWMENG: # Текущее количество к поставке
-          type: number # Или string?
-          description: Количество к поставке (может быть уменьшено при невозможности полной поставки)
-        ORDERED: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Изначально заказанное количество (не меняется, хранится в родительской позиции при перезаказе)
-        REJECTED: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Общее отклоненное количество (не может быть поставлено)
-        PROCESSING: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество в процессе обработки (на складах партнера или АРМТЕК)
-        Ready: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, готовое к отгрузке на складе отгрузки
-        Delivered: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, отгруженное клиенту
-        InvoiceNum: # Добавлено поле
-          type: string
-          # maxLength: Не указан
-          description: Номер накладной (если отгружено)
-        InvoiceDate: # Добавлено поле
-          type: string
-          format: date # YYYYMMDD ?
-          description: Дата накладной (если отгружено)
-        ClientRefusal: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, от которого клиент отказался при доставке
-        ReadyToIssue: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, готовое к выдаче (при самовывозе)
-        Issued: # Добавлено поле
-          type: string # Или number? Указано "строка ( 20 )"
-          description: Количество, выданное клиенту (при самовывозе)
-        # ... другие существующие поля позиции заказа ...
-
-    OrderDetailsResponse: # Обновляем схему ответа для getOrder/getOrder2
-      allOf:
-        - $ref: '#/components/schemas/BaseResponse'
-        - type: object
-          properties:
-            RESP: # Переопределяем RESP
-              type: object
-              properties:
-                HEADER:
-                  type: object
-                  properties:
-                    ORDER: # Добавлено поле из описания
-                      type: string
-                      maxLength: 10
-                      description: Номер заказа
-                    # ... другие поля заголовка заказа
-                ITEMS:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/OrderItemDetail' # Используем детализированную схему
-                ABGRU_ITEMS: # Таблица для editOrder
-                   type: array
-                   items:
-                     type: object
-                     properties:
-                       ABGRU:
-                         type: string
-                         description: Код причины отклонения
-                       # ... другие поля
-                STATUSES: # Новая структура, добавляемая при STATUS=1
-                  type: array
-                  description: Расшифровка статусов позиций (доступно при STATUS=1)
-                  items:
-                    type: array # Вложенный массив? Или объект? Документация неясна ("новая сложная структура (вложенные массивы): STATUSES"). Предполагаем массив объектов.
-                    items:
-                      $ref: '#/components/schemas/OrderStatusDetail'
-                # ... другие таблицы и поля в ответе getOrder
-
-    # ... остальные схемы ...
-
-paths:
-  # ... existing paths ...
-
-  /ws_order/getOrder:
-    get:
-      summary: Подробная информация по номеру заказа
-      description: Получает детальную информацию по указанному номеру заказа. Может включать расшифровку статусов при STATUS=1.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          # ...
-        - name: KUNRG
-          # ...
-        - name: ORDER
-          # ...
-        - name: STATUS # Уточняем описание
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: ['0', '1', '']
-          description: >
-            Флаг для добавления расшифровки статусов позиций.
-            1 - добавить структуру STATUSES с детальной расшифровкой.
-            0 или пусто - без расшифровки.
-        - name: EDIT
-          # ...
-        - name: format
-          # ...
-      responses:
-        '200':
-          description: Детальная информация по заказу
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse' # Используем обновленную схему
-        '401':
-          description: Ошибка авторизации
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        '404':
-          description: Заказ не найден
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-
-  /ws_order/getOrder2:
-    get:
-      summary: Подробная информация по номеру заказа (ver. 2)
-      description: >
-        Получает детальную информацию по указанному номеру заказа (версия 2).
-        Отличается от getOrder в основном структурой ответа при использовании параметра STATUS=1,
-        который добавляет детализированную расшифровку статусов в структуру STATUSES.
-      tags: [Orders]
-      parameters:
-        - name: VKORG
-          # ...
-        - name: KUNRG
-          # ...
-        - name: ORDER
-          # ...
-        - name: STATUS # Добавляем параметр STATUS, так как он ключевой для getOrder2
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: ['0', '1', '']
-          description: >
-            Флаг для добавления расшифровки статусов позиций.
-            1 - добавить структуру STATUSES с детальной расшифровкой.
-            0 или пусто - без расшифровки.
-        # EDIT не упомянут для getOrder2
-        - name: format
-          # ...
-      responses:
-        '200':
-          description: Детальная информация по заказу (версия 2)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OrderDetailsResponse' # Используем ту же обновленную схему ответа
-        '401':
-          description: Ошибка авторизации
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        '404':
-          description: Заказ не найден
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericErrorResponse'
-
-  # ... остальные пути ...
-```
-
-**Основные изменения:**
-
-1.  **Добавлена схема `OrderStatusDetail`:** Описывает поля, входящие в расшифровку статуса (`POSROOT`, `SUPPLIER`, `DateDelNew`, `SubStatus`, `Werks`, `WerksName`, `LsegETP`).
-2.  **Создана/Обновлена схема `OrderItemDetail`:** Включены новые поля, описывающие количество на разных стадиях (`ORDERED`, `REJECTED`, `PROCESSING`, `Ready`, `Delivered`, `ClientRefusal`, `ReadyToIssue`, `Issued`), а также поля накладной (`InvoiceNum`, `InvoiceDate`). Эта схема используется в `OrderDetailsResponse`.
-3.  **Обновлена схема `OrderDetailsResponse`:**
-    *   В `RESP.HEADER` добавлено поле `ORDER`.
-    *   В `RESP.ITEMS` теперь используется ссылка на `OrderItemDetail`.
-    *   Добавлено опциональное поле `RESP.STATUSES` (массив массивов или массив объектов `OrderStatusDetail` - выбрал массив объектов для большей структурированности), которое появляется при `STATUS=1`.
-4.  **Обновлен путь `/ws_order/getOrder`:** Уточнено описание параметра `STATUS`. Ссылка на ответ теперь указывает на обновленную `OrderDetailsResponse`. Добавлены ответы 401/404 со ссылкой на `GenericErrorResponse`.
-5.  **Обновлен путь `/ws_order/getOrder2`:**
-    *   Добавлено более подробное описание, подчеркивающее роль `STATUS=1` и структуры `STATUSES`.
-    *   Добавлен параметр `STATUS`, так как он является ключевым отличием/особенностью этого эндпоинта согласно документации.
-    *   Ссылка на ответ указывает на ту же обновленную `OrderDetailsResponse`.
-    *   Добавлены ответы 401/404 со ссылкой на `GenericErrorResponse`.
-
-**Неясности:**
-
-*   Точная структура `STATUSES` (массив объектов или массив массивов). Выбрана структура массива объектов.
-*   Типы данных для полей количества (`ORDERED`, `REJECTED` и т.д.) - указаны как "строка (20)", но логичнее было бы число. Оставлены как `string` согласно документации, но это может потребовать уточнения.
-*   Присутствуют ли новые поля (`ORDERED`, `REJECTED` и т.д.) в ответе `getOrder` или только в `getOrder2` (или только при `STATUS=1`). Пока добавлены в общую схему `OrderItemDetail`, используемую обеими версиями.
+---

@@ -17,5 +17,7 @@
     "all": "All",
     "filterByClient": "Filter by Client",
     "loading": "Loading...",
+    "confirmResetDatabaseTitle": "Confirm DB Reset",
+    "confirmResetDatabaseMessage": "All data will be deleted permanently. Are you sure?",
     "copiedToClipboard(value: String)": "{value} copied to clipboard"
 }

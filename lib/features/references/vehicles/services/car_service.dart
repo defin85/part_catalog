@@ -212,6 +212,35 @@ class CarService {
     }
   }
 
+  /// Проверяет уникальность VIN-кода.
+  ///
+  /// [vin] - VIN-код для проверки.
+  /// [excludeUuid] - UUID автомобиля, который нужно исключить из проверки (при редактировании).
+  Future<bool> isVinUnique(String vin, {String? excludeUuid}) async {
+    _logger.d('Checking VIN uniqueness for "$vin", excluding $excludeUuid');
+    try {
+      final existingCar = await _carsDao.getCarByVin(vin);
+      if (existingCar == null) {
+        _logger.d('VIN "$vin" is unique (no car found).');
+        return true; // VIN не найден, значит уникален
+      }
+      // Если VIN найден, проверяем, не принадлежит ли он автомобилю, который мы редактируем
+      if (excludeUuid != null && existingCar.coreData.uuid == excludeUuid) {
+        _logger.d(
+            'VIN "$vin" belongs to the car being edited ($excludeUuid), considering unique.');
+        return true; // Найденный VIN принадлежит редактируемому авто, считаем уникальным для других
+      }
+      _logger.w(
+          'VIN "$vin" is not unique (found car ${existingCar.coreData.uuid}).');
+      return false; // VIN найден и не принадлежит редактируемому авто
+    } catch (e, s) {
+      _logger.e('Error checking VIN uniqueness for "$vin"',
+          error: e, stackTrace: s);
+      // В случае ошибки лучше считать VIN не уникальным, чтобы предотвратить дублирование
+      return false;
+    }
+  }
+
   /// Получает список автомобилей [CarWithOwnerModel] с информацией о владельцах.
   Future<List<CarWithOwnerModel>> getCarsWithOwners() async {
     _logger.i(LogMessages.carGetWithOwners);

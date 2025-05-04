@@ -17,5 +17,7 @@
     "all": "Все",
     "filterByClient": "Фильтр по клиенту",
     "loading": "Загрузка...",
+    "confirmResetDatabaseTitle": "Подтвердите сброс БД",
+    "confirmResetDatabaseMessage": "Все данные будут удалены без возможности восстановления. Вы уверены?",
     "copiedToClipboard(value: String)": "{value} скопировано в буфер обмена"
 }

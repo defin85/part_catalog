@@ -24,7 +24,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "deleteConfirmTitle": "Delete vehicle?",
-    "deleteConfirmMessage": "Are you sure you want to delete the {make} {model}?",
+    "deleteConfirmMessage(make: String, model: String, vin: String)": "Are you sure you want to delete the {make} {model} (VIN: {vin})?",
     "makeHint": "For example: Toyota",
     "modelHint": "For example: Camry",
     "yearHint": "For example: 2022",
@@ -41,6 +41,9 @@
     "deleteError(error: String)": "Error deleting vehicle: {error}",
     "addError(error: String)": "Error adding vehicle: {error}",
     "updateError(error: String)": "Error updating vehicle: {error}",
-    "deleteConfirmMessage(make: String, model: String)": "Are you sure you want to delete the {make} {model}?",
-    "vinNotUnique": "A vehicle with this VIN already exists"
+    "vinNotUnique": "A vehicle with this VIN already exists",
+    "restored(name: String)": "Vehicle \"{name}\" restored",
+    "added(name: String)": "Vehicle \"{name}\" added",
+    "updated(name: String)": "Vehicle \"{name}\" updated",
+    "vinCheckError": "VIN check error"
 }

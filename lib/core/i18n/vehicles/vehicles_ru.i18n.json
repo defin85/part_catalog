@@ -24,7 +24,7 @@
     "cancel": "Отмена",
     "save": "Сохранить",
     "deleteConfirmTitle": "Удалить автомобиль?",
-    "deleteConfirmMessage": "Вы действительно хотите удалить автомобиль {make} {model}?",
+    "deleteConfirmMessage(make: String, model: String, vin: String)": "Вы действительно хотите удалить автомобиль {make} {model} (VIN: {vin})?",
     "makeHint": "Например: Toyota",
     "modelHint": "Например: Camry",
     "yearHint": "Например: 2022",
@@ -41,6 +41,9 @@
     "deleteError(error: String)": "Ошибка при удалении автомобиля: {error}",
     "addError(error: String)": "Ошибка при добавлении автомобиля: {error}",
     "updateError(error: String)": "Ошибка при обновлении автомобиля: {error}",
-    "deleteConfirmMessage(make: String, model: String)": "Вы действительно хотите удалить автомобиль {make} {model}?",
-    "vinNotUnique": "Автомобиль с таким VIN уже существует"
+    "vinNotUnique": "Автомобиль с таким VIN уже существует",
+    "restored(name: String)": "Автомобиль \"{name}\" восстановлен",
+    "added(name: String)": "Автомобиль \"{name}\" добавлен",
+    "updated(name: String)": "Автомобиль \"{name}\" обновлен",
+    "vinCheckError": "Ошибка проверки VIN"
 }

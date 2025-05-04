@@ -1,630 +1,115 @@
-# ...existing code...
-components:
-  securitySchemes:
-    basicAuth:
-      # ... existing basicAuth schema ...
-  schemas:
-    GenericError:
-      # ... existing GenericError schema ...
-    # ... other existing schemas ...
-    PingResponse:
-      # ... existing PingResponse schema ...
-    # ... report schemas ...
-    # ... search schemas ...
+# Armtek API: Сервис Настроек Пользователя (`/ws_user`) - Формализованная информация
 
-    # --- Схемы для Настроек Пользователя ---
-    VkorgItem: # Элемент ответа getUserVkorgList
-      type: object
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        PROGRAM_NAME:
-          type: string
-          maxLength: 100
-          description: Наименование программы
-      required:
-        - VKORG
-        - PROGRAM_NAME
-    GetUserVkorgListResponse:
-      type: object
-      properties:
-        DATA:
-          type: array
-          items:
-            $ref: '#/components/schemas/VkorgItem'
-      # required: # Неизвестно
+**Общие параметры:**
 
-    UserInfoRequest: # Запрос для getUserInfo
-      type: object
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация. Пример: 4000
-        STRUCTURE:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Получить структуру клиента (1 - да, 0/пусто - нет)
-        FTPDATA:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Получить данные FTP клиента (1 - да, 0/пусто - нет)
-      required:
-        - VKORG
+*   **Базовый URL:** `http://ws.armtek.ru` (или другой региональный)
+*   **Аутентификация:** Basic Authentication (логин/пароль)
+*   **Формат ответа:** Управляется query-параметром `format` (`json` или `xml`, по умолчанию `json`).
+*   **Базовая структура ответа:**
+    *   `STATUS` (integer): HTTP статус код.
+    *   `MESSAGES` (array): Массив сообщений (`TYPE`, `TEXT`, `DATE`).
+    *   `RESP` (object/array/null): Тело ответа, специфичное для метода.
 
-    ClientStructure: # Часть ответа getUserInfo
-      type: object
-      properties:
-        KUNAG:
-          type: string
-          maxLength: 10
-          description: Клиент
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        SNAME:
-          type: string
-          maxLength: 100
-          description: Краткое наименование
-        # ... другие поля структуры клиента ...
-        RG_TAB: # Таблица плательщиков
-          type: array
-          items:
-            type: object
-            properties:
-              KUNNR: { type: string, maxLength: 10, description: Идентификатор плательщика }
-              DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-              SNAME: { type: string, maxLength: 100, description: Краткое наименование }
-              # ... другие поля плательщика ...
-              ZA_TAB: # Таблица адресов доставки
-                type: array
-                items:
-                  type: object
-                  properties:
-                    KUNNR: { type: string, maxLength: 10, description: Идентификатор адреса }
-                    DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-                    SNAME: { type: string, maxLength: 100, description: Краткое наименование }
-                    # ... другие поля адреса ...
-              EWX_TAB: # Таблица пунктов выдачи
-                type: array
-                items:
-                  type: object
-                  properties:
-                    ID: { type: string, maxLength: 10, description: Идентификатор пункта выдачи }
-                    DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-                    SNAME: { type: string, maxLength: 100, description: Краткое наименование }
-                    # ... другие поля пункта выдачи ...
-              DOGOVOR_TAB: # Таблица договоров
-                type: array
-                items:
-                  type: object
-                  properties:
-                    # ... поля договора ...
-              CONTACT_TAB: # Таблица контактных лиц
-                type: array
-                items:
-                  type: object
-                  properties:
-                    KUNNR: { type: string, maxLength: 10, description: Идентификатор контактного лица }
-                    DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-                    FNAME: { type: string, maxLength: 100, description: Полное наименование }
-                    LNAME: { type: string, maxLength: 100, description: Фамилия }
-                    MNAME: { type: string, maxLength: 100, description: Отчество }
-                    PHONE: { type: string, description: Телефон } # Размер не указан
-                    # ... другие поля контактного лица ...
-    FtpData: # Часть ответа getUserInfo
-      type: object
-      properties:
-        # ... поля данных FTP ...
-    GetUserInfoResponse:
-      type: object
-      properties:
-        STRUCTURE:
-          $ref: '#/components/schemas/ClientStructure'
-        FTPDATA:
-          $ref: '#/components/schemas/FtpData'
-      # required: # Неизвестно
+---
 
-    BrandItem: # Элемент ответа getBrandList
-      type: object
-      properties:
-        # ... поля бренда (не описаны) ...
-    GetBrandListResponse:
-      type: object
-      properties:
-        DATA:
-          type: array
-          items:
-            $ref: '#/components/schemas/BrandItem'
-      # required: # Неизвестно
+## 1. Метод `getUserVkorgList`
 
-    StoreItem: # Элемент ответа getStoreList
-      type: object
-      properties:
-        # ... поля склада (не описаны) ...
-    GetStoreListResponse:
-      type: object
-      properties:
-        DATA:
-          type: array
-          items:
-            $ref: '#/components/schemas/StoreItem'
-      # required: # Неизвестно
+*   **Назначение:** Получение списка доступных сбытовых организаций для текущего пользователя.
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_user/getUserVkorgList`
+*   **Параметры запроса (Query):**
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, array):**
+    *   Массив объектов, каждый из которых представляет сбытовую организацию:
+        *   `VKORG` (string, max 4): Код сбытовой организации.
+        *   `PROGRAM_NAME` (string, max 100): Наименование программы (например, "Легковая", "Грузовая").
 
-paths:
-  # ... existing invoice paths ...
-  # ... existing order paths ...
-  /ws_ping/index:
-    # ... existing ping path ...
-  # ... existing report paths ...
-  # ... existing search paths ...
+---
 
-  # --- Пути для Настроек Пользователя ---
-  /ws_user/getUserVkorgList:
-    get:
-      summary: Получение сбытовых организаций клиента
-      description: Возвращает список доступных сбытовых организаций для текущего пользователя.
-      tags: [User]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Список сбытовых организаций
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetUserVkorgListResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+## 2. Метод `getUserInfo`
 
-  /ws_user/getUserInfo:
-    post:
-      summary: Получение структуры клиента
-      description: Возвращает информацию о структуре клиента, включая адреса, контакты, договоры и данные FTP.
-      tags: [User]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/UserInfoRequest'
-          # application/x-www-form-urlencoded: # Возможен и такой вариант
-          #   schema:
-          #     $ref: '#/components/schemas/UserInfoRequest'
-      responses:
-        '200':
-          description: Структура клиента
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetUserInfoResponse'
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+*   **Назначение:** Получение подробной информации о структуре клиента (покупатели, адреса, контакты) и данных FTP.
+*   **HTTP Метод:** `POST`
+*   **Путь:** `/ws_user/getUserInfo`
+*   **Параметры запроса (Body - JSON или form-urlencoded):**
+    *   `VKORG` (string, max 4, **обязательный**): Сбытовая организация (код из `getUserVkorgList`).
+    *   `STRUCTURE` (string, '0' или '1', *необязательный*, по умолчанию '1'): Флаг получения структуры клиента (`1` - получить, `0` - не получать).
+    *   `FTPDATA` (string, '0' или '1', *необязательный*, по умолчанию '1'): Флаг получения данных FTP (`1` - получить, `0` - не получать).
+*   **Структура успешного ответа (`RESP`, object):**
+    *   `STRUCTURE` (array, *если `STRUCTURE=1`*): Массив объектов, представляющих структуру клиента (покупатели/грузополучатели).
+        *   `KUNNR` (string, max 10): Номер клиента (покупателя KUNNR_RG или грузополучателя KUNNR_WE).
+        *   `NAME1` (string, max 35): Наименование 1.
+        *   `NAME2` (string, max 35): Наименование 2.
+        *   `ORT01` (string, max 35): Город.
+        *   `ORT02` (string, max 35): Район.
+        *   `PSTLZ` (string, max 10): Почтовый индекс.
+        *   `REGIO` (string, max 3): Регион (код).
+        *   `SORTL` (string, max 20): Понятие поиска.
+        *   `STRAS` (string, max 60): Улица и номер дома.
+        *   `TELF1` (string, max 30): Номер телефона 1.
+        *   `TELF2` (string, max 30): Номер телефона 2.
+        *   `TELFX` (string, max 30): Номер факса.
+        *   `ADDRESS` (string, max 255): Полный адрес.
+        *   `INN` (string, max 20): ИНН.
+        *   `KPP` (string, max 9): КПП.
+        *   `OKPO` (string, max 10): ОКПО.
+        *   `OKVED` (string, max 100): ОКВЭД.
+        *   `EMAIL` (string, max 241): Адрес электронной почты.
+        *   `WWW` (string, max 100): Адрес сайта.
+        *   `TYPE` (string, max 1): Тип клиента (`1` - ЮЛ, `2` - ФЛ, `3` - ИП).
+        *   `CONTACTS` (array): Массив контактных лиц.
+            *   `PARNR` (string, max 10): Код контактного лица.
+            *   `DEFAULT` (string, max 1): Признак установки по умолчанию (`X` - да).
+            *   `FNAME` (string, max 100): Полное наименование (Имя).
+            *   `LNAME` (string, max 100): Фамилия.
+            *   `MNAME` (string, max 100): Отчество.
+            *   `PHONE` (string, max 30): Телефон.
+            *   `EMAIL` (string, max 241): Email.
+            *   `POSITION` (string, max 100): Должность.
+        *   `DELIVERY_ADDRESSES` (array): Массив адресов доставки (KUNNR_ZA).
+            *   `KUNNR` (string, max 10): Код адреса доставки.
+            *   `DEFAULT` (string, max 1): Признак установки по умолчанию (`X` - да).
+            *   `NAME1` (string, max 35): Наименование 1.
+            *   `ORT01` (string, max 35): Город.
+            *   `STRAS` (string, max 60): Улица и номер дома.
+            *   `ADDRESS` (string, max 255): Полный адрес.
+    *   `FTPDATA` (object, *если `FTPDATA=1`*): Объект с данными FTP.
+        *   `FTP_HOST` (string, max 100): Хост FTP.
+        *   `FTP_USER` (string, max 100): Пользователь FTP.
+        *   `FTP_PASS` (string, max 100): Пароль FTP.
+        *   `FTP_DIR` (string, max 100): Директория FTP.
 
-  /ws_user/getBrandList:
-    get:
-      summary: Получение списка брендов
-      description: Возвращает список брендов (структура ответа не описана).
-      tags: [User, Search] # Бренды могут использоваться и при поиске
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Список брендов
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetBrandListResponse' # Структура DATA неизвестна
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+---
 
-  /ws_user/getStoreList:
-    get:
-      summary: Получение списка складов
-      description: Возвращает список складов (структура ответа не описана).
-      tags: [User, Search] # Склады могут использоваться при поиске
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Список складов
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetStoreListResponse' # Структура DATA неизвестна
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
+## 3. Метод `getBrandList`
 
-tags:
-  # ... existing tags ...
-  - name: User
-    description: Сервисы, связанные с настройками и информацией пользователя
-```
+*   **Назначение:** Получение полного списка брендов, доступных в системе.
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_user/getBrandList`
+*   **Параметры запроса (Query):**
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, array):**
+    *   Массив объектов, каждый из которых представляет бренд:
+        *   `BRAND` (string, max 40): Наименование бренда.
 
-**Основные изменения:**
+---
 
-1.  **Добавлены пути:** `/ws_user/getUserVkorgList` (GET), `/ws_user/getUserInfo` (POST), `/ws_user/getBrandList` (GET), `/ws_user/getStoreList` (GET).
-2.  **Добавлены схемы запросов:** `UserInfoRequest`.
-3.  **Добавлены схемы ответов:** `GetUserVkorgListResponse`, `GetUserInfoResponse` (с вложенными `ClientStructure`, `FtpData` и другими), `GetBrandListResponse`, `GetStoreListResponse`. **Структуры ответов для `getBrandList` и `getStoreList`, а также детальная структура `ClientStructure` и `FtpData` не описаны в документации и являются предположениями.**
-4.  **Описаны параметры запроса:** Для каждого пути указаны query-параметры или `requestBody`.
-5.  **Описаны ответы:** Добавлены ответы `200`, `400` (для POST) и `default` со ссылками на соответствующие схемы.
-6.  **Обновлены теги:** Убедились, что используется тег `User`. Добавлен тег `Search` для `getBrandList` и `getStoreList`, так как они могут быть релевантны для поиска.
+## 4. Метод `getStoreList`
 
-**Необходимые уточнения (если возможно):**
+*   **Назначение:** Получение списка складов, доступных для указанной сбытовой организации.
+*   **HTTP Метод:** `GET`
+*   **Путь:** `/ws_user/getStoreList`
+*   **Параметры запроса (Query):**
+    *   `VKORG` (string, max 4, **обязательный**): Сбытовая организация (код из `getUserVkorgList`).
+    *   `format` (string, *необязательный*): `json` или `xml`.
+*   **Структура успешного ответа (`RESP`, array):**
+    *   Массив объектов, каждый из которых представляет склад:
+        *   `KEYZAK` (string, max 10): Код склада (используется при поиске и заказе).
+        *   `SKLCODE` (string, max 10): Технический идентификатор склада.
+        *   `NAME` (string, max 100): Наименование склада.
+        *   `ADDRESS` (string, max 255): Адрес склада.
+        *   `PHONE` (string, max 30): Телефон склада.
+        *   `WORKTIME` (string, max 100): Время работы склада.
+        *   `GPS` (string, max 100): Координаты GPS.
 
-*   Точный базовый URL API.
-*   **Структура ответа** для `getBrandList` и `getStoreList`.
-*   **Полная структура** ответа `getUserInfo` (поля в `ClientStructure`, `FtpData` и вложенных таблицах).
-*   Формат передачи данных для POST-запросов (JSON или form-urlencoded).# filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\ArmtekRestApi.md
-# ...existing code...
-components:
-  securitySchemes:
-    basicAuth:
-      # ... existing basicAuth schema ...
-  schemas:
-    GenericError:
-      # ... existing GenericError schema ...
-    # ... other existing schemas ...
-    PingResponse:
-      # ... existing PingResponse schema ...
-    # ... report schemas ...
-    # ... search schemas ...
-
-    # --- Схемы для Настроек Пользователя ---
-    VkorgItem: # Элемент ответа getUserVkorgList
-      type: object
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        PROGRAM_NAME:
-          type: string
-          maxLength: 100
-          description: Наименование программы
-      required:
-        - VKORG
-        - PROGRAM_NAME
-    GetUserVkorgListResponse:
-      type: object
-      properties:
-        DATA:
-          type: array
-          items:
-            $ref: '#/components/schemas/VkorgItem'
-      # required: # Неизвестно
-
-    UserInfoRequest: # Запрос для getUserInfo
-      type: object
-      properties:
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация. Пример: 4000
-        STRUCTURE:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Получить структуру клиента (1 - да, 0/пусто - нет)
-        FTPDATA:
-          type: string
-          maxLength: 1
-          enum: ['0', '1', '']
-          description: Получить данные FTP клиента (1 - да, 0/пусто - нет)
-      required:
-        - VKORG
-
-    ClientStructure: # Часть ответа getUserInfo
-      type: object
-      properties:
-        KUNAG:
-          type: string
-          maxLength: 10
-          description: Клиент
-        VKORG:
-          type: string
-          maxLength: 4
-          description: Сбытовая организация
-        SNAME:
-          type: string
-          maxLength: 100
-          description: Краткое наименование
-        # ... другие поля структуры клиента ...
-        RG_TAB: # Таблица плательщиков
-          type: array
-          items:
-            type: object
-            properties:
-              KUNNR: { type: string, maxLength: 10, description: Идентификатор плательщика }
-              DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-              SNAME: { type: string, maxLength: 100, description: Краткое наименование }
-              # ... другие поля плательщика ...
-              ZA_TAB: # Таблица адресов доставки
-                type: array
-                items:
-                  type: object
-                  properties:
-                    KUNNR: { type: string, maxLength: 10, description: Идентификатор адреса }
-                    DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-                    SNAME: { type: string, maxLength: 100, description: Краткое наименование }
-                    # ... другие поля адреса ...
-              EWX_TAB: # Таблица пунктов выдачи
-                type: array
-                items:
-                  type: object
-                  properties:
-                    ID: { type: string, maxLength: 10, description: Идентификатор пункта выдачи }
-                    DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-                    SNAME: { type: string, maxLength: 100, description: Краткое наименование }
-                    # ... другие поля пункта выдачи ...
-              DOGOVOR_TAB: # Таблица договоров
-                type: array
-                items:
-                  type: object
-                  properties:
-                    # ... поля договора ...
-              CONTACT_TAB: # Таблица контактных лиц
-                type: array
-                items:
-                  type: object
-                  properties:
-                    KUNNR: { type: string, maxLength: 10, description: Идентификатор контактного лица }
-                    DEFAULT: { type: string, maxLength: 1, description: Признак установки по умолчанию }
-                    FNAME: { type: string, maxLength: 100, description: Полное наименование }
-                    LNAME: { type: string, maxLength: 100, description: Фамилия }
-                    MNAME: { type: string, maxLength: 100, description: Отчество }
-                    PHONE: { type: string, description: Телефон } # Размер не указан
-                    # ... другие поля контактного лица ...
-    FtpData: # Часть ответа getUserInfo
-      type: object
-      properties:
-        # ... поля данных FTP ...
-    GetUserInfoResponse:
-      type: object
-      properties:
-        STRUCTURE:
-          $ref: '#/components/schemas/ClientStructure'
-        FTPDATA:
-          $ref: '#/components/schemas/FtpData'
-      # required: # Неизвестно
-
-    BrandItem: # Элемент ответа getBrandList
-      type: object
-      properties:
-        # ... поля бренда (не описаны) ...
-    GetBrandListResponse:
-      type: object
-      properties:
-        DATA:
-          type: array
-          items:
-            $ref: '#/components/schemas/BrandItem'
-      # required: # Неизвестно
-
-    StoreItem: # Элемент ответа getStoreList
-      type: object
-      properties:
-        # ... поля склада (не описаны) ...
-    GetStoreListResponse:
-      type: object
-      properties:
-        DATA:
-          type: array
-          items:
-            $ref: '#/components/schemas/StoreItem'
-      # required: # Неизвестно
-
-paths:
-  # ... existing invoice paths ...
-  # ... existing order paths ...
-  /ws_ping/index:
-    # ... existing ping path ...
-  # ... existing report paths ...
-  # ... existing search paths ...
-
-  # --- Пути для Настроек Пользователя ---
-  /ws_user/getUserVkorgList:
-    get:
-      summary: Получение сбытовых организаций клиента
-      description: Возвращает список доступных сбытовых организаций для текущего пользователя.
-      tags: [User]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Список сбытовых организаций
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetUserVkorgListResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  /ws_user/getUserInfo:
-    post:
-      summary: Получение структуры клиента
-      description: Возвращает информацию о структуре клиента, включая адреса, контакты, договоры и данные FTP.
-      tags: [User]
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      requestBody:
-        required: true
-        content:
-          application/json: # Предполагаем JSON
-            schema:
-              $ref: '#/components/schemas/UserInfoRequest'
-          # application/x-www-form-urlencoded: # Возможен и такой вариант
-          #   schema:
-          #     $ref: '#/components/schemas/UserInfoRequest'
-      responses:
-        '200':
-          description: Структура клиента
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetUserInfoResponse'
-        '400':
-          description: Ошибка валидации входных данных
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-        default:
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  /ws_user/getBrandList:
-    get:
-      summary: Получение списка брендов
-      description: Возвращает список брендов (структура ответа не описана).
-      tags: [User, Search] # Бренды могут использоваться и при поиске
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Список брендов
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetBrandListResponse' # Структура DATA неизвестна
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-  /ws_user/getStoreList:
-    get:
-      summary: Получение списка складов
-      description: Возвращает список складов (структура ответа не описана).
-      tags: [User, Search] # Склады могут использоваться при поиске
-      parameters:
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [json, xml]
-            default: json
-          description: Формат ответа
-      responses:
-        '200':
-          description: Список складов
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetStoreListResponse' # Структура DATA неизвестна
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GenericError'
-
-tags:
-  # ... existing tags ...
-  - name: User
-    description: Сервисы, связанные с настройками и информацией пользователя
-```
-
-**Основные изменения:**
-
-1.  **Добавлены пути:** `/ws_user/getUserVkorgList` (GET), `/ws_user/getUserInfo` (POST), `/ws_user/getBrandList` (GET), `/ws_user/getStoreList` (GET).
-2.  **Добавлены схемы запросов:** `UserInfoRequest`.
-3.  **Добавлены схемы ответов:** `GetUserVkorgListResponse`, `GetUserInfoResponse` (с вложенными `ClientStructure`, `FtpData` и другими), `GetBrandListResponse`, `GetStoreListResponse`. **Структуры ответов для `getBrandList` и `getStoreList`, а также детальная структура `ClientStructure` и `FtpData` не описаны в документации и являются предположениями.**
-4.  **Описаны параметры запроса:** Для каждого пути указаны query-параметры или `requestBody`.
-5.  **Описаны ответы:** Добавлены ответы `200`, `400` (для POST) и `default` со ссылками на соответствующие схемы.
-6.  **Обновлены теги:** Убедились, что используется тег `User`. Добавлен тег `Search` для `getBrandList` и `getStoreList`, так как они могут быть релевантны для поиска.
-
-**Необходимые уточнения (если возможно):**
-
-*   Точный базовый URL API.
-*   **Структура ответа** для `getBrandList` и `getStoreList`.
-*   **Полная структура** ответа `getUserInfo` (поля в `ClientStructure`, `FtpData` и вложенных таблицах).
-*   Формат передачи данных для POST-запросов (JSON или form-urlencoded).
+---

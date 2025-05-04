@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart';
-import 'package:part_catalog/core/navigation/app_router.dart'; // Импорт GoRouter
+import 'package:part_catalog/core/navigation/app_router.dart';
 import 'package:part_catalog/core/service_locator.dart';
 // Используем slang для локализации
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   // Выполнение в защищенной зоне для перехвата всех ошибок
@@ -39,10 +40,13 @@ void main() {
     // Передаем существующий экземпляр в setupLocator
     setupLocator(database);
 
-    // Оборачиваем приложение в TranslationProvider от slang
+    // Оборачиваем приложение в ProviderScope и TranslationProvider
     runApp(
-      TranslationProvider(
-        child: const MyApp(),
+      ProviderScope(
+        // <--- Обертка для Riverpod
+        child: TranslationProvider(
+          child: const MyApp(),
+        ),
       ),
     );
   }, (error, stackTrace) {
