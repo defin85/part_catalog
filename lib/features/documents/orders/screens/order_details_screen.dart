@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Импорт Riverpod
 import 'package:intl/intl.dart';
-import 'package:part_catalog/core/service_locator.dart';
+import 'package:logger/logger.dart';
+// --- Обновленные импорты ---
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-// --- Обновленные импорты ---
 import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
@@ -11,115 +12,96 @@ import 'package:part_catalog/features/documents/orders/models/order_model_compos
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
-import 'package:part_catalog/features/documents/orders/services/order_service.dart';
-// Импорты для получения данных клиента и авто (если нужно)
-import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
-import 'package:part_catalog/features/references/clients/services/client_service.dart';
-import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
-import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
-import 'package:part_catalog/core/utils/logger_config.dart'; // Импорт конфигурации логгера
+// Импортируем провайдеры
+import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
+import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
 
-class OrderDetailsScreen extends StatefulWidget {
-  final String orderUuid; // Переименовано для ясности
+// Преобразуем в ConsumerWidget
+class OrderDetailsScreen extends ConsumerWidget {
+  final String orderUuid;
 
   const OrderDetailsScreen({
     super.key,
     required this.orderUuid,
   });
 
-  @override
-  State<OrderDetailsScreen> createState() => _OrderDetailsScreenState();
-}
-
-class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
-  final _orderService = locator<OrderService>();
-  final _clientService = locator<ClientService>(); // Добавлено
-  final _carService = locator<CarService>(); // Добавлено
-  final _logger = AppLoggers.ordersLogger; // Используем логгер
-
-  late Stream<OrderModelComposite> _orderStream;
+  // Удаляем State, initState, dispose
 
   @override
-  void initState() {
-    super.initState();
-    // Используем новый метод сервиса, если он есть, или старый, если он возвращает нужный тип
-    _orderStream = _orderService.watchOrderByUuid(widget.orderUuid);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Добавляем WidgetRef
     final theme = Theme.of(context);
     final t = context.t; // Для краткости
+    // Получаем логгер через ref
+    final logger = ref.watch(ordersLoggerProvider);
+
+    // Следим за состоянием заказа через провайдер
+    final orderAsyncValue = ref.watch(orderDetailsStreamProvider(orderUuid));
 
     return Scaffold(
       appBar: AppBar(
         title: Text(t.orders.orderDetailsTitle),
         actions: [
           // Кнопки действий будут доступны только после загрузки данных
-          StreamBuilder<OrderModelComposite>(
-            stream: _orderStream,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData || snapshot.data!.isDeleted) {
+          orderAsyncValue.when(
+            data: (order) {
+              if (order.isDeleted) {
                 return const SizedBox
-                    .shrink(); // Не показывать кнопки, если нет данных или удалено
+                    .shrink(); // Не показывать кнопки, если удалено
               }
-              final order = snapshot.data!;
               return Row(
                 children: [
                   IconButton(
                     icon: const Icon(Icons.edit),
                     tooltip: t.common.edit,
-                    onPressed: () => _editOrder(order),
+                    onPressed: () =>
+                        _editOrder(context, order), // Передаем context
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete),
                     tooltip: t.common.delete,
-                    onPressed: () => _confirmDelete(order),
+                    onPressed: () => _confirmDelete(context, ref, order,
+                        logger), // Передаем context, ref, logger
                   ),
                 ],
               );
             },
+            loading: () => const Padding(
+              // Показываем заглушку во время загрузки
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+            error: (_, __) =>
+                const SizedBox.shrink(), // Не показываем кнопки при ошибке
           ),
         ],
       ),
-      body: StreamBuilder<OrderModelComposite>(
-        stream: _orderStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            _logger.e(LogMessages.orderDetailsStreamBuilderError,
-                error: snapshot.error, stackTrace: snapshot.stackTrace);
+      body: orderAsyncValue.when(
+        data: (order) {
+          if (order.isDeleted) {
+            // Отображение, если заказ удален
             return Center(
               child: Text(
-                t.common.dataLoadingError,
-                style: const TextStyle(color: Colors.red),
+                t.orders.orderNotFound, // Или "Заказ удален"
               ),
             );
           }
-
-          if (!snapshot.hasData || snapshot.data!.isDeleted) {
-            return Center(
-              child: Text(
-                t.orders.orderNotFound,
-              ),
-            );
-          }
-
-          final order = snapshot.data!;
+          // Основной контент экрана
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Заголовок и статус
-                _buildHeader(order, theme, t),
+                _buildHeader(context, order, theme, t), // Передаем context
                 const Divider(height: 32),
 
                 // Информация о клиенте и автомобиле
-                _buildClientAndCarInfo(order, theme, t),
+                _buildClientAndCarInfo(
+                    context, ref, order, theme, t), // Передаем context, ref
                 const Divider(height: 32),
 
                 // Описание проблемы
@@ -138,29 +120,46 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
 
                 // Запчасти
-                _buildItemsList(order, theme, t, BaseItemType.part),
+                _buildItemsList(context, ref, order, theme, t,
+                    BaseItemType.part, logger), // Передаем context, ref, logger
                 const SizedBox(height: 24),
 
                 // Работы/услуги
-                _buildItemsList(order, theme, t, BaseItemType.service),
+                _buildItemsList(
+                    context,
+                    ref,
+                    order,
+                    theme,
+                    t,
+                    BaseItemType.service,
+                    logger), // Передаем context, ref, logger
                 const SizedBox(height: 24),
 
                 // Итого и дата
-                _buildTotalAndDates(order, theme, t),
+                _buildTotalAndDates(
+                    context, order, theme, t), // Передаем context
               ],
             ),
           );
         },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) {
+          logger.e(LogMessages.orderDetailsStreamBuilderError,
+              error: error, stackTrace: stackTrace);
+          return Center(
+            child: Text(
+              t.common.dataLoadingError,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        },
       ),
-      bottomNavigationBar: StreamBuilder<OrderModelComposite>(
-        stream: _orderStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data!.isDeleted) {
+      // Нижняя панель с кнопкой действия
+      bottomNavigationBar: orderAsyncValue.maybeWhen(
+        data: (order) {
+          if (order.isDeleted) {
             return const SizedBox.shrink();
           }
-
-          final order = snapshot.data!;
-          // TODO: Реализовать логику определения следующего статуса
           final nextStatusAction = _getNextStatusAction(order.status, t);
           if (nextStatusAction == null) {
             return const SizedBox.shrink(); // Нет доступных действий
@@ -182,8 +181,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () =>
-                        _changeStatus(order, nextStatusAction.status),
+                    onPressed: () => _changeStatus(
+                        context,
+                        ref,
+                        order,
+                        nextStatusAction.status,
+                        logger), // Передаем context, ref, logger
                     style: ElevatedButton.styleFrom(
                       backgroundColor: nextStatusAction.color,
                     ),
@@ -194,17 +197,20 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
           );
         },
+        orElse: () =>
+            const SizedBox.shrink(), // Не показывать панель при загрузке/ошибке
       ),
     );
   }
 
-  // --- Методы построения UI ---
+  // --- Методы построения UI (теперь принимают BuildContext) ---
 
-  Widget _buildHeader(
-      OrderModelComposite order, ThemeData theme, Translations t) {
+  Widget _buildHeader(BuildContext context, OrderModelComposite order,
+      ThemeData theme, Translations t) {
     final dateFormat = DateFormat(
         'dd.MM.yyyy HH:mm', Localizations.localeOf(context).toString());
 
+    // ... остальной код метода без изменений ...
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -259,8 +265,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildClientAndCarInfo(
+  // Используем ref для получения данных клиента/авто через провайдеры
+  Widget _buildClientAndCarInfo(BuildContext context, WidgetRef ref,
       OrderModelComposite order, ThemeData theme, Translations t) {
+    // Получаем данные клиента через провайдер
+    final clientAsyncValue = ref.watch(orderClientProvider(order.clientId));
+    // Получаем данные автомобиля через провайдер
+    final carAsyncValue = ref.watch(orderCarProvider(order.carId));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -270,28 +282,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         ),
         const SizedBox(height: 8),
         // Отображение информации о клиенте
-        if (order.clientId != null)
-          FutureBuilder<ClientModelComposite?>(
-            future: _clientService.getClientByUuid(order.clientId!),
-            builder: (context, clientSnapshot) {
-              if (clientSnapshot.connectionState == ConnectionState.waiting) {
-                return ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(t.orders.loadingClient),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                );
-              }
-              if (clientSnapshot.hasData && clientSnapshot.data != null) {
-                return ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(clientSnapshot.data!.displayName),
-                  subtitle: Text(clientSnapshot.data!.contactInfo), // Пример
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  // TODO: Добавить onTap для перехода к клиенту
-                );
-              }
+        clientAsyncValue.when(
+          data: (client) {
+            if (client != null) {
+              return ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(client.displayName),
+                subtitle: Text(client.contactInfo), // Пример
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                // TODO: Добавить onTap для перехода к клиенту
+              );
+            } else if (order.clientId != null) {
+              // Клиент был, но не загрузился
               return ListTile(
                 leading:
                     const Icon(Icons.person_off_outlined, color: Colors.grey),
@@ -300,42 +303,49 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 dense: true,
                 contentPadding: EdgeInsets.zero,
               );
-            },
-          )
-        else
-          ListTile(
-            leading: const Icon(Icons.person_off_outlined, color: Colors.grey),
-            title: Text(t.clients.clientNotSelected,
-                style: const TextStyle(color: Colors.grey)),
+            } else {
+              // Клиент не был выбран
+              return ListTile(
+                leading:
+                    const Icon(Icons.person_off_outlined, color: Colors.grey),
+                title: Text(t.clients.clientNotSelected,
+                    style: const TextStyle(color: Colors.grey)),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+              );
+            }
+          },
+          loading: () => ListTile(
+            leading: const Icon(Icons.person),
+            title: Text(t.orders.loadingClient),
             dense: true,
             contentPadding: EdgeInsets.zero,
           ),
+          error: (e, s) => ListTile(
+            // Отображаем ошибку загрузки клиента
+            leading: const Icon(Icons.error_outline, color: Colors.red),
+            title: Text(t.errors.dataLoadingError,
+                style: const TextStyle(color: Colors.red)),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
 
         // Отображение информации об автомобиле
-        if (order.carId != null)
-          FutureBuilder<CarModelComposite?>(
-            future: _carService.getCarByUuid(order.carId!),
-            builder: (context, carSnapshot) {
-              if (carSnapshot.connectionState == ConnectionState.waiting) {
-                return ListTile(
-                  leading: Icon(Icons.directions_car),
-                  title: Text(t.orders.loadingVehicle),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                );
-              }
-              if (carSnapshot.hasData && carSnapshot.data != null) {
-                final car = carSnapshot.data!;
-                return ListTile(
-                  leading: const Icon(Icons.directions_car),
-                  title: Text(car.displayName),
-                  subtitle:
-                      Text('${car.vin} / ${car.displayLicensePlate}'), // Пример
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  // TODO: Добавить onTap для перехода к автомобилю
-                );
-              }
+        carAsyncValue.when(
+          data: (car) {
+            if (car != null) {
+              return ListTile(
+                leading: const Icon(Icons.directions_car),
+                title: Text(car.displayName),
+                subtitle:
+                    Text('${car.vin} / ${car.displayLicensePlate}'), // Пример
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                // TODO: Добавить onTap для перехода к автомобилю
+              );
+            } else if (order.carId != null) {
+              // Авто было, но не загрузилось
               return ListTile(
                 leading:
                     const Icon(Icons.no_transfer_outlined, color: Colors.grey),
@@ -344,22 +354,46 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 dense: true,
                 contentPadding: EdgeInsets.zero,
               );
-            },
-          )
-        else
-          ListTile(
-            leading: const Icon(Icons.no_transfer_outlined, color: Colors.grey),
-            title: Text(t.vehicles.vehicleNotSelected,
-                style: const TextStyle(color: Colors.grey)),
+            } else {
+              // Авто не было выбрано
+              return ListTile(
+                leading:
+                    const Icon(Icons.no_transfer_outlined, color: Colors.grey),
+                title: Text(t.vehicles.vehicleNotSelected,
+                    style: const TextStyle(color: Colors.grey)),
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+              );
+            }
+          },
+          loading: () => ListTile(
+            leading: const Icon(Icons.directions_car),
+            title: Text(t.orders.loadingVehicle),
             dense: true,
             contentPadding: EdgeInsets.zero,
           ),
+          error: (e, s) => ListTile(
+            // Отображаем ошибку загрузки авто
+            leading: const Icon(Icons.error_outline, color: Colors.red),
+            title: Text(t.errors.dataLoadingError,
+                style: const TextStyle(color: Colors.red)),
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildItemsList(OrderModelComposite order, ThemeData theme,
-      Translations t, BaseItemType itemType) {
+  Widget _buildItemsList(
+      BuildContext context,
+      WidgetRef ref,
+      OrderModelComposite order,
+      ThemeData theme,
+      Translations t,
+      BaseItemType itemType,
+      Logger logger) {
+    // Добавляем ref, logger
     final currencyFormat = NumberFormat.currency(
       locale: Localizations.localeOf(context).toString(),
       symbol: '₽', // TODO: Сделать символ валюты настраиваемым
@@ -388,8 +422,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               icon: const Icon(Icons.add, size: 18),
               label: Text(t.common.add),
               onPressed: () => itemType == BaseItemType.part
-                  ? _addPart(order)
-                  : _addService(order),
+                  ? _addPart(context, order, logger) // Передаем context, logger
+                  : _addService(
+                      context, order, logger), // Передаем context, logger
             ),
           ],
         ),
@@ -408,15 +443,25 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
-              return _buildItemTile(order, item, currencyFormat, theme, t);
+              // Передаем context, ref, logger в _buildItemTile
+              return _buildItemTile(
+                  context, ref, order, item, currencyFormat, theme, t, logger);
             },
           ),
       ],
     );
   }
 
-  Widget _buildItemTile(OrderModelComposite order, IDocumentItemEntity item,
-      NumberFormat currencyFormat, ThemeData theme, Translations t) {
+  Widget _buildItemTile(
+      BuildContext context,
+      WidgetRef ref,
+      OrderModelComposite order,
+      IDocumentItemEntity item,
+      NumberFormat currencyFormat,
+      ThemeData theme,
+      Translations t,
+      Logger logger) {
+    // Добавляем ref, logger
     final title = item.name;
     final subtitle = item is OrderPartModelComposite
         ? '${item.partNumber}${item.brand != null ? ' (${item.brand})' : ''}'
@@ -451,12 +496,15 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         leading: item is OrderPartModelComposite
             ? _buildPartStatusChip(item, t)
             : _buildServiceStatusChip(item as OrderServiceModelComposite, t),
-        onTap: () => _editItem(order, item), // Редактирование по тапу
-        onLongPress: () =>
-            _confirmRemoveItem(order, item, t), // Удаление по долгому нажатию
+        onTap: () =>
+            _editItem(context, order, item, logger), // Передаем context, logger
+        onLongPress: () => _confirmRemoveItem(context, ref, order, item, t,
+            logger), // Передаем context, ref, logger
       ),
     );
   }
+
+  // _buildPartStatusChip и _buildServiceStatusChip остаются без изменений
 
   Widget _buildPartStatusChip(OrderPartModelComposite part, Translations t) {
     IconData icon;
@@ -504,8 +552,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildTotalAndDates(
-      OrderModelComposite order, ThemeData theme, Translations t) {
+  Widget _buildTotalAndDates(BuildContext context, OrderModelComposite order,
+      ThemeData theme, Translations t) {
     final currencyFormat = NumberFormat.currency(
       locale: Localizations.localeOf(context).toString(),
       symbol: '₽',
@@ -537,10 +585,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ],
         ),
         const SizedBox(height: 16),
+        // Используем documentDate из docData
         Text(
-          '${t.common.createdAt}: ${dateFormat.format(order.createdAt)}',
+          '${t.common.createdAt}: ${dateFormat.format(order.documentDate)}',
           style: theme.textTheme.bodySmall,
         ),
+        // Используем modifiedAt из coreData
         if (order.modifiedAt != null)
           Text(
             '${t.common.modifiedAt}: ${dateFormat.format(order.modifiedAt!)}',
@@ -550,9 +600,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  // --- Методы действий ---
+  // --- Методы действий (теперь принимают BuildContext и WidgetRef) ---
 
-  void _editOrder(OrderModelComposite order) {
+  void _editOrder(BuildContext context, OrderModelComposite order) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -561,7 +611,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Future<void> _confirmDelete(OrderModelComposite order) async {
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref,
+      OrderModelComposite order, Logger logger) async {
+    // Получаем сервис через ref
+    final orderService = ref.read(orderServiceProvider);
     // Store BuildContext-dependent variables before the async gap.
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -587,13 +640,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
     );
 
-    // Check mounted after the first await
-    if (confirmed == true && mounted) {
+    // Check mounted after the first await - В ConsumerWidget нет mounted, проверка не нужна
+    if (confirmed == true) {
       try {
-        await _orderService.deleteOrder(order.uuid);
+        await orderService.deleteOrder(order.uuid);
 
-        // Check mounted again after the second await
-        if (!mounted) return; // Guard subsequent context uses
+        // Check mounted again - не нужно
 
         scaffoldMessenger.showSnackBar(
           SnackBar(
@@ -604,14 +656,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         // Закрыть экран после удаления
         navigator.pop(); // Use captured navigator
       } catch (e, s) {
-        _logger.e(
+        logger.e(
             LogMessages.orderDeleteErrorDetails
                 .replaceAll('{uuid}', order.uuid),
             error: e,
             stackTrace: s);
 
-        // Check mounted in the catch block
-        if (!mounted) return; // Guard context use in catch
+        // Check mounted in the catch block - не нужно
 
         scaffoldMessenger.showSnackBar(
           SnackBar(
@@ -624,53 +675,66 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Future<void> _changeStatus(
-      OrderModelComposite order, DocumentStatus nextStatus) async {
-    final t = context.t;
+      BuildContext context,
+      WidgetRef ref,
+      OrderModelComposite order,
+      DocumentStatus nextStatus,
+      Logger logger) async {
+    // Store BuildContext-dependent variables before the async gap.
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final currentContext = context; // Capture context if needed for t
+    final t = currentContext.t; // Use captured context for t
+
+    // Получаем сервис через ref
+    final orderService = ref.read(orderServiceProvider);
     try {
-      await _orderService.changeOrderStatus(order.uuid, nextStatus);
+      await orderService.changeOrderStatus(order.uuid, nextStatus);
       // Сообщение об успехе не показываем, т.к. UI обновится через Stream
     } catch (e, s) {
-      _logger.e(
-          LogMessages.orderStatusChangeErrorDetails // <-- ИЗМЕНЕНО
+      logger.e(
+          LogMessages.orderStatusChangeErrorDetails
               .replaceAll('{uuid}', order.uuid)
               .replaceAll('{status}', nextStatus.toString()),
           error: e,
           stackTrace: s);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(t.orders.statusChangeError),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      // Check mounted - не нужно в ConsumerWidget
+      // Используем сохраненный scaffoldMessenger
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(t.orders.statusChangeError),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   // TODO: Реализовать навигацию или диалоги для добавления/редактирования
-  void _addPart(OrderModelComposite order) {
-    _logger.w(LogMessages.orderAddPartNotImplemented); // <-- ИЗМЕНЕНО
+  void _addPart(
+      BuildContext context, OrderModelComposite order, Logger logger) {
+    logger.w(LogMessages.orderAddPartNotImplemented);
     // Navigator.push(context, MaterialPageRoute(builder: (_) => PartFormScreen(orderUuid: order.uuid)));
+    final t = context.t;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        // Используем slang
         content: Text(t.common
             .featureNotImplemented(featureName: t.orders.addPartFeature))));
   }
 
-  void _addService(OrderModelComposite order) {
-    _logger.w(LogMessages.orderAddServiceNotImplemented); // <-- ИЗМЕНЕНО
+  void _addService(
+      BuildContext context, OrderModelComposite order, Logger logger) {
+    logger.w(LogMessages.orderAddServiceNotImplemented);
     // Navigator.push(context, MaterialPageRoute(builder: (_) => ServiceFormScreen(orderUuid: order.uuid)));
+    final t = context.t;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        // Используем slang
         content: Text(t.common
             .featureNotImplemented(featureName: t.orders.addServiceFeature))));
   }
 
-  void _editItem(OrderModelComposite order, IDocumentItemEntity item) {
-    _logger.w(LogMessages.orderEditItemNotImplemented // <-- ИЗМЕНЕНО
+  void _editItem(BuildContext context, OrderModelComposite order,
+      IDocumentItemEntity item, Logger logger) {
+    logger.w(LogMessages.orderEditItemNotImplemented
         .replaceAll('{runtimeType}', item.runtimeType.toString()));
+    final t = context.t;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        // Используем slang
         content: Text(t.common
             .editingNotImplemented(itemType: item.runtimeType.toString()))));
     // if (item is OrderPartModelComposite) {
@@ -680,13 +744,18 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     // }
   }
 
-  Future<void> _confirmRemoveItem(OrderModelComposite order,
-      IDocumentItemEntity item, Translations t) async {
+  Future<void> _confirmRemoveItem(
+      BuildContext context,
+      WidgetRef ref,
+      OrderModelComposite order,
+      IDocumentItemEntity item,
+      Translations t,
+      Logger logger) async {
+    // Получаем сервис через ref
+    final orderService = ref.read(orderServiceProvider);
     // Store BuildContext-dependent variables before the async gap.
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final currentContext = context; // Capture context if needed for t
-    // Note: 't' is already passed as an argument, so capturing it from context might be redundant
-    // unless it's used differently elsewhere. We'll keep using the passed 't'.
 
     final String confirmationText = item is OrderPartModelComposite
         ? t.orders.confirmPartDeletion(name: item.name)
@@ -711,16 +780,14 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       ),
     );
 
-    // Check mounted after the first await
-    if (confirmed == true && mounted) {
+    // Check mounted - не нужно
+    if (confirmed == true) {
       try {
-        await _orderService.removeItemFromOrder(item.uuid, order.uuid);
+        await orderService.removeItemFromOrder(item.uuid, order.uuid);
 
-        // Check mounted again after the second await
-        if (!mounted) return; // Guard subsequent context uses
+        // Check mounted - не нужно
 
         scaffoldMessenger.showSnackBar(
-          // Use captured scaffoldMessenger
           SnackBar(
             content: Text(item is OrderPartModelComposite
                 ? t.orders.partRemovedSuccess
@@ -729,18 +796,16 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
         );
       } catch (e, s) {
-        _logger.e(
+        logger.e(
             LogMessages.orderRemoveItemErrorDetails
                 .replaceAll('{itemUuid}', item.uuid)
                 .replaceAll('{orderUuid}', order.uuid),
             error: e,
             stackTrace: s);
 
-        // Check mounted in the catch block
-        if (!mounted) return; // Guard context use in catch
+        // Check mounted - не нужно
 
         scaffoldMessenger.showSnackBar(
-          // Use captured scaffoldMessenger
           SnackBar(
             content: Text(item is OrderPartModelComposite
                 ? t.orders.partRemoveError
@@ -752,9 +817,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     }
   }
 
-  // --- Вспомогательные функции ---
+  // --- Вспомогательные функции (остаются без изменений) ---
 
-  // Определяет текст и цвет для кнопки следующего действия со статусом
   ({String text, Color color, DocumentStatus status})? _getNextStatusAction(
       DocumentStatus currentStatus, Translations t) {
     switch (currentStatus) {

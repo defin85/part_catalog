@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Импортируем go_router
-import 'package:part_catalog/core/navigation/app_routes.dart'; // Импортируем маршруты
+import 'package:go_router/go_router.dart';
+import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/core/widgets/language_switcher.dart';
-// Используем slang для локализации
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
-/// Оболочка навигации (Shell) для основных разделов приложения.
-/// Используется с ShellRoute в go_router.
 class HomeScreen extends StatelessWidget {
-  /// Дочерний виджет, предоставляемый ShellRoute (текущий экран).
   final Widget child;
 
   const HomeScreen({
@@ -16,22 +12,23 @@ class HomeScreen extends StatelessWidget {
     required this.child,
   });
 
-  // Определяем элементы навигации статически или получаем из конфигурации
-  // Теперь они больше связаны с маршрутами, чем с конкретными виджетами
   static final _navigationDestinations = [
     (
       route: AppRoutes.clients,
-      icon: Icons.people,
+      icon: Icons.people_alt_outlined,
+      selectedIcon: Icons.people, // Добавляем выбранную иконку
       labelKey: t.clients.screenTitle
     ),
     (
       route: AppRoutes.vehicles,
-      icon: Icons.directions_car,
+      icon: Icons.directions_car_outlined,
+      selectedIcon: Icons.directions_car, // Добавляем выбранную иконку
       labelKey: t.vehicles.screenTitle
     ),
     (
       route: AppRoutes.orders,
-      icon: Icons.list_alt,
+      icon: Icons.list_alt_outlined,
+      selectedIcon: Icons.list_alt, // Добавляем выбранную иконку
       labelKey: t.orders.screenTitle
     ),
     // Добавьте другие основные разделы здесь
@@ -39,45 +36,84 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущий маршрут для определения активного индекса
     final String location = GoRouterState.of(context).uri.toString();
     final int currentIndex = _calculateSelectedIndex(location);
 
-    return Scaffold(
-      appBar: AppBar(
-        // Заголовок теперь может зависеть от текущего раздела или быть общим
-        title: Text(_navigationDestinations[currentIndex].labelKey),
-        actions: const [
-          LanguageSwitcher(),
-        ],
-      ),
-      // Отображаем дочерний экран, предоставленный ShellRoute
-      body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          // Используем go_router для навигации
-          context.go(_navigationDestinations[index].route);
-        },
-        destinations: _navigationDestinations
-            .map(
-              (dest) => NavigationDestination(
-                icon: Icon(dest.icon),
-                label: dest.labelKey, // Используем ключ локализации slang
-              ),
-            )
-            .toList(),
-      ),
-    );
+    // Определяем ширину экрана
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Устанавливаем точку перехода (breakpoint), например, 600 пикселей
+    const double breakpoint = 600;
+
+    // Если экран достаточно широкий, используем NavigationRail
+    if (screenWidth >= breakpoint) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(_navigationDestinations[currentIndex].labelKey),
+          actions: const [
+            LanguageSwitcher(),
+          ],
+        ),
+        body: Row(
+          children: [
+            NavigationRail(
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                context.go(_navigationDestinations[index].route);
+              },
+              labelType: NavigationRailLabelType.all, // Или .selected, .none
+              destinations: _navigationDestinations
+                  .map(
+                    (dest) => NavigationRailDestination(
+                      icon: Icon(dest.icon),
+                      selectedIcon: Icon(
+                          dest.selectedIcon), // Используем выбранную иконку
+                      label: Text(dest.labelKey),
+                    ),
+                  )
+                  .toList(),
+            ),
+            const VerticalDivider(thickness: 1, width: 1),
+            // Основной контент занимает оставшееся место
+            Expanded(
+              child: child, // Отображаем дочерний экран
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Иначе используем NavigationBar (для мобильных)
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(_navigationDestinations[currentIndex].labelKey),
+          actions: const [
+            LanguageSwitcher(),
+          ],
+        ),
+        body: child, // Отображаем дочерний экран
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: currentIndex,
+          onDestinationSelected: (index) {
+            context.go(_navigationDestinations[index].route);
+          },
+          destinations: _navigationDestinations
+              .map(
+                (dest) => NavigationDestination(
+                  icon: Icon(dest.icon),
+                  selectedIcon:
+                      Icon(dest.selectedIcon), // Используем выбранную иконку
+                  label: dest.labelKey,
+                ),
+              )
+              .toList(),
+        ),
+      );
+    }
   }
 
-  /// Определяет индекс активного элемента навигации на основе текущего маршрута.
   int _calculateSelectedIndex(String location) {
-    // Находим первый элемент, чей маршрут является началом текущего location
     final index = _navigationDestinations.indexWhere(
       (dest) => location.startsWith(dest.route),
     );
-    // Если маршрут не найден (например, главная страница или ошибка), возвращаем 0
     return index < 0 ? 0 : index;
   }
 }

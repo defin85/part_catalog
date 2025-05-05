@@ -26,5 +26,7 @@
     "featureNotImplemented": "Функция \"{featureName}\" не реализована",
     "editingNotImplemented": "Редактирование \"{itemType}\" не реализовано",
     "undo": "Отменить",
-    "clear": "Очистить"
+    "clear": "Очистить",
+    "selectDate": "Выберите дату",
+    "resetSearch": "Сбросить поиск"
 }

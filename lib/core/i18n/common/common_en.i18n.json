@@ -26,5 +26,7 @@
     "featureNotImplemented": "\"{featureName}\" feature is not implemented",
     "editingNotImplemented": "Editing \"{itemType}\" is not implemented",
     "undo": "Undo",
-    "clear": "Clear"
+    "clear": "Clear",
+    "selectDate": "Select date",
+    "resetSearch": "Reset search"
 }

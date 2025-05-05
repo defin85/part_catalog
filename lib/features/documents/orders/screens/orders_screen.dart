@@ -1,51 +1,75 @@
-import 'dart:async'; // Для Timer (debounce)
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:part_catalog/core/service_locator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Импорт Riverpod
 // Импортируем сгенерированный файл slang
 import 'package:part_catalog/core/i18n/strings.g.dart';
 // Импортируем композитор и статус документа
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
-import 'package:part_catalog/features/core/document_status.dart'; // Используем DocumentStatus
-import 'package:part_catalog/features/documents/orders/services/order_service.dart';
-import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart'; // Предполагаем, что он адаптирован
-import 'package:part_catalog/features/documents/orders/screens/order_details_screen.dart'; // Предполагаем, что он адаптирован
-import 'package:part_catalog/features/documents/orders/widgets/order_list_item.dart'; // Предполагаем, что он адаптирован
-import 'package:part_catalog/core/utils/logger_config.dart'; // Для логгирования
-import 'package:part_catalog/core/utils/log_messages.dart'; // Для сообщений логгера
+import 'package:part_catalog/features/core/document_status.dart';
+// Импортируем Notifier
+import 'package:part_catalog/features/documents/orders/notifiers/orders_notifier.dart';
+import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
+import 'package:part_catalog/features/documents/orders/screens/order_details_screen.dart';
+import 'package:part_catalog/features/documents/orders/widgets/order_list_item.dart';
 
-class OrdersScreen extends StatefulWidget {
+// Преобразуем в ConsumerStatefulWidget
+class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
 
   @override
-  State<OrdersScreen> createState() => _OrdersScreenState();
+  ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-class _OrdersScreenState extends State<OrdersScreen> {
-  final _orderService = locator<OrderService>();
-  final _logger = AppLoggers.ordersLogger; // Логгер для экрана
-  String? _searchQuery;
-  DocumentStatus? _filterStatus; // Используем DocumentStatus
+// Преобразуем State в ConsumerState
+class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   Timer? _debounce; // Таймер для debounce поиска
+  final _searchController = TextEditingController(); // Контроллер для поиска
+
+  @override
+  void initState() {
+    super.initState();
+    // Слушатель для контроллера поиска с debounce
+    _searchController.addListener(() {
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        // Вызываем метод Notifier'а для обновления поиска
+        ref
+            .read(ordersNotifierProvider.notifier)
+            .setSearchQuery(_searchController.text);
+      });
+    });
+  }
 
   @override
   void dispose() {
-    _debounce?.cancel(); // Отменяем таймер при уничтожении виджета
+    _debounce?.cancel();
+    _searchController.dispose(); // Не забываем освобождать контроллер
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Получаем доступ к локализации через context.t
     final t = context.t;
+    // Следим за состоянием Notifier'а
+    final ordersState = ref.watch(ordersNotifierProvider);
+    final notifier = ref.read(ordersNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(t.orders.screenTitle), // Используем slang
+        title: Text(t.orders.screenTitle),
         actions: [
+          // Кнопка сброса фильтра, если он активен
+          if (ordersState.filterStatus != null)
+            IconButton(
+              icon: const Icon(Icons.filter_alt_off),
+              tooltip: t.common.resetFilter,
+              onPressed: () => notifier.setFilterStatus(null),
+            ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            tooltip: t.common.filter, // Используем slang
-            onPressed: _showFilterDialog,
+            tooltip: t.common.filter,
+            onPressed: () => _showFilterDialog(
+                ordersState.filterStatus), // Передаем текущий фильтр
           ),
         ],
       ),
@@ -54,99 +78,54 @@ class _OrdersScreenState extends State<OrdersScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
+              controller: _searchController, // Используем контроллер
               decoration: InputDecoration(
-                hintText: t.orders.searchByNumberOrClient, // Используем slang
+                hintText: t.orders.searchByNumberOrClient,
                 prefixIcon: const Icon(Icons.search),
+                // Добавляем кнопку очистки поиска
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        tooltip: t.common.clear,
+                        onPressed: () {
+                          _searchController.clear();
+                          // Сразу обновляем notifier, т.к. очистка - мгновенное действие
+                          // notifier.setSearchQuery(null); // Вызовется через listener контроллера
+                        },
+                      )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              onChanged: (value) {
-                // Реализация debounce
-                if (_debounce?.isActive ?? false) _debounce!.cancel();
-                _debounce = Timer(const Duration(milliseconds: 500), () {
-                  if (mounted) {
-                    // Проверяем, что виджет еще в дереве
-                    setState(() {
-                      _searchQuery = value.isNotEmpty ? value : null;
-                    });
-                  }
-                });
-              },
+              // onChanged убран, т.к. используем listener контроллера
             ),
           ),
           // Отображение активного фильтра
-          if (_filterStatus != null)
+          if (ordersState.filterStatus != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Chip(
                   label: Text(
-                      '${t.common.filter}: ${_filterStatus!.displayName}'), // Используем displayName
-                  backgroundColor:
-                      _filterStatus!.color.withAlpha((255 * 0.1).round()),
-                  onDeleted: () {
-                    setState(() {
-                      _filterStatus = null;
-                    });
-                  },
+                      '${t.common.filter}: ${ordersState.filterStatus!.displayName}'),
+                  backgroundColor: ordersState.filterStatus!.color
+                      .withAlpha((255 * 0.1).round()),
+                  onDeleted: () => notifier
+                      .setFilterStatus(null), // Вызываем метод Notifier'а
                 ),
               ),
             ),
           Expanded(
-            // Используем OrderModelComposite
-            child: StreamBuilder<List<OrderModelComposite>>(
-              stream: _orderService
-                  .watchOrders(), // Метод сервиса возвращает Stream<List<OrderModelComposite>>
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  // Логируем ошибку
-                  _logger.e(LogMessages.orderWatchError,
-                      error: snapshot.error, stackTrace: snapshot.stackTrace);
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        '${t.errors.dataLoadingError}: ${snapshot.error}', // Используем slang
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  );
-                }
-
-                final allOrders = snapshot.data;
-
-                if (allOrders == null || allOrders.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.assignment_late_outlined,
-                            size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(
-                          t.orders.noOrdersFound, // Используем slang
-                          style: Theme.of(context).textTheme.titleMedium,
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                // Фильтрация и сортировка данных
-                final orders = _filterOrders(allOrders);
-
-                // Отображение, если ничего не найдено после фильтрации
+            // Используем AsyncValue из ordersState
+            child: ordersState.orders.when(
+              data: (orders) {
+                // Отображение, если ничего не найдено после фильтрации/поиска
                 if (orders.isEmpty &&
-                    (_searchQuery != null || _filterStatus != null)) {
+                    (ordersState.searchQuery != null ||
+                        ordersState.filterStatus != null)) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -155,36 +134,81 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             size: 64, color: Colors.grey),
                         const SizedBox(height: 16),
                         Text(
-                          t.common.noResultsFound, // Используем slang
+                          t.common.noResultsFound,
                           style: Theme.of(context).textTheme.titleMedium,
                           textAlign: TextAlign.center,
                         ),
-                        if (_filterStatus != null)
+                        // Кнопки сброса фильтров/поиска
+                        if (ordersState.filterStatus != null)
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: ActionChip(
                               avatar: const Icon(Icons.close, size: 16),
                               label: Text(
-                                  '${t.common.resetFilter}: ${_filterStatus!.displayName}'),
-                              onPressed: () =>
-                                  setState(() => _filterStatus = null),
+                                  '${t.common.resetFilter}: ${ordersState.filterStatus!.displayName}'),
+                              onPressed: () => notifier.setFilterStatus(null),
+                            ),
+                          ),
+                        if (ordersState.searchQuery != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: ActionChip(
+                              avatar: const Icon(Icons.close, size: 16),
+                              label: Text(
+                                  '${t.common.resetSearch}: "${ordersState.searchQuery!}"'),
+                              onPressed: () => _searchController
+                                  .clear(), // Очищаем контроллер
                             ),
                           ),
                       ],
                     ),
                   );
                 }
+                // Отображение, если вообще нет заказов (не после фильтрации)
+                if (orders.isEmpty &&
+                    ordersState.searchQuery == null &&
+                    ordersState.filterStatus == null) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.assignment_late_outlined,
+                            size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          t.orders.noOrdersFound,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
+                // Отображение списка
                 return ListView.builder(
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     final order = orders[index];
-                    // OrderListItem должен быть адаптирован под OrderModelComposite
                     return OrderListItem(
-                      order: order, // Передаем композитор
+                      order: order,
                       onTap: () => _openOrderDetails(order),
                     );
                   },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) {
+                // Логгер уже сработал в Notifier'е
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      '${t.errors.dataLoadingError}: $error',
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 );
               },
             ),
@@ -192,65 +216,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: t.orders.add, // Используем slang
+        tooltip: t.orders.add,
         onPressed: _createNewOrder,
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  // Фильтрация и сортировка заказ-нарядов (OrderModelComposite)
-  List<OrderModelComposite> _filterOrders(List<OrderModelComposite> orders) {
-    var filteredOrders = List<OrderModelComposite>.from(orders);
-
-    // Применяем фильтр по статусу
-    if (_filterStatus != null) {
-      filteredOrders = filteredOrders
-          .where((order) => order.docData.status == _filterStatus)
-          .toList();
-    }
-
-    // Применяем поисковый запрос
-    if (_searchQuery != null && _searchQuery!.isNotEmpty) {
-      final query = _searchQuery!.toLowerCase();
-      filteredOrders = filteredOrders
-          .where((order) =>
-              order.containsSearchText(query)) // Используем метод композитора
-          .toList();
-    }
-
-    // Сортируем по дате создания (сначала новые)
-    filteredOrders.sort(
-        (a, b) => b.docData.documentDate.compareTo(a.docData.documentDate));
-
-    return filteredOrders;
-  }
+  // Фильтрация и сортировка теперь выполняются в Notifier'е
+  // List<OrderModelComposite> _filterOrders(List<OrderModelComposite> orders) { ... } // <--- Удалить
 
   // Открытие диалога фильтрации
-  void _showFilterDialog() {
+  void _showFilterDialog(DocumentStatus? currentFilter) {
+    // Принимаем текущий фильтр
     final t = context.t;
+    final notifier =
+        ref.read(ordersNotifierProvider.notifier); // Получаем notifier
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t.orders.filterByStatus), // Используем slang
+        title: Text(t.orders.filterByStatus),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView(
             shrinkWrap: true,
             children: [
-              // Используем DocumentStatus
               for (final status in DocumentStatus.values)
-                // Исключаем 'unknown' из фильтра
                 if (status != DocumentStatus.unknown)
                   RadioListTile<DocumentStatus>(
-                    title: Text(status.displayName), // Используем displayName
+                    title: Text(status.displayName),
                     value: status,
-                    groupValue: _filterStatus,
-                    activeColor: status.color, // Используем color
+                    groupValue: currentFilter, // Используем переданный фильтр
+                    activeColor: status.color,
                     onChanged: (value) {
-                      if (mounted) {
-                        setState(() => _filterStatus = value);
-                      }
+                      notifier
+                          .setFilterStatus(value); // Вызываем метод Notifier'а
                       Navigator.pop(context);
                     },
                   ),
@@ -259,16 +259,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
         ),
         actions: [
           TextButton(
-            child: Text(t.common.resetButtonLabel), // Используем slang
+            child: Text(t.common.resetButtonLabel),
             onPressed: () {
-              if (mounted) {
-                setState(() => _filterStatus = null);
-              }
+              notifier.setFilterStatus(null); // Вызываем метод Notifier'а
               Navigator.pop(context);
             },
           ),
           TextButton(
-            child: Text(t.common.closeButtonLabel), // Используем slang
+            child: Text(t.common.closeButtonLabel),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -279,40 +277,35 @@ class _OrdersScreenState extends State<OrdersScreen> {
   // Создание нового заказ-наряда
   void _createNewOrder() async {
     final t = context.t;
-    // OrderFormScreen должен быть адаптирован для создания OrderModelComposite
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            const OrderFormScreen(), // Передаем null для orderId
+        builder: (context) => const OrderFormScreen(), // orderUuid не передаем
       ),
     );
 
-    // Проверяем, что виджет все еще в дереве после асинхронной операции
     if (!mounted) return;
 
     if (result == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(t.orders.createdSuccess)), // Используем slang
+        SnackBar(content: Text(t.orders.createdSuccess)),
       );
-      // Список обновится автоматически благодаря StreamBuilder
+      // Список обновится автоматически благодаря подписке Notifier'а на stream
+      // ref.invalidate(ordersNotifierProvider); // Можно инвалидировать, если watchOrders не используется
     }
   }
 
   // Открытие экрана деталей заказ-наряда
   void _openOrderDetails(OrderModelComposite order) {
-    // OrderDetailsScreen должен быть адаптирован под OrderModelComposite
     Navigator.push(
       context,
       MaterialPageRoute(
+        // OrderDetailsScreen должен быть адаптирован для приема orderUuid
+        // и использования Riverpod для загрузки данных (например, через FutureProvider.family)
         builder: (context) => OrderDetailsScreen(
-          orderUuid: order
-              .coreData.uuid, // Передаем UUID с правильным именем параметра
+          orderUuid: order.coreData.uuid,
         ),
       ),
     );
   }
 }
-
-// Добавляем геттер displayName в DocumentStatus
-// (Предполагается, что этот код будет добавлен в файл document_status.dart)
