@@ -26,7 +26,7 @@ class OrderFormScreen extends ConsumerStatefulWidget {
 class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
-  final _logger = AppLoggers.ordersLogger;
+  final _logger = AppLoggers.orders;
 
   // Notifier provider instance specific to this screen/orderUuid
   // Используем правильный тип AutoDisposeStateNotifierProvider
@@ -88,7 +88,6 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
   }
 
   Future<void> _selectCar(String clientUuid) async {
-    final t = context.t;
     final car = await showDialog<CarModelComposite>(
       context: context,
       builder: (context) =>
@@ -187,7 +186,6 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
   Widget build(BuildContext context) {
     // Следим за состоянием Notifier'а
     final formState = ref.watch(_provider);
-    final notifier = ref.read(_provider.notifier);
 
     final theme = Theme.of(context);
     final t = context.t;

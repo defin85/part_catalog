@@ -29,7 +29,7 @@ final orderFormNotifierProvider = StateNotifierProvider.autoDispose
 class OrderFormNotifier extends StateNotifier<OrderFormState> {
   final Ref _ref;
   final String? _orderUuid;
-  final _logger = AppLoggers.ordersLogger; // Используем логгер
+  final _logger = AppLoggers.orders; // Используем логгер
 
   OrderFormNotifier(this._ref, this._orderUuid)
       : super(OrderFormState(isEditMode: _orderUuid != null)) {

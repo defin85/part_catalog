@@ -86,7 +86,7 @@ class OrdersDao extends DatabaseAccessor<AppDatabase> with _$OrdersDaoMixin {
   /// {@macro orders_dao}
   OrdersDao(super.db);
 
-  final _logger = AppLoggers.databaseLogger;
+  final _logger = AppLoggers.database;
 
   // --- Приватные методы маппинга (из таблицы в @freezed) ---
 

@@ -3368,6 +3368,633 @@ class OrderServicesItemsCompanion extends UpdateCompanion<OrderServicesItem> {
   }
 }
 
+class $SupplierSettingsItemsTable extends SupplierSettingsItems
+    with TableInfo<$SupplierSettingsItemsTable, SupplierSettingsItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SupplierSettingsItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _supplierCodeMeta =
+      const VerificationMeta('supplierCode');
+  @override
+  late final GeneratedColumn<String> supplierCode = GeneratedColumn<String>(
+      'supplier_code', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _isEnabledMeta =
+      const VerificationMeta('isEnabled');
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+      'is_enabled', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_enabled" IN (0, 1))'),
+      defaultValue: const Constant(true));
+  static const VerificationMeta _encryptedCredentialsMeta =
+      const VerificationMeta('encryptedCredentials');
+  @override
+  late final GeneratedColumn<String> encryptedCredentials =
+      GeneratedColumn<String>('encrypted_credentials', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastCheckStatusMeta =
+      const VerificationMeta('lastCheckStatus');
+  @override
+  late final GeneratedColumn<String> lastCheckStatus = GeneratedColumn<String>(
+      'last_check_status', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastCheckMessageMeta =
+      const VerificationMeta('lastCheckMessage');
+  @override
+  late final GeneratedColumn<String> lastCheckMessage = GeneratedColumn<String>(
+      'last_check_message', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastSuccessfulCheckAtMeta =
+      const VerificationMeta('lastSuccessfulCheckAt');
+  @override
+  late final GeneratedColumn<DateTime> lastSuccessfulCheckAt =
+      GeneratedColumn<DateTime>('last_successful_check_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _clientIdentifierAtSupplierMeta =
+      const VerificationMeta('clientIdentifierAtSupplier');
+  @override
+  late final GeneratedColumn<String> clientIdentifierAtSupplier =
+      GeneratedColumn<String>(
+          'client_identifier_at_supplier', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _additionalConfigMeta =
+      const VerificationMeta('additionalConfig');
+  @override
+  late final GeneratedColumn<String> additionalConfig = GeneratedColumn<String>(
+      'additional_config', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        supplierCode,
+        isEnabled,
+        encryptedCredentials,
+        lastCheckStatus,
+        lastCheckMessage,
+        lastSuccessfulCheckAt,
+        clientIdentifierAtSupplier,
+        additionalConfig,
+        createdAt,
+        updatedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'supplier_settings';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<SupplierSettingsItem> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('supplier_code')) {
+      context.handle(
+          _supplierCodeMeta,
+          supplierCode.isAcceptableOrUnknown(
+              data['supplier_code']!, _supplierCodeMeta));
+    } else if (isInserting) {
+      context.missing(_supplierCodeMeta);
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(_isEnabledMeta,
+          isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta));
+    }
+    if (data.containsKey('encrypted_credentials')) {
+      context.handle(
+          _encryptedCredentialsMeta,
+          encryptedCredentials.isAcceptableOrUnknown(
+              data['encrypted_credentials']!, _encryptedCredentialsMeta));
+    }
+    if (data.containsKey('last_check_status')) {
+      context.handle(
+          _lastCheckStatusMeta,
+          lastCheckStatus.isAcceptableOrUnknown(
+              data['last_check_status']!, _lastCheckStatusMeta));
+    }
+    if (data.containsKey('last_check_message')) {
+      context.handle(
+          _lastCheckMessageMeta,
+          lastCheckMessage.isAcceptableOrUnknown(
+              data['last_check_message']!, _lastCheckMessageMeta));
+    }
+    if (data.containsKey('last_successful_check_at')) {
+      context.handle(
+          _lastSuccessfulCheckAtMeta,
+          lastSuccessfulCheckAt.isAcceptableOrUnknown(
+              data['last_successful_check_at']!, _lastSuccessfulCheckAtMeta));
+    }
+    if (data.containsKey('client_identifier_at_supplier')) {
+      context.handle(
+          _clientIdentifierAtSupplierMeta,
+          clientIdentifierAtSupplier.isAcceptableOrUnknown(
+              data['client_identifier_at_supplier']!,
+              _clientIdentifierAtSupplierMeta));
+    }
+    if (data.containsKey('additional_config')) {
+      context.handle(
+          _additionalConfigMeta,
+          additionalConfig.isAcceptableOrUnknown(
+              data['additional_config']!, _additionalConfigMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SupplierSettingsItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SupplierSettingsItem(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      supplierCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}supplier_code'])!,
+      isEnabled: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_enabled'])!,
+      encryptedCredentials: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}encrypted_credentials']),
+      lastCheckStatus: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}last_check_status']),
+      lastCheckMessage: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}last_check_message']),
+      lastSuccessfulCheckAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}last_successful_check_at']),
+      clientIdentifierAtSupplier: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}client_identifier_at_supplier']),
+      additionalConfig: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}additional_config']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $SupplierSettingsItemsTable createAlias(String alias) {
+    return $SupplierSettingsItemsTable(attachedDatabase, alias);
+  }
+}
+
+class SupplierSettingsItem extends DataClass
+    implements Insertable<SupplierSettingsItem> {
+  final int id;
+  final String supplierCode;
+  final bool isEnabled;
+
+  /// Зашифрованные учетные данные (логин, пароль, API-ключ в виде JSON-строки, затем зашифрованной).
+  /// Может храниться как BLOB, если шифрование дает бинарные данные,
+  /// или как TEXT, если результат шифрования - base64 строка.
+  /// Выберем TEXT для простоты, предполагая base64.
+  final String? encryptedCredentials;
+
+  /// Статус последней проверки ("success", "error_auth", "error_network", "not_checked" и т.д.).
+  final String? lastCheckStatus;
+  final String? lastCheckMessage;
+  final DateTime? lastSuccessfulCheckAt;
+
+  /// ID клиента у поставщика (если есть, например, после успешной регистрации/подключения).
+  final String? clientIdentifierAtSupplier;
+
+  /// JSON-строка для хранения специфичных для поставщика настроек
+  /// (например, выбранный VKORG для Armtek, список выбранных складов и т.д.).
+  final String? additionalConfig;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const SupplierSettingsItem(
+      {required this.id,
+      required this.supplierCode,
+      required this.isEnabled,
+      this.encryptedCredentials,
+      this.lastCheckStatus,
+      this.lastCheckMessage,
+      this.lastSuccessfulCheckAt,
+      this.clientIdentifierAtSupplier,
+      this.additionalConfig,
+      required this.createdAt,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['supplier_code'] = Variable<String>(supplierCode);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    if (!nullToAbsent || encryptedCredentials != null) {
+      map['encrypted_credentials'] = Variable<String>(encryptedCredentials);
+    }
+    if (!nullToAbsent || lastCheckStatus != null) {
+      map['last_check_status'] = Variable<String>(lastCheckStatus);
+    }
+    if (!nullToAbsent || lastCheckMessage != null) {
+      map['last_check_message'] = Variable<String>(lastCheckMessage);
+    }
+    if (!nullToAbsent || lastSuccessfulCheckAt != null) {
+      map['last_successful_check_at'] =
+          Variable<DateTime>(lastSuccessfulCheckAt);
+    }
+    if (!nullToAbsent || clientIdentifierAtSupplier != null) {
+      map['client_identifier_at_supplier'] =
+          Variable<String>(clientIdentifierAtSupplier);
+    }
+    if (!nullToAbsent || additionalConfig != null) {
+      map['additional_config'] = Variable<String>(additionalConfig);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SupplierSettingsItemsCompanion toCompanion(bool nullToAbsent) {
+    return SupplierSettingsItemsCompanion(
+      id: Value(id),
+      supplierCode: Value(supplierCode),
+      isEnabled: Value(isEnabled),
+      encryptedCredentials: encryptedCredentials == null && nullToAbsent
+          ? const Value.absent()
+          : Value(encryptedCredentials),
+      lastCheckStatus: lastCheckStatus == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastCheckStatus),
+      lastCheckMessage: lastCheckMessage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastCheckMessage),
+      lastSuccessfulCheckAt: lastSuccessfulCheckAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSuccessfulCheckAt),
+      clientIdentifierAtSupplier:
+          clientIdentifierAtSupplier == null && nullToAbsent
+              ? const Value.absent()
+              : Value(clientIdentifierAtSupplier),
+      additionalConfig: additionalConfig == null && nullToAbsent
+          ? const Value.absent()
+          : Value(additionalConfig),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory SupplierSettingsItem.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SupplierSettingsItem(
+      id: serializer.fromJson<int>(json['id']),
+      supplierCode: serializer.fromJson<String>(json['supplierCode']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      encryptedCredentials:
+          serializer.fromJson<String?>(json['encryptedCredentials']),
+      lastCheckStatus: serializer.fromJson<String?>(json['lastCheckStatus']),
+      lastCheckMessage: serializer.fromJson<String?>(json['lastCheckMessage']),
+      lastSuccessfulCheckAt:
+          serializer.fromJson<DateTime?>(json['lastSuccessfulCheckAt']),
+      clientIdentifierAtSupplier:
+          serializer.fromJson<String?>(json['clientIdentifierAtSupplier']),
+      additionalConfig: serializer.fromJson<String?>(json['additionalConfig']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'supplierCode': serializer.toJson<String>(supplierCode),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'encryptedCredentials': serializer.toJson<String?>(encryptedCredentials),
+      'lastCheckStatus': serializer.toJson<String?>(lastCheckStatus),
+      'lastCheckMessage': serializer.toJson<String?>(lastCheckMessage),
+      'lastSuccessfulCheckAt':
+          serializer.toJson<DateTime?>(lastSuccessfulCheckAt),
+      'clientIdentifierAtSupplier':
+          serializer.toJson<String?>(clientIdentifierAtSupplier),
+      'additionalConfig': serializer.toJson<String?>(additionalConfig),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  SupplierSettingsItem copyWith(
+          {int? id,
+          String? supplierCode,
+          bool? isEnabled,
+          Value<String?> encryptedCredentials = const Value.absent(),
+          Value<String?> lastCheckStatus = const Value.absent(),
+          Value<String?> lastCheckMessage = const Value.absent(),
+          Value<DateTime?> lastSuccessfulCheckAt = const Value.absent(),
+          Value<String?> clientIdentifierAtSupplier = const Value.absent(),
+          Value<String?> additionalConfig = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      SupplierSettingsItem(
+        id: id ?? this.id,
+        supplierCode: supplierCode ?? this.supplierCode,
+        isEnabled: isEnabled ?? this.isEnabled,
+        encryptedCredentials: encryptedCredentials.present
+            ? encryptedCredentials.value
+            : this.encryptedCredentials,
+        lastCheckStatus: lastCheckStatus.present
+            ? lastCheckStatus.value
+            : this.lastCheckStatus,
+        lastCheckMessage: lastCheckMessage.present
+            ? lastCheckMessage.value
+            : this.lastCheckMessage,
+        lastSuccessfulCheckAt: lastSuccessfulCheckAt.present
+            ? lastSuccessfulCheckAt.value
+            : this.lastSuccessfulCheckAt,
+        clientIdentifierAtSupplier: clientIdentifierAtSupplier.present
+            ? clientIdentifierAtSupplier.value
+            : this.clientIdentifierAtSupplier,
+        additionalConfig: additionalConfig.present
+            ? additionalConfig.value
+            : this.additionalConfig,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  SupplierSettingsItem copyWithCompanion(SupplierSettingsItemsCompanion data) {
+    return SupplierSettingsItem(
+      id: data.id.present ? data.id.value : this.id,
+      supplierCode: data.supplierCode.present
+          ? data.supplierCode.value
+          : this.supplierCode,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      encryptedCredentials: data.encryptedCredentials.present
+          ? data.encryptedCredentials.value
+          : this.encryptedCredentials,
+      lastCheckStatus: data.lastCheckStatus.present
+          ? data.lastCheckStatus.value
+          : this.lastCheckStatus,
+      lastCheckMessage: data.lastCheckMessage.present
+          ? data.lastCheckMessage.value
+          : this.lastCheckMessage,
+      lastSuccessfulCheckAt: data.lastSuccessfulCheckAt.present
+          ? data.lastSuccessfulCheckAt.value
+          : this.lastSuccessfulCheckAt,
+      clientIdentifierAtSupplier: data.clientIdentifierAtSupplier.present
+          ? data.clientIdentifierAtSupplier.value
+          : this.clientIdentifierAtSupplier,
+      additionalConfig: data.additionalConfig.present
+          ? data.additionalConfig.value
+          : this.additionalConfig,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierSettingsItem(')
+          ..write('id: $id, ')
+          ..write('supplierCode: $supplierCode, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('encryptedCredentials: $encryptedCredentials, ')
+          ..write('lastCheckStatus: $lastCheckStatus, ')
+          ..write('lastCheckMessage: $lastCheckMessage, ')
+          ..write('lastSuccessfulCheckAt: $lastSuccessfulCheckAt, ')
+          ..write('clientIdentifierAtSupplier: $clientIdentifierAtSupplier, ')
+          ..write('additionalConfig: $additionalConfig, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      supplierCode,
+      isEnabled,
+      encryptedCredentials,
+      lastCheckStatus,
+      lastCheckMessage,
+      lastSuccessfulCheckAt,
+      clientIdentifierAtSupplier,
+      additionalConfig,
+      createdAt,
+      updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SupplierSettingsItem &&
+          other.id == this.id &&
+          other.supplierCode == this.supplierCode &&
+          other.isEnabled == this.isEnabled &&
+          other.encryptedCredentials == this.encryptedCredentials &&
+          other.lastCheckStatus == this.lastCheckStatus &&
+          other.lastCheckMessage == this.lastCheckMessage &&
+          other.lastSuccessfulCheckAt == this.lastSuccessfulCheckAt &&
+          other.clientIdentifierAtSupplier == this.clientIdentifierAtSupplier &&
+          other.additionalConfig == this.additionalConfig &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SupplierSettingsItemsCompanion
+    extends UpdateCompanion<SupplierSettingsItem> {
+  final Value<int> id;
+  final Value<String> supplierCode;
+  final Value<bool> isEnabled;
+  final Value<String?> encryptedCredentials;
+  final Value<String?> lastCheckStatus;
+  final Value<String?> lastCheckMessage;
+  final Value<DateTime?> lastSuccessfulCheckAt;
+  final Value<String?> clientIdentifierAtSupplier;
+  final Value<String?> additionalConfig;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const SupplierSettingsItemsCompanion({
+    this.id = const Value.absent(),
+    this.supplierCode = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.encryptedCredentials = const Value.absent(),
+    this.lastCheckStatus = const Value.absent(),
+    this.lastCheckMessage = const Value.absent(),
+    this.lastSuccessfulCheckAt = const Value.absent(),
+    this.clientIdentifierAtSupplier = const Value.absent(),
+    this.additionalConfig = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  SupplierSettingsItemsCompanion.insert({
+    this.id = const Value.absent(),
+    required String supplierCode,
+    this.isEnabled = const Value.absent(),
+    this.encryptedCredentials = const Value.absent(),
+    this.lastCheckStatus = const Value.absent(),
+    this.lastCheckMessage = const Value.absent(),
+    this.lastSuccessfulCheckAt = const Value.absent(),
+    this.clientIdentifierAtSupplier = const Value.absent(),
+    this.additionalConfig = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  }) : supplierCode = Value(supplierCode);
+  static Insertable<SupplierSettingsItem> custom({
+    Expression<int>? id,
+    Expression<String>? supplierCode,
+    Expression<bool>? isEnabled,
+    Expression<String>? encryptedCredentials,
+    Expression<String>? lastCheckStatus,
+    Expression<String>? lastCheckMessage,
+    Expression<DateTime>? lastSuccessfulCheckAt,
+    Expression<String>? clientIdentifierAtSupplier,
+    Expression<String>? additionalConfig,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (supplierCode != null) 'supplier_code': supplierCode,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (encryptedCredentials != null)
+        'encrypted_credentials': encryptedCredentials,
+      if (lastCheckStatus != null) 'last_check_status': lastCheckStatus,
+      if (lastCheckMessage != null) 'last_check_message': lastCheckMessage,
+      if (lastSuccessfulCheckAt != null)
+        'last_successful_check_at': lastSuccessfulCheckAt,
+      if (clientIdentifierAtSupplier != null)
+        'client_identifier_at_supplier': clientIdentifierAtSupplier,
+      if (additionalConfig != null) 'additional_config': additionalConfig,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  SupplierSettingsItemsCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? supplierCode,
+      Value<bool>? isEnabled,
+      Value<String?>? encryptedCredentials,
+      Value<String?>? lastCheckStatus,
+      Value<String?>? lastCheckMessage,
+      Value<DateTime?>? lastSuccessfulCheckAt,
+      Value<String?>? clientIdentifierAtSupplier,
+      Value<String?>? additionalConfig,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt}) {
+    return SupplierSettingsItemsCompanion(
+      id: id ?? this.id,
+      supplierCode: supplierCode ?? this.supplierCode,
+      isEnabled: isEnabled ?? this.isEnabled,
+      encryptedCredentials: encryptedCredentials ?? this.encryptedCredentials,
+      lastCheckStatus: lastCheckStatus ?? this.lastCheckStatus,
+      lastCheckMessage: lastCheckMessage ?? this.lastCheckMessage,
+      lastSuccessfulCheckAt:
+          lastSuccessfulCheckAt ?? this.lastSuccessfulCheckAt,
+      clientIdentifierAtSupplier:
+          clientIdentifierAtSupplier ?? this.clientIdentifierAtSupplier,
+      additionalConfig: additionalConfig ?? this.additionalConfig,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (supplierCode.present) {
+      map['supplier_code'] = Variable<String>(supplierCode.value);
+    }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (encryptedCredentials.present) {
+      map['encrypted_credentials'] =
+          Variable<String>(encryptedCredentials.value);
+    }
+    if (lastCheckStatus.present) {
+      map['last_check_status'] = Variable<String>(lastCheckStatus.value);
+    }
+    if (lastCheckMessage.present) {
+      map['last_check_message'] = Variable<String>(lastCheckMessage.value);
+    }
+    if (lastSuccessfulCheckAt.present) {
+      map['last_successful_check_at'] =
+          Variable<DateTime>(lastSuccessfulCheckAt.value);
+    }
+    if (clientIdentifierAtSupplier.present) {
+      map['client_identifier_at_supplier'] =
+          Variable<String>(clientIdentifierAtSupplier.value);
+    }
+    if (additionalConfig.present) {
+      map['additional_config'] = Variable<String>(additionalConfig.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SupplierSettingsItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('supplierCode: $supplierCode, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('encryptedCredentials: $encryptedCredentials, ')
+          ..write('lastCheckStatus: $lastCheckStatus, ')
+          ..write('lastCheckMessage: $lastCheckMessage, ')
+          ..write('lastSuccessfulCheckAt: $lastSuccessfulCheckAt, ')
+          ..write('clientIdentifierAtSupplier: $clientIdentifierAtSupplier, ')
+          ..write('additionalConfig: $additionalConfig, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3379,9 +4006,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $OrderPartsItemsTable(this);
   late final $OrderServicesItemsTable orderServicesItems =
       $OrderServicesItemsTable(this);
+  late final $SupplierSettingsItemsTable supplierSettingsItems =
+      $SupplierSettingsItemsTable(this);
   late final ClientsDao clientsDao = ClientsDao(this as AppDatabase);
   late final CarsDao carsDao = CarsDao(this as AppDatabase);
   late final OrdersDao ordersDao = OrdersDao(this as AppDatabase);
+  late final SupplierSettingsDao supplierSettingsDao =
+      SupplierSettingsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3392,7 +4023,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         appInfoItems,
         ordersItems,
         orderPartsItems,
-        orderServicesItems
+        orderServicesItems,
+        supplierSettingsItems
       ];
 }
 
@@ -5847,6 +6479,283 @@ typedef $$OrderServicesItemsTableProcessedTableManager = ProcessedTableManager<
     (OrderServicesItem, $$OrderServicesItemsTableReferences),
     OrderServicesItem,
     PrefetchHooks Function({bool documentUuid})>;
+typedef $$SupplierSettingsItemsTableCreateCompanionBuilder
+    = SupplierSettingsItemsCompanion Function({
+  Value<int> id,
+  required String supplierCode,
+  Value<bool> isEnabled,
+  Value<String?> encryptedCredentials,
+  Value<String?> lastCheckStatus,
+  Value<String?> lastCheckMessage,
+  Value<DateTime?> lastSuccessfulCheckAt,
+  Value<String?> clientIdentifierAtSupplier,
+  Value<String?> additionalConfig,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+typedef $$SupplierSettingsItemsTableUpdateCompanionBuilder
+    = SupplierSettingsItemsCompanion Function({
+  Value<int> id,
+  Value<String> supplierCode,
+  Value<bool> isEnabled,
+  Value<String?> encryptedCredentials,
+  Value<String?> lastCheckStatus,
+  Value<String?> lastCheckMessage,
+  Value<DateTime?> lastSuccessfulCheckAt,
+  Value<String?> clientIdentifierAtSupplier,
+  Value<String?> additionalConfig,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+});
+
+class $$SupplierSettingsItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $SupplierSettingsItemsTable> {
+  $$SupplierSettingsItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get supplierCode => $composableBuilder(
+      column: $table.supplierCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+      column: $table.isEnabled, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get encryptedCredentials => $composableBuilder(
+      column: $table.encryptedCredentials,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastCheckStatus => $composableBuilder(
+      column: $table.lastCheckStatus,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get lastCheckMessage => $composableBuilder(
+      column: $table.lastCheckMessage,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastSuccessfulCheckAt => $composableBuilder(
+      column: $table.lastSuccessfulCheckAt,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get clientIdentifierAtSupplier => $composableBuilder(
+      column: $table.clientIdentifierAtSupplier,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get additionalConfig => $composableBuilder(
+      column: $table.additionalConfig,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$SupplierSettingsItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SupplierSettingsItemsTable> {
+  $$SupplierSettingsItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get supplierCode => $composableBuilder(
+      column: $table.supplierCode,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+      column: $table.isEnabled, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get encryptedCredentials => $composableBuilder(
+      column: $table.encryptedCredentials,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastCheckStatus => $composableBuilder(
+      column: $table.lastCheckStatus,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get lastCheckMessage => $composableBuilder(
+      column: $table.lastCheckMessage,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastSuccessfulCheckAt => $composableBuilder(
+      column: $table.lastSuccessfulCheckAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get clientIdentifierAtSupplier => $composableBuilder(
+      column: $table.clientIdentifierAtSupplier,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get additionalConfig => $composableBuilder(
+      column: $table.additionalConfig,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SupplierSettingsItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SupplierSettingsItemsTable> {
+  $$SupplierSettingsItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get supplierCode => $composableBuilder(
+      column: $table.supplierCode, builder: (column) => column);
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<String> get encryptedCredentials => $composableBuilder(
+      column: $table.encryptedCredentials, builder: (column) => column);
+
+  GeneratedColumn<String> get lastCheckStatus => $composableBuilder(
+      column: $table.lastCheckStatus, builder: (column) => column);
+
+  GeneratedColumn<String> get lastCheckMessage => $composableBuilder(
+      column: $table.lastCheckMessage, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastSuccessfulCheckAt => $composableBuilder(
+      column: $table.lastSuccessfulCheckAt, builder: (column) => column);
+
+  GeneratedColumn<String> get clientIdentifierAtSupplier => $composableBuilder(
+      column: $table.clientIdentifierAtSupplier, builder: (column) => column);
+
+  GeneratedColumn<String> get additionalConfig => $composableBuilder(
+      column: $table.additionalConfig, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$SupplierSettingsItemsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SupplierSettingsItemsTable,
+    SupplierSettingsItem,
+    $$SupplierSettingsItemsTableFilterComposer,
+    $$SupplierSettingsItemsTableOrderingComposer,
+    $$SupplierSettingsItemsTableAnnotationComposer,
+    $$SupplierSettingsItemsTableCreateCompanionBuilder,
+    $$SupplierSettingsItemsTableUpdateCompanionBuilder,
+    (
+      SupplierSettingsItem,
+      BaseReferences<_$AppDatabase, $SupplierSettingsItemsTable,
+          SupplierSettingsItem>
+    ),
+    SupplierSettingsItem,
+    PrefetchHooks Function()> {
+  $$SupplierSettingsItemsTableTableManager(
+      _$AppDatabase db, $SupplierSettingsItemsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SupplierSettingsItemsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SupplierSettingsItemsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SupplierSettingsItemsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> supplierCode = const Value.absent(),
+            Value<bool> isEnabled = const Value.absent(),
+            Value<String?> encryptedCredentials = const Value.absent(),
+            Value<String?> lastCheckStatus = const Value.absent(),
+            Value<String?> lastCheckMessage = const Value.absent(),
+            Value<DateTime?> lastSuccessfulCheckAt = const Value.absent(),
+            Value<String?> clientIdentifierAtSupplier = const Value.absent(),
+            Value<String?> additionalConfig = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              SupplierSettingsItemsCompanion(
+            id: id,
+            supplierCode: supplierCode,
+            isEnabled: isEnabled,
+            encryptedCredentials: encryptedCredentials,
+            lastCheckStatus: lastCheckStatus,
+            lastCheckMessage: lastCheckMessage,
+            lastSuccessfulCheckAt: lastSuccessfulCheckAt,
+            clientIdentifierAtSupplier: clientIdentifierAtSupplier,
+            additionalConfig: additionalConfig,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String supplierCode,
+            Value<bool> isEnabled = const Value.absent(),
+            Value<String?> encryptedCredentials = const Value.absent(),
+            Value<String?> lastCheckStatus = const Value.absent(),
+            Value<String?> lastCheckMessage = const Value.absent(),
+            Value<DateTime?> lastSuccessfulCheckAt = const Value.absent(),
+            Value<String?> clientIdentifierAtSupplier = const Value.absent(),
+            Value<String?> additionalConfig = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              SupplierSettingsItemsCompanion.insert(
+            id: id,
+            supplierCode: supplierCode,
+            isEnabled: isEnabled,
+            encryptedCredentials: encryptedCredentials,
+            lastCheckStatus: lastCheckStatus,
+            lastCheckMessage: lastCheckMessage,
+            lastSuccessfulCheckAt: lastSuccessfulCheckAt,
+            clientIdentifierAtSupplier: clientIdentifierAtSupplier,
+            additionalConfig: additionalConfig,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SupplierSettingsItemsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $SupplierSettingsItemsTable,
+        SupplierSettingsItem,
+        $$SupplierSettingsItemsTableFilterComposer,
+        $$SupplierSettingsItemsTableOrderingComposer,
+        $$SupplierSettingsItemsTableAnnotationComposer,
+        $$SupplierSettingsItemsTableCreateCompanionBuilder,
+        $$SupplierSettingsItemsTableUpdateCompanionBuilder,
+        (
+          SupplierSettingsItem,
+          BaseReferences<_$AppDatabase, $SupplierSettingsItemsTable,
+              SupplierSettingsItem>
+        ),
+        SupplierSettingsItem,
+        PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5863,4 +6772,6 @@ class $AppDatabaseManager {
       $$OrderPartsItemsTableTableManager(_db, _db.orderPartsItems);
   $$OrderServicesItemsTableTableManager get orderServicesItems =>
       $$OrderServicesItemsTableTableManager(_db, _db.orderServicesItems);
+  $$SupplierSettingsItemsTableTableManager get supplierSettingsItems =>
+      $$SupplierSettingsItemsTableTableManager(_db, _db.supplierSettingsItems);
 }

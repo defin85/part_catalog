@@ -24,7 +24,7 @@ import 'package:rxdart/rxdart.dart';
 /// во/из `@freezed` моделей данных для взаимодействия с DAO.
 class OrderService {
   final AppDatabase _database;
-  final _logger = AppLoggers.ordersLogger;
+  final _logger = AppLoggers.orders;
 
   /// Получение DAO для работы с заказ-нарядами из базы данных
   OrdersDao get _ordersDao => _database.ordersDao;

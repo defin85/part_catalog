@@ -11,49 +11,49 @@ part 'core_providers.g.dart';
 @Riverpod(keepAlive: true)
 Logger coreLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.coreLogger;
+  return AppLoggers.core;
 }
 
 // Логгер для модуля клиентов
 @Riverpod(keepAlive: true)
 Logger clientsLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.clientsLogger;
+  return AppLoggers.clients;
 }
 
 // Логгер для модуля автомобилей
 @Riverpod(keepAlive: true)
 Logger vehiclesLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.vehiclesLogger;
+  return AppLoggers.vehicles;
 }
 
 // Логгер для модуля заказ-нарядов
 @Riverpod(keepAlive: true)
 Logger ordersLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.ordersLogger;
+  return AppLoggers.orders;
 }
 
 // Логгер для модуля поставщиков
 @Riverpod(keepAlive: true)
 Logger suppliersLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.suppliersLogger;
+  return AppLoggers.suppliers;
 }
 
 // Логгер для сетевых операций (если нужен отдельно)
 @Riverpod(keepAlive: true)
 Logger networkLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.networkLogger;
+  return AppLoggers.network;
 }
 
 // Логгер для базы данных (если нужен отдельно)
 @Riverpod(keepAlive: true)
 Logger databaseLogger(Ref ref) {
   // Используем базовый Ref
-  return AppLoggers.databaseLogger;
+  return AppLoggers.database;
 }
 
 // --- Другие общие провайдеры ---

@@ -1,0 +1,10 @@
+{
+    "screenTitle": "Центр управления API",
+    "apiConnectionMode": "Режим подключения API",
+    "directMode": "Напрямую",
+    "proxyMode": "Через прокси",
+    "proxyUrlLabel": "URL прокси-сервера",
+    "proxyUrlHint": "например, http://localhost:8080",
+    "suppliersListTitle": "Поставщики",
+    "configureButton": "Настроить"
+}

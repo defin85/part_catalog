@@ -46,7 +46,7 @@ class CarsDao extends DatabaseAccessor<AppDatabase> with _$CarsDaoMixin {
   CarsDao(super.db);
 
   // Используем логгер из AppLoggers
-  final _logger = AppLoggers.databaseLogger; // Или AppLoggers.vehiclesLogger
+  final _logger = AppLoggers.database; // Или AppLoggers.vehiclesLogger
 
   // --- Приватные методы маппинга (из таблицы в @freezed) ---
 

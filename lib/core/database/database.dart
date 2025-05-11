@@ -1,4 +1,6 @@
 import 'package:drift/drift.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:part_catalog/core/service_locator.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:drift/native.dart';
@@ -15,11 +17,13 @@ import 'items/app_info_items.dart';
 import 'items/orders_items.dart';
 import 'items/order_parts_items.dart';
 import 'items/order_services_items.dart';
+import 'items/supplier_settings_items.dart';
 
 // импорты DAO
 import 'daos/clients_dao.dart';
 import 'daos/cars_dao.dart';
 import 'daos/orders_dao.dart';
+import 'daos/supplier_settings_dao.dart';
 
 part 'database.g.dart';
 
@@ -33,9 +37,10 @@ part 'database.g.dart';
     AppInfoItems,
     OrdersItems,
     OrderPartsItems,
-    OrderServicesItems
+    OrderServicesItems,
+    SupplierSettingsItems
   ],
-  daos: [ClientsDao, CarsDao, OrdersDao],
+  daos: [ClientsDao, CarsDao, OrdersDao, SupplierSettingsDao],
 ) // Обновлены имена таблиц
 class AppDatabase extends _$AppDatabase {
   /// {@macro app_database}
@@ -45,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   final Logger _logger = Logger();
 
   @override
-  int get schemaVersion => 10; // Увеличиваем версию из-за изменения схемы
+  int get schemaVersion => 11; // Увеличиваем версию из-за изменения схемы
 
   /// Получает экземпляр DAO клиентов.
   @override
@@ -58,6 +63,10 @@ class AppDatabase extends _$AppDatabase {
   /// Получает экземпляр DAO заказ-нарядов.
   @override
   OrdersDao get ordersDao => OrdersDao(this);
+
+  /// Получает экземпляр DAO настройки поставщиков.
+  @override
+  SupplierSettingsDao get supplierSettingsDao => SupplierSettingsDao(this);
 
   // Определите стратегию миграции
   @override
@@ -294,3 +303,8 @@ LazyDatabase _openConnection() {
     return NativeDatabase.createInBackground(file);
   });
 }
+
+// Провайдер для AppDatabase, получающий экземпляр из locator
+final appDatabaseProvider = Provider<AppDatabase>((ref) {
+  return locator<AppDatabase>();
+});

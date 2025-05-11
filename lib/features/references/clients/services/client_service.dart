@@ -20,7 +20,7 @@ import 'package:part_catalog/features/references/vehicles/models/car_model_compo
 class ClientService {
   /// {@macro client_service}
   ClientService(this._db)
-      : _logger = AppLoggers.clientsLogger; // Используем настроенный логгер
+      : _logger = AppLoggers.clients; // Используем настроенный логгер
 
   final AppDatabase _db;
   final Logger _logger;

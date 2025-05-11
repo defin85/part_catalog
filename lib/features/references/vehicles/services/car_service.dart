@@ -28,7 +28,7 @@ class CarWithOwnerModel {
 class CarService {
   /// {@macro car_service}
   CarService(this._db)
-      : _logger = AppLoggers.vehiclesLogger; // Используем настроенный логгер
+      : _logger = AppLoggers.vehicles; // Используем настроенный логгер
 
   final AppDatabase _db;
   final Logger _logger;

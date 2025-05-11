@@ -28,7 +28,7 @@ class ClientsDao extends DatabaseAccessor<AppDatabase> with _$ClientsDaoMixin {
   /// {@macro clients_dao}
   ClientsDao(super.db);
 
-  final _logger = AppLoggers.databaseLogger;
+  final _logger = AppLoggers.database;
 
   // --- Приватные методы маппинга ---
 
