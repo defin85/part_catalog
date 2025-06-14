@@ -1,6 +1,10 @@
 import 'dart:convert'; // For base64Encode
 import 'package:dio/dio.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
+import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/ping_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
@@ -13,11 +17,17 @@ import 'package:part_catalog/features/suppliers/models/armtek/user_info_response
 part 'armtek_api_client.g.dart';
 
 const String armtekBaseUrl =
-    "http://ws.armtek.ru"; // Можно вынести в конфигурацию
+    "http://ws.armtek.ru/api"; // Можно вынести в конфигурацию
 
 @RestApi(baseUrl: armtekBaseUrl)
 abstract class ArmtekRestInterface {
   factory ArmtekRestInterface(Dio dio, {String baseUrl}) = _ArmtekRestInterface;
+
+  // --- ServicePing ---
+  @GET("/ws_ping/index")
+  Future<ArmtekResponseWrapper<PingResponse>> pingService({
+    @Query("format") String format = "json",
+  });
 
   // --- ServiceUser ---
   @GET("/ws_user/getUserVkorgList")
@@ -34,13 +44,19 @@ abstract class ArmtekRestInterface {
     @Query("format") String format = "json",
   });
 
-  // TODO: Добавить метод getBrandList
-  // @GET("/ws_user/getBrandList")
-  // Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList(...);
+  /// Добавляем метод getBrandList
+  @GET("/ws_user/getBrandList")
+  Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList({
+    @Query("VKORG") required String vkorg,
+    @Query("format") String format = "json",
+  });
 
-  // TODO: Добавить метод getStoreList
-  // @GET("/ws_user/getStoreList")
-  // Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(...);
+  // Добавляем метод getStoreList
+  @GET("/ws_user/getStoreList")
+  Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList({
+    @Query("VKORG") required String vkorg,
+    @Query("format") String format = "json",
+  });
 
   // --- ServiceSearch ---
   // TODO: Добавить методы для поиска (например, getSearch)
@@ -53,17 +69,20 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   final Dio _dio;
   final ArmtekRestInterface _client;
   final _logger = AppLoggers.suppliers;
+  final String _effectiveBaseUrl;
 
   ArmtekApiClient(this._dio,
       {String? username,
       String? password,
       String? baseUrl,
-      String? proxyAuthToken}) // Сделали username и password опциональными
-      : _client = ArmtekRestInterface(_dio, baseUrl: baseUrl ?? armtekBaseUrl) {
-    // Добавляем Interceptor для Basic Authentication или Proxy Authentication
+      String? proxyAuthToken})
+      : _effectiveBaseUrl = baseUrl ?? armtekBaseUrl, // Инициализируем поле
+        _client = ArmtekRestInterface(_dio, baseUrl: baseUrl ?? armtekBaseUrl) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        if (baseUrl == null || baseUrl.contains('ws.armtek.ru')) {
+        // Используем _effectiveBaseUrl для проверки, так как options.baseUrl может быть изменен Dio
+        if (_effectiveBaseUrl == armtekBaseUrl ||
+            _effectiveBaseUrl.contains('ws.armtek.ru')) {
           // Если это прямой запрос к Armtek
           if (username != null && password != null) {
             final basicAuth =
@@ -77,8 +96,11 @@ class ArmtekApiClient implements BaseSupplierApiClient {
           }
         }
         // Если это запрос к прокси и есть токен для прокси
+        // Сравниваем options.baseUrl с _effectiveBaseUrl, который был использован для создания клиента
         if (proxyAuthToken != null &&
-            options.baseUrl == baseUrl /* baseUrl здесь будет URL прокси */) {
+            options.baseUrl == _effectiveBaseUrl &&
+            _effectiveBaseUrl !=
+                armtekBaseUrl /* Убедимся, что это действительно прокси URL */) {
           options.headers['X-Proxy-Auth-Token'] =
               proxyAuthToken; // Пример заголовка для прокси
         }
@@ -87,11 +109,14 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     ));
   }
 
-  @override
-  String get supplierName => 'Armtek';
+  /// Возвращает базовый URL, с которым был сконфигурирован этот клиент.
+  String get baseUrl => _effectiveBaseUrl; // Добавлен геттер
 
   @override
-  String get supplierCode => 'Armtek';
+  String get supplierName => SupplierCode.armtek.name;
+
+  @override
+  String get supplierCode => SupplierCode.armtek.code;
 
   // --- Реализация методов BaseSupplierApiClient ---
 
@@ -120,26 +145,48 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   }
 
   @override
-  Future<bool> checkConnection() {
-    // TODO: Реализовать проверку соединения с Armtek API
-    // Это потребует создания моделей запроса и ответа для поиска,
-    // а затем маппинга ответа Armtek в унифицированную модель PartPriceModel.
-    // Пример:
-    // final searchRequest = SearchRequest(article: articleNumber, brand: brand, ...);
-    // final response = await _client.searchParts(request: searchRequest);
-    // if (response.status == 200 && response.responseData != null) {
-    //   return response.responseData.items.map((item) => PartPriceModel(
-    //     article: item.article,
-    //     brand: item.brand,
-    //     name: item.name,
-    //     price: item.price,
-    //     quantity: item.quantity,
-    //     deliveryDays: item.deliveryDays,
-    //     supplierName: supplierName,
-    //   )).toList();
-    // }
-    throw UnimplementedError(
-        'checkConnection for Armtek is not yet implemented.');
+  Future<bool> checkConnection() async {
+    try {
+      // Используем наш метод pingService вместо прямого запроса
+      final response = await pingService();
+
+      if (response.status == 200 && response.responseData != null) {
+        _logger.i('API Armtek доступно. IP: ${response.responseData!.ip}, '
+            'Время выполнения: ${response.responseData!.time}');
+        return true;
+      } else {
+        _logger.w('API Armtek недоступно. Статус ответа: ${response.status}');
+        return false;
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Ошибка при проверке доступности API Armtek',
+          error: e, stackTrace: stackTrace);
+      return false;
+    }
+  }
+
+  // --- Методы для проверки сервиса (ServicePing) ---
+
+  /// Проверяет доступность сервиса Armtek
+  Future<ArmtekResponseWrapper<PingResponse>> pingService() async {
+    _logger.i('Проверка доступности сервиса Armtek...');
+    try {
+      final response = await _client.pingService();
+
+      final pingData = response.responseData;
+      if (pingData != null) {
+        _logger.i('Сервис Armtek доступен. IP: ${pingData.ip}, '
+            'Время выполнения: ${pingData.time}');
+      } else {
+        _logger.i('Сервис Armtek доступен, но данные отсутствуют.');
+      }
+
+      return response;
+    } catch (e, stackTrace) {
+      _logger.e('Ошибка при проверке сервиса Armtek',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
 
   // --- Методы специфичные для Armtek API (из ServiceUser) ---
@@ -157,5 +204,17 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     );
   }
 
-  // TODO: Добавить обертки для getBrandList, getStoreList
+  // Добавляем метод getBrandList
+  Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList(
+      String vkorg) async {
+    _logger.i('Getting brand list for VKORG: $vkorg');
+    return _client.getBrandList(vkorg: vkorg);
+  }
+
+  // Добавляем метод getStoreList
+  Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(
+      String vkorg) async {
+    _logger.i('Getting store list for VKORG: $vkorg');
+    return _client.getStoreList(vkorg: vkorg);
+  }
 }

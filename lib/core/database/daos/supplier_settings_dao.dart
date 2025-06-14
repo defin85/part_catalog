@@ -48,9 +48,19 @@ class SupplierSettingsDao extends DatabaseAccessor<AppDatabase>
   }
 
   // Обновить или вставить настройку поставщика
+  // Обновить или вставить настройку поставщика
   Future<int> upsertSupplierSetting(
       SupplierSettingsItemsCompanion entry) async {
-    return into(supplierSettingsItems).insertOnConflictUpdate(entry);
+    // Используем insert с указанием onConflict для разрешения по supplierCode
+    return into(supplierSettingsItems).insert(
+      entry,
+      onConflict: DoUpdate(
+        (old) => entry, // Обновляем все поля, которые есть в 'entry'
+        target: [
+          supplierSettingsItems.supplierCode
+        ], // Целевой столбец для конфликта
+      ),
+    );
   }
 
   // Удалить настройку поставщика по ID

@@ -193,7 +193,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                         Text(t.core.dataLoadingError),
                         const SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: () => _resetDatabase(context),
+                          onPressed: () => _showResetConfirmation(context),
                           child: Text(t.core.resetDatabase),
                         )
                       ],
@@ -224,7 +224,12 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   // --- Методы для действий ---
 
   Future<void> _showResetConfirmation(BuildContext context) async {
+    // Захватываем ВСЕ необходимые значения из context ПЕРЕД await
     final t = context.t;
+    final currentColorScheme = Theme.of(context).colorScheme;
+    // Захватываем ScaffoldMessengerState здесь, до await
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -239,21 +244,26 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(t.core.resetDatabase,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  style: TextStyle(color: currentColorScheme.error)),
             ),
           ],
         );
       },
     );
 
+    // Проверяем, смонтирован ли виджет, после await
+    if (!mounted) return;
+
     if (confirmed == true) {
-      await _resetDatabase(context);
+      // Передаем захваченные scaffoldMessenger и t, а не context
+      await _resetDatabase(scaffoldMessenger, t);
     }
   }
 
-  Future<void> _resetDatabase(BuildContext context) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final t = context.t;
+  Future<void> _resetDatabase(
+      ScaffoldMessengerState scaffoldMessenger, Translations t) async {
+    // final scaffoldMessenger = ScaffoldMessenger.of(context); // Больше не используется context
+    // final t = context.t; // Больше не используется context
 
     try {
       final db = locator<AppDatabase>();
@@ -276,13 +286,14 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
       // Инвалидируйте другие связанные провайдеры, если они есть
 
       if (mounted) {
+        // mounted здесь - это свойство ConsumerState
         scaffoldMessenger
             .showSnackBar(SnackBar(content: Text(t.core.resetDatabaseSuccess)));
-        // Не нужно делать setState, Riverpod обновит UI
       }
     } catch (e, s) {
       _logger.e(LogMessages.databaseResetError, error: e, stackTrace: s);
       if (mounted) {
+        // mounted здесь - это свойство ConsumerState
         scaffoldMessenger.showSnackBar(SnackBar(
             content: Text(t.core.resetDatabaseError(error: e.toString()))));
       }
@@ -292,9 +303,13 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   Future<bool?> _confirmDeletion(
       BuildContext context, ClientModelComposite client) async {
     final t = context.t;
+    // Захватываем цветовую схему из исходного контекста, если она нужна для стиля кнопки в диалоге
+    // final currentColorScheme = Theme.of(context).colorScheme;
+
     return await showDialog<bool>(
           context: context,
           builder: (BuildContext dialogContext) {
+            // dialogContext - новый, валидный контекст для билдера диалога
             return AlertDialog(
               title: Text(t.common.confirmDeletion),
               content: Text(t.clients.confirmDelete(name: client.displayName)),
@@ -307,7 +322,9 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   onPressed: () => Navigator.of(dialogContext).pop(true),
                   child: Text(t.common.delete,
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.error)),
+                          color: Theme.of(dialogContext)
+                              .colorScheme
+                              .error)), // Используем dialogContext для Theme
                 ),
               ],
             );
@@ -379,18 +396,19 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   }
 
   Future<void> _addClient() async {
+    // Захватываем ScaffoldMessenger и Translations до await
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = context.t;
 
-    // Показываем диалог и ждем результат
-    // Передаем ref в диалог
     final newClient = await _showClientDialog(context, ref: ref);
+
+    if (!mounted) return; // Проверка после await
+
     if (newClient != null) {
       try {
-        // Вызываем метод Notifier'а
         await ref.read(clientsNotifierProvider.notifier).addClient(newClient);
-        // Сообщение об успехе можно показать здесь
         if (mounted) {
+          // Дополнительная проверка mounted перед использованием scaffoldMessenger
           scaffoldMessenger.showSnackBar(SnackBar(
               content:
                   Text(t.clients.clientAdded(name: newClient.displayName))));
@@ -398,6 +416,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
       } catch (e, s) {
         _logger.e(LogMessages.clientAddError, error: e, stackTrace: s);
         if (mounted) {
+          // Дополнительная проверка mounted
           scaffoldMessenger.showSnackBar(
             SnackBar(content: Text(t.clients.addError(error: e.toString()))),
           );
@@ -407,20 +426,22 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   }
 
   Future<void> _editClient(ClientModelComposite client) async {
+    // Захватываем ScaffoldMessenger и Translations до await
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final t = context.t;
 
-    // Показываем диалог с существующим клиентом, передаем ref
     final updatedClient =
         await _showClientDialog(context, client: client, ref: ref);
+
+    if (!mounted) return; // Проверка после await
+
     if (updatedClient != null) {
       try {
-        // Вызываем метод Notifier'а
         await ref
             .read(clientsNotifierProvider.notifier)
             .updateClient(updatedClient);
-        // Сообщение об успехе
         if (mounted) {
+          // Дополнительная проверка mounted
           scaffoldMessenger.showSnackBar(SnackBar(
               content: Text(
                   t.clients.clientUpdated(name: updatedClient.displayName))));
@@ -431,6 +452,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
             error: e,
             stackTrace: s);
         if (mounted) {
+          // Дополнительная проверка mounted
           scaffoldMessenger.showSnackBar(
             SnackBar(content: Text(t.clients.updateError(error: e.toString()))),
           );

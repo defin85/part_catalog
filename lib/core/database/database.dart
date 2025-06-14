@@ -50,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   final Logger _logger = Logger();
 
   @override
-  int get schemaVersion => 11; // Увеличиваем версию из-за изменения схемы
+  int get schemaVersion => 12; // Увеличиваем версию из-за изменения схемы
 
   /// Получает экземпляр DAO клиентов.
   @override
@@ -307,4 +307,11 @@ LazyDatabase _openConnection() {
 // Провайдер для AppDatabase, получающий экземпляр из locator
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return locator<AppDatabase>();
+});
+
+// Провайдер для SupplierSettingsDao
+final supplierSettingsDaoProvider = Provider<SupplierSettingsDao>((ref) {
+  // Получаем зависимость AppDatabase через другой провайдер
+  final database = ref.watch(appDatabaseProvider);
+  return SupplierSettingsDao(database);
 });

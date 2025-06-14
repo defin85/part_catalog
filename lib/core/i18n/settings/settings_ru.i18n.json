@@ -1,0 +1,32 @@
+{
+    "apiControlCenter": {
+        "screenTitle": "Центр управления API",
+        "apiConnectionMode": "Режим подключения API",
+        "directMode": "Напрямую",
+        "proxyMode": "Через прокси",
+        "proxyUrlLabel": "URL прокси-сервера",
+        "proxyUrlHint": "например, http://localhost:8080",
+        "suppliersListTitle": "Поставщики",
+        "configureButton": "Настроить"
+    },
+    "armtekSettings": {
+        "screenTitle": "Настройки Armtek",
+        "credentialsSectionTitle": "Учетные данные",
+        "loginLabel": "Логин",
+        "passwordLabel": "Пароль",
+        "loginRequiredError": "Логин обязателен",
+        "passwordRequiredError": "Пароль обязателен для нового подключения",
+        "checkAndSaveButton": "Проверить и сохранить",
+        "supplierInfoSectionTitle": "Информация от поставщика",
+        "vkorgLabel": "Сбытовая организация",
+        "clientInfoTitle": "Информация о клиенте",
+        "clientStructureKUNAG": "KUNAG",
+        "clientStructureVKORG": "VKORG",
+        "clientStructureSNAME": "Наименование",
+        "clientStructureADRESS": "Адрес",
+        "userInfoUnavailable": "Информация о клиенте недоступна",
+        "rgTabInfoTitle": "Информация о плательщиках (RG_TAB)",
+        "rgTabKUNNR": "Номер плательщика (KUNNR)",
+        "rgTabSNAME": "Наименование плательщика (SNAME)"
+    }
+}

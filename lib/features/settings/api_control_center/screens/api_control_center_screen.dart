@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 // import 'package:part_catalog/core/config/global_api_settings_service.dart'; // Больше не нужен напрямую
 import 'package:part_catalog/core/utils/logger_config.dart';
@@ -35,7 +37,7 @@ class ApiControlCenterScreen extends ConsumerWidget {
       // Показываем загрузку только при первой загрузке
       return Scaffold(
         appBar: AppBar(
-          title: Text(t.apiControlCenter.screenTitle),
+          title: Text(t.settings.apiControlCenter.screenTitle),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -51,7 +53,7 @@ class ApiControlCenterScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(t.apiControlCenter.screenTitle),
+        title: Text(t.settings.apiControlCenter.screenTitle),
         actions: [
           if (state.isLoading)
             const Padding(
@@ -72,11 +74,11 @@ class ApiControlCenterScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              t.apiControlCenter.apiConnectionMode,
+              t.settings.apiControlCenter.apiConnectionMode,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             RadioListTile<ApiConnectionMode>(
-              title: Text(t.apiControlCenter.directMode),
+              title: Text(t.settings.apiControlCenter.directMode),
               value: ApiConnectionMode.direct,
               groupValue: state.apiMode,
               onChanged: (ApiConnectionMode? value) {
@@ -86,7 +88,7 @@ class ApiControlCenterScreen extends ConsumerWidget {
               },
             ),
             RadioListTile<ApiConnectionMode>(
-              title: Text(t.apiControlCenter.proxyMode),
+              title: Text(t.settings.apiControlCenter.proxyMode),
               value: ApiConnectionMode.proxy,
               groupValue: state.apiMode,
               onChanged: (ApiConnectionMode? value) {
@@ -102,8 +104,8 @@ class ApiControlCenterScreen extends ConsumerWidget {
                 child: TextFormField(
                   controller: proxyUrlController,
                   decoration: InputDecoration(
-                    labelText: t.apiControlCenter.proxyUrlLabel,
-                    hintText: t.apiControlCenter.proxyUrlHint,
+                    labelText: t.settings.apiControlCenter.proxyUrlLabel,
+                    hintText: t.settings.apiControlCenter.proxyUrlHint,
                     border: const OutlineInputBorder(),
                   ),
                   onEditingComplete: () {
@@ -114,7 +116,7 @@ class ApiControlCenterScreen extends ConsumerWidget {
               ),
             const SizedBox(height: 24),
             Text(
-              t.apiControlCenter.suppliersListTitle,
+              t.settings.apiControlCenter.suppliersListTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -137,13 +139,18 @@ class ApiControlCenterScreen extends ConsumerWidget {
                     isConfigured: supplierInfo.isConfigured, onConfigure: () {
                   logger.i(
                       'Configure button pressed for ${supplierInfo.displayName}');
-                  // TODO: Навигация на экран настроек supplierInfo.code
-                  // Например, context.go('/settings/suppliers/${supplierInfo.code}');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'Переход к настройкам ${supplierInfo.displayName} (TODO)')),
-                  );
+                  if (supplierInfo.code == SupplierCode.armtek.code) {
+                    // Используем context.goNamed для перехода по имени маршрута
+                    // Убедитесь, что родительский маршрут ApiControlCenterScreen уже активен
+                    // или используйте полный путь context.go('${AppRoutes.apiControlCenter}/${AppRoutes.armtekSettings}');
+                    context.goNamed(AppRoutes.armtekSettings);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Настройки для ${supplierInfo.displayName} еще не реализованы')),
+                    );
+                  }
                 },
                     // Тестовая кнопка для имитации сохранения настроек
                     onTestToggleConfigured: () {
@@ -194,7 +201,7 @@ class ApiControlCenterScreen extends ConsumerWidget {
             const SizedBox(width: 8),
             ElevatedButton(
               onPressed: onConfigure,
-              child: Text(t.apiControlCenter.configureButton),
+              child: Text(t.settings.apiControlCenter.configureButton),
             ),
           ],
         ),

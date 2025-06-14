@@ -1,0 +1,32 @@
+{
+    "apiControlCenter": {
+        "screenTitle": "API Control Center",
+        "apiConnectionMode": "API Connection Mode",
+        "directMode": "Direct",
+        "proxyMode": "Via Proxy",
+        "proxyUrlLabel": "Proxy Server URL",
+        "proxyUrlHint": "e.g., http://localhost:8080",
+        "suppliersListTitle": "Suppliers",
+        "configureButton": "Configure"
+    },
+    "armtekSettings": {
+        "screenTitle": "Armtek Settings",
+        "credentialsSectionTitle": "Credentials",
+        "loginLabel": "Login",
+        "passwordLabel": "Password",
+        "loginRequiredError": "Login is required",
+        "passwordRequiredError": "Password is required for new connection",
+        "checkAndSaveButton": "Check and Save",
+        "supplierInfoSectionTitle": "Supplier Information",
+        "vkorgLabel": "Sales Organization (VKORG)",
+        "clientInfoTitle": "Client Information",
+        "clientStructureKUNAG": "Client No. (KUNAG)",
+        "clientStructureVKORG": "Sales Org. (VKORG)",
+        "clientStructureSNAME": "Name",
+        "clientStructureADRESS": "Address",
+        "userInfoUnavailable": "Client information unavailable",
+        "rgTabInfoTitle": "Payer Information (RG_TAB)",
+        "rgTabKUNNR": "Payer No. (KUNNR)",
+        "rgTabSNAME": "Payer Name (SNAME)"
+    }
+}

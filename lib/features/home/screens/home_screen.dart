@@ -31,6 +31,14 @@ class HomeScreen extends StatelessWidget {
       selectedIcon: Icons.list_alt, // Добавляем выбранную иконку
       labelKey: t.orders.screenTitle
     ),
+    (
+      // Новый элемент навигации
+      route: AppRoutes.apiControlCenter,
+      icon: Icons.settings_input_component_outlined,
+      selectedIcon: Icons.settings_input_component,
+      labelKey: t.settings.apiControlCenter
+          .screenTitle // Убедитесь, что эта строка локализации существует
+    ),
     // Добавьте другие основные разделы здесь
   ];
 

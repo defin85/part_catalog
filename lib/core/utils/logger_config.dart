@@ -12,18 +12,24 @@ PrettyPrinter _createPrettyPrinter({
   int lineLength = 100,
   bool colors = true,
   bool printEmojis = true,
-  bool printTime = true, // Включаем время по умолчанию
-  DateTimeFormatter dateTimeFormat =
-      DateTimeFormat.dateAndTime, // Формат времени
+  bool printTime =
+      true, // Этот параметр остается для управления логикой _createPrettyPrinter
+  DateTimeFormatter dateTimeFormat = DateTimeFormat
+      .dateAndTime, // Формат времени по умолчанию, если printTime = true
 }) {
+  // Определяем, какой формат времени использовать в PrettyPrinter
+  // на основе параметра printTime этой функции
+  final DateTimeFormatter effectiveDateTimeFormat =
+      printTime ? dateTimeFormat : DateTimeFormat.none;
+
   return PrettyPrinter(
     methodCount: methodCount,
     errorMethodCount: errorMethodCount,
     lineLength: lineLength,
     colors: colors,
     printEmojis: printEmojis,
-    printTime: printTime,
-    dateTimeFormat: dateTimeFormat,
+    // printTime: printTime, // Удаляем устаревший параметр
+    dateTimeFormat: effectiveDateTimeFormat, // Используем новый подход
     // Можно добавить кастомные цвета и эмодзи, если нужно
   );
 }

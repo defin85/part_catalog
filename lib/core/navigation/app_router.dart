@@ -4,6 +4,8 @@ import 'package:part_catalog/features/home/screens/home_screen.dart';
 import 'package:part_catalog/features/references/clients/screens/clients_screen.dart'; // Пример
 import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
 import 'package:part_catalog/features/documents/orders/screens/orders_screen.dart'; // Пример
+import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
+import 'package:part_catalog/features/settings/armtek/screens/armtek_settings_screen.dart';
 // Импортируйте другие экраны...
 import 'app_routes.dart';
 
@@ -48,6 +50,23 @@ final GoRouter router = GoRouter(
           builder: (BuildContext context, GoRouterState state) {
             return const OrdersScreen(); // Экран списка заказов
           },
+        ),
+        GoRoute(
+          path: AppRoutes.apiControlCenter,
+          builder: (BuildContext context, GoRouterState state) {
+            return const ApiControlCenterScreen();
+          },
+          routes: <RouteBase>[
+            // Вложенные маршруты для ApiControlCenterScreen
+            GoRoute(
+              name: AppRoutes.armtekSettings, // Имя маршрута для удобства
+              path: AppRoutes
+                  .armtekSettings, // Путь будет '/api-control-center/armtek'
+              builder: (BuildContext context, GoRouterState state) {
+                return const ArmtekSettingsScreen();
+              },
+            ),
+          ],
         ),
         // Добавьте GoRoute для других разделов здесь
       ],
