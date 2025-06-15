@@ -1,5 +1,13 @@
 {
     "dotnet.defaultSolution": "build/windows/x64/plugins/sqlite3_flutter_libs/sqlite3_flutter_libs.sln",
     "markdown.validate.enabled": true,
-    "cmake.sourceDirectory": "C:/FlutterProject/part_catalog/windows"
+    "cmake.sourceDirectory": "C:/FlutterProject/part_catalog/windows",
+    "chat.mcp.serverSampling": {
+        "part_catalog/.vscode/mcp.json: Tavily": {
+            "allowedModels": [
+                "github.copilot-chat/claude-sonnet-4",
+                "github.copilot-chat/gemini-2.5-pro"
+            ]
+        }
+    }
 }

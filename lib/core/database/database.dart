@@ -7,13 +7,11 @@ import 'package:drift/native.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'dart:io';
 import 'package:logger/logger.dart';
-import 'schema_synchronizer.dart';
 import 'package:uuid/uuid.dart';
 
 // импорты таблиц
 import 'items/clients_items.dart';
 import 'items/cars_items.dart';
-import 'items/app_info_items.dart';
 import 'items/orders_items.dart';
 import 'items/order_parts_items.dart';
 import 'items/order_services_items.dart';
@@ -34,14 +32,13 @@ part 'database.g.dart';
   tables: [
     ClientsItems,
     CarsItems,
-    AppInfoItems,
     OrdersItems,
     OrderPartsItems,
     OrderServicesItems,
     SupplierSettingsItems
   ],
   daos: [ClientsDao, CarsDao, OrdersDao, SupplierSettingsDao],
-) // Обновлены имена таблиц
+)
 class AppDatabase extends _$AppDatabase {
   /// {@macro app_database}
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
@@ -50,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   final Logger _logger = Logger();
 
   @override
-  int get schemaVersion => 12; // Увеличиваем версию из-за изменения схемы
+  int get schemaVersion => 13; // Новая базовая версия схемы
 
   /// Получает экземпляр DAO клиентов.
   @override
@@ -68,25 +65,73 @@ class AppDatabase extends _$AppDatabase {
   @override
   SupplierSettingsDao get supplierSettingsDao => SupplierSettingsDao(this);
 
-  // Определите стратегию миграции
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
-          // Создаём все таблицы при первом запуске
+          _logger
+              .i('Создание новой базы данных, schemaVersion: $schemaVersion');
           await m.createAll();
-          await setAppVersion(schemaVersion);
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          // Создаем таблицу AppInfo, если её ещё нет (нужно в любом случае)
-          await m.createTable(appInfoItems);
-          // Обновляем версию в таблице AppInfo
-          await setAppVersion(to);
+          _logger.i('Обновление схемы с версии $from до $to');
+
+          // Применяем миграции пошагово
+          for (var version = from; version < to; version++) {
+            final nextVersion = version + 1;
+            _logger.i('Применение миграции для схемы версии $nextVersion');
+
+            // Миграции со старых версий (до v12 включительно, где работал SchemaSynchronizer)
+            // на новую базовую версию v13.
+            // Этот блок гарантирует, что все таблицы, ожидаемые в v13, существуют.
+            if (version < 12) {
+              _logger.i(
+                  'Миграция с v$version на v$nextVersion: проверка/создание базовых таблиц.');
+              await m.createTable(clientsItems);
+              await m.createTable(carsItems);
+              await m.createTable(ordersItems);
+              await m.createTable(orderPartsItems);
+              await m.createTable(orderServicesItems);
+              await m.createTable(supplierSettingsItems);
+              _logger.i(
+                  'Завершено: проверка/создание таблиц при миграции с v$version на v$nextVersion.');
+            }
+
+            // Миграция с версии 12 (последняя версия с кастомным синхронизатором) на 13
+            if (version == 12 && nextVersion == 13) {
+              _logger.i('Выполнение специфичных шагов миграции с v12 на v13.');
+              // На данный момент, если SchemaSynchronizer корректно создавал все таблицы и колонки
+              // для v12, и v13 не вносит новых изменений по сравнению с v12,
+              // этот блок может быть пустым или содержать только проверки.
+              // Для безопасности, еще раз убедимся, что все таблицы созданы,
+              // на случай если createAll в onCreate не был вызван для очень старых БД.
+              await m.createTable(clientsItems);
+              await m.createTable(carsItems);
+              await m.createTable(ordersItems);
+              await m.createTable(orderPartsItems);
+              await m.createTable(orderServicesItems);
+              await m.createTable(supplierSettingsItems);
+              _logger.i(
+                  'Завершено: специфичные шаги миграции с v12 на v13 (проверка таблиц).');
+            }
+
+            // Сюда добавляются будущие миграции:
+            // if (version == 13 && nextVersion == 14) {
+            //   _logger.i('Миграция с v13 на v14.');
+            //   // await m.addColumn(clientsItems, clientsItems.newColumnForV14);
+            //   _logger.i('Завершено: Миграция с v13 на v14.');
+            // }
+            // if (version == 14 && nextVersion == 15) {
+            //   // Миграция с v14 на v15
+            // }
+          }
         },
         beforeOpen: (details) async {
+          _logger.i(
+              'Открытие БД: wasCreated=${details.wasCreated}, hadUpgrade=${details.hadUpgrade}, versionBefore=${details.versionBefore}, versionNow=${details.versionNow}');
           if (details.wasCreated) {
-            _logger.i('База данных была создана с нуля');
+            _logger.i(
+                'База данных была создана с нуля. Текущая версия схемы: ${details.versionNow}');
           }
-
           // Включаем внешние ключи
           await customStatement('PRAGMA foreign_keys = ON');
 
@@ -94,90 +139,8 @@ class AppDatabase extends _$AppDatabase {
             _logger.i(
                 'База данных была обновлена с версии ${details.versionBefore} до ${details.versionNow}');
           }
-
-          // Проверяем, требуется ли синхронизация схемы
-          await _checkAndSynchronizeSchema();
         },
       );
-
-  /// Проверяет необходимость синхронизации схемы и выполняет её при необходимости
-  Future<void> _checkAndSynchronizeSchema() async {
-    try {
-      // Проверяем, существует ли таблица AppInfo
-      final tableExists = await customSelect(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='app_info'",
-      ).get().then((result) => result.isNotEmpty);
-
-      if (!tableExists) {
-        _logger.i('Таблица app_info не найдена, создаем её');
-        await customStatement('''
-          CREATE TABLE IF NOT EXISTS app_info (
-            key TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-          )
-        ''');
-        await setAppVersion(schemaVersion);
-        await _runSchemaSynchronization();
-        return;
-      }
-
-      // Получаем сохраненную версию схемы
-      final savedVersion = await getAppVersion();
-      if (savedVersion == null || savedVersion != schemaVersion) {
-        _logger.i('Обнаружено несоответствие версий: '
-            'сохраненная=$savedVersion, текущая=$schemaVersion');
-
-        await _runSchemaSynchronization();
-
-        // Обновляем версию после синхронизации
-        await setAppVersion(schemaVersion);
-      } else {
-        _logger.i(
-            'Синхронизация схемы не требуется, версии совпадают: $savedVersion');
-      }
-    } catch (e) {
-      _logger.e('Ошибка при проверке/синхронизации схемы: $e');
-    }
-  }
-
-  /// Запускает синхронизацию схемы БД
-  Future<void> _runSchemaSynchronization() async {
-    _logger.i('Запуск синхронизации схемы БД...');
-
-    final synchronizer = SchemaSynchronizer(this, _logger);
-    await synchronizer.synchronize();
-
-    _logger.i('Синхронизация схемы завершена');
-  }
-
-  /// Получает сохраненную версию схемы из таблицы AppInfo
-  Future<int?> getAppVersion() async {
-    try {
-      final result = await (select(appInfoItems)
-            ..where((t) => t.key.equals('schema_version')))
-          .getSingleOrNull();
-
-      return result != null ? int.tryParse(result.value) : null;
-    } catch (e) {
-      _logger.e('Ошибка при получении версии схемы: $e');
-      return null;
-    }
-  }
-
-  /// Сохраняет версию схемы в таблицу AppInfo
-  Future<void> setAppVersion(int version) async {
-    try {
-      await into(appInfoItems).insertOnConflictUpdate(
-        AppInfoItemsCompanion.insert(
-          key: 'schema_version',
-          value: version.toString(),
-        ),
-      );
-      _logger.i('Версия схемы $version сохранена в БД');
-    } catch (e) {
-      _logger.e('Ошибка при сохранении версии схемы: $e');
-    }
-  }
 
   /// Удаляет файл базы данных.
   ///
@@ -186,8 +149,8 @@ class AppDatabase extends _$AppDatabase {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'db.sqlite'));
     if (await file.exists()) {
+      await close(); // Закрываем соединение перед удалением файла
       await file.delete();
-      close();
       _logger.i('База данных была удалена');
     }
   }
@@ -196,6 +159,7 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// Возвращает путь к созданному файлу резервной копии.
   Future<String> backupDatabase() async {
+    await close(); // Закрываем соединение перед копированием
     final dbFolder = await getApplicationDocumentsDirectory();
     final dbFile = File(p.join(dbFolder.path, 'db.sqlite'));
     final backupFolder = Directory(p.join(dbFolder.path, 'backups'));
@@ -214,78 +178,24 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Сбрасывает базу данных (удаляет и создает заново)
-  ///
-  /// Создает временный файл и переключает приложение на него,
-  /// чтобы безопасно удалить оригинальный файл базы данных.
   Future<void> resetDatabase() async {
     try {
       _logger.i('Начинаем процесс сброса базы данных...');
+      await close();
 
-      // Закрываем текущее соединение
-      close();
-
-      // Создаем временный файл для хранения новой базы данных
       final dbFolder = await getApplicationDocumentsDirectory();
-      final oldDbPath = p.join(dbFolder.path, 'db.sqlite');
-      final tempDbPath = p.join(dbFolder.path,
-          'db_temp_${DateTime.now().millisecondsSinceEpoch}.sqlite');
+      final dbPath = p.join(dbFolder.path, 'db.sqlite');
+      final dbFile = File(dbPath);
 
-      // Создаем пустой временный файл
-      final tempFile = File(tempDbPath);
-      if (!await tempFile.exists()) {
-        await tempFile.create();
-        _logger.i('Создан временный файл: $tempDbPath');
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+        _logger.i('Старый файл базы данных удален: $dbPath');
       }
-
-      // Удаляем старый файл, если можно
-      final oldFile = File(oldDbPath);
-      if (await oldFile.exists()) {
-        try {
-          await oldFile.delete();
-          _logger.i('Старый файл базы данных удален');
-        } catch (e) {
-          _logger.w('Не удалось удалить старый файл базы данных: $e');
-          // Если не удалось удалить, попробуем переименовать
-          final backupPath = p.join(dbFolder.path,
-              'db_old_${DateTime.now().millisecondsSinceEpoch}.sqlite');
-          await oldFile.rename(backupPath);
-          _logger.i('Старый файл базы данных переименован в: $backupPath');
-        }
-      }
-
-      // Перемещаем временный файл на место основного
-      await tempFile.rename(oldDbPath);
-      _logger.i('Временный файл перемещен на место основного');
-
-      _logger.i('База данных успешно сброшена');
-    } catch (e) {
-      _logger.e('Ошибка при сбросе базы данных: $e');
+      _logger.i(
+          'База данных успешно сброшена. Будет создана заново при следующем обращении.');
+    } catch (e, s) {
+      _logger.e('Ошибка при сбросе базы данных', error: e, stackTrace: s);
       rethrow;
-    }
-  }
-
-  /// Проверяет существование всех таблиц и создает их при необходимости
-  Future<void> ensureDatabaseReady() async {
-    // Проверяем существование таблицы клиентов
-    final clientsTableExists = await customSelect(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='clients_items'",
-    ).get().then((result) => result.isNotEmpty);
-
-    if (!clientsTableExists) {
-      _logger
-          .w('Таблица clients_items не найдена, выполняем создание схемы...');
-
-      // Создаем все таблицы принудительно
-      final migrator = Migrator(this);
-      for (var table in allTables) {
-        _logger.i('Создание таблицы: ${table.actualTableName}');
-        await migrator.createTable(table);
-      }
-
-      // Обновляем версию
-      await setAppVersion(schemaVersion);
-
-      _logger.i('Инициализация схемы БД завершена');
     }
   }
 }
@@ -295,7 +205,6 @@ LazyDatabase _openConnection() {
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'db.sqlite'));
 
-    // Обходное решение для старых версий Android
     if (Platform.isAndroid) {
       await applyWorkaroundToOpenSqlite3OnOldAndroidVersions();
     }
@@ -304,14 +213,11 @@ LazyDatabase _openConnection() {
   });
 }
 
-// Провайдер для AppDatabase, получающий экземпляр из locator
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return locator<AppDatabase>();
 });
 
-// Провайдер для SupplierSettingsDao
 final supplierSettingsDaoProvider = Provider<SupplierSettingsDao>((ref) {
-  // Получаем зависимость AppDatabase через другой провайдер
   final database = ref.watch(appDatabaseProvider);
   return SupplierSettingsDao(database);
 });

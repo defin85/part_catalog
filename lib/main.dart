@@ -33,9 +33,6 @@ void main() {
 
     // Создаем экземпляр базы данных один раз
     final database = AppDatabase();
-    // Убедимся, что база данных готова (миграции и т.д.)
-    await database
-        .ensureDatabaseReady(); // Раскомментируйте, если есть такой метод
 
     // Передаем существующий экземпляр в setupLocator
     setupLocator(database);

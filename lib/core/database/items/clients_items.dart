@@ -16,6 +16,8 @@ class ClientsItems extends Table {
   DateTimeColumn get modifiedAt => dateTime().nullable()();
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
+  /// Временное поле для теста генерации схемы
+
   List<Index> get indexes => [
         // Уникальный индекс по uuid (если не null)
         Index('clients_uuid_idx',
