@@ -20,5 +20,9 @@
     "confirmResetDatabaseTitle": "Confirm DB Reset",
     "confirmResetDatabaseMessage": "All data will be deleted permanently. Are you sure?",
     "copiedToClipboard(value: String)": "{value} copied to clipboard",
-    "noDataAvailable": "No data available"
+    "noDataAvailable": "No data available",
+    "notSpecified": "Not specified",
+    "unnamedEntry": "Unnamed entry",
+    "yes": "Yes",
+    "no": "No"
 }

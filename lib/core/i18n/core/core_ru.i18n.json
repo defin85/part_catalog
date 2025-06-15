@@ -20,5 +20,9 @@
     "confirmResetDatabaseTitle": "Подтвердите сброс БД",
     "confirmResetDatabaseMessage": "Все данные будут удалены без возможности восстановления. Вы уверены?",
     "copiedToClipboard(value: String)": "{value} скопировано в буфер обмена",
-    "noDataAvailable": "Нет данных для отображения"
+    "noDataAvailable": "Нет данных для отображения",
+    "notSpecified": "Не указано",
+    "unnamedEntry": "Запись без имени",
+    "yes": "Да",
+    "no": "Нет"
 }

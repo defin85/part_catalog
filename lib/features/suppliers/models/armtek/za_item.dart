@@ -1,5 +1,6 @@
 // filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\za_item.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
 
 part 'za_item.freezed.dart';
 part 'za_item.g.dart';
@@ -8,7 +9,7 @@ part 'za_item.g.dart';
 abstract class ZaItem with _$ZaItem {
   const factory ZaItem({
     @JsonKey(name: 'KUNNR') String? kunnr,
-    @JsonKey(name: 'DEFAULT') int? defaultFlag,
+    @DefaultToBoolConverter() @JsonKey(name: 'DEFAULT') bool? defaultFlag,
     @JsonKey(name: 'SNAME') String? sname,
     @JsonKey(name: 'FNAME') String? fname,
     @JsonKey(name: 'ADRESS') String? adress,

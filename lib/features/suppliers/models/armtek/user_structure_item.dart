@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
 import 'exw_item.dart'; // Новая модель
 import 'za_item.dart'; // Новая модель
 import 'dogovor_item.dart'; // Новая модель
@@ -11,7 +12,7 @@ part 'user_structure_item.g.dart';
 abstract class UserStructureItem with _$UserStructureItem {
   const factory UserStructureItem({
     @JsonKey(name: 'KUNNR') String? kunnr,
-    @JsonKey(name: 'DEFAULT') int? defaultFlag,
+    @DefaultToBoolConverter() @JsonKey(name: 'DEFAULT') bool? defaultFlag,
     @JsonKey(name: 'SNAME') String? sname,
     @JsonKey(name: 'FNAME') String? fname,
     @JsonKey(name: 'ADRESS') String? adress,
