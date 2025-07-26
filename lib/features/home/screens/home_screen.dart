@@ -32,6 +32,12 @@ class HomeScreen extends StatelessWidget {
       labelKey: t.orders.screenTitle
     ),
     (
+      route: AppRoutes.partsSearch,
+      icon: Icons.search_outlined,
+      selectedIcon: Icons.search,
+      labelKey: t.suppliers.partsSearch.screenTitle
+    ),
+    (
       // Новый элемент навигации
       route: AppRoutes.apiControlCenter,
       icon: Icons.settings_input_component_outlined,

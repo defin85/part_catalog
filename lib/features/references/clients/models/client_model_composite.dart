@@ -49,8 +49,7 @@ class ClientModelComposite implements IReferenceEntity {
   /// Фабричный конструктор для создания нового экземпляра клиента.
   factory ClientModelComposite.create({
     required String code,
-    required String
-        name, // Имя/название теперь часть EntityCoreData.displayName
+    required String displayName, // Стандартизировано
     required ClientType type,
     required String contactInfo,
     String? additionalInfo,
@@ -60,7 +59,7 @@ class ClientModelComposite implements IReferenceEntity {
     final core = EntityCoreData(
       uuid: const Uuid().v4(),
       code: code,
-      displayName: name, // Используем displayName
+      displayName: displayName, // Используем displayName
       createdAt: now,
       modifiedAt: now,
       isDeleted: false,
@@ -71,14 +70,13 @@ class ClientModelComposite implements IReferenceEntity {
       contactInfo: contactInfo,
       additionalInfo: additionalInfo,
     );
-    // Для клиентов parentId, isFolder, ancestorIds, itemsMap обычно имеют значения по умолчанию
     return ClientModelComposite._(
       core,
       specific,
       parentId: parentId,
       isFolder: false,
-      ancestorIds: const [], // Или вычислить, если parentId задан
-      itemsMap: const {}, // Тип Map<BaseItemType, List<IReferenceItemEntity>>
+      ancestorIds: const [],
+      itemsMap: const {},
     );
   }
 

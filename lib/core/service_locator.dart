@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:logger/logger.dart';
+import 'package:part_catalog/core/utils/error_logger.dart';
+import 'package:part_catalog/core/database/database_error_recovery.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
+import 'package:part_catalog/features/documents/orders/services/pdf_service.dart';
 import 'package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 import 'package:part_catalog/core/database/database.dart';
@@ -29,6 +33,7 @@ void setupLocator(AppDatabase database) {
       () => CarService(locator<AppDatabase>()));
   locator.registerLazySingleton<OrderService>(
       () => OrderService(locator<AppDatabase>()));
+  locator.registerLazySingleton(() => PdfService());
 
   // Регистрация ApiClientManager и SuppliersService
   locator.registerLazySingleton<ApiClientManager>(() => ApiClientManager());
@@ -38,6 +43,14 @@ void setupLocator(AppDatabase database) {
   // Регистрация GlobalApiSettingsService
   locator.registerLazySingleton<GlobalApiSettingsService>(
       () => GlobalApiSettingsService());
+
+  // Утилиты
+  locator.registerLazySingleton(() => Logger());
+  locator.registerLazySingleton(() => ErrorLogger());
+  
+  // Система восстановления БД
+  locator.registerLazySingleton<DatabaseErrorRecovery>(
+      () => DatabaseErrorRecovery(locator<AppDatabase>()));
 
   // Регистрация SupplierSettingsDao (если он не получается напрямую из AppDatabase.supplierSettingsDao)
   // Обычно DAO доступны через экземпляр AppDatabase, например: locator<AppDatabase>().supplierSettingsDao

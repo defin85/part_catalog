@@ -1,0 +1,29 @@
+{
+  "partsSearch": {
+    "screenTitle": "Parts Search",
+    "searchParameters": "Search Parameters",
+    "articleNumber": "Article Number",
+    "articleNumberHint": "Enter part article number",
+    "articleNumberRequired": "Article number is required",
+    "brand": "Brand",
+    "brandHint": "Specify brand (optional)",
+    "search": "Search",
+    "clearSearch": "Clear Search",
+    "enterArticleToSearch": "Enter article number to search for parts",
+    "noPartsFound": "No parts found",
+    "tryDifferentArticle": "Try different article number or brand",
+    "foundResults": "Found results: {count}",
+    "searchError": "Search error",
+    "retrySearch": "Retry Search",
+    "article": "Article",
+    "name": "Name",
+    "price": "Price",
+    "quantity": "Quantity",
+    "deliveryDays": "Delivery Days",
+    "supplier": "Supplier",
+    "originalArticle": "Original Article",
+    "comment": "Comment",
+    "priceUpdated": "Price Updated",
+    "daysCount": "{days} days"
+  }
+}

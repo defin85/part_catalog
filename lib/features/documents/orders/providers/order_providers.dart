@@ -13,6 +13,13 @@ import 'package:part_catalog/features/references/vehicles/providers/car_provider
 final orderServiceProvider =
     Provider<OrderService>((ref) => locator<OrderService>());
 
+// Провайдер для отслеживания списка всех заказов
+final ordersListProvider =
+    StreamProvider.autoDispose<List<OrderModelComposite>>((ref) {
+  final orderService = ref.watch(orderServiceProvider);
+  return orderService.watchOrders();
+});
+
 // Провайдер для отслеживания одного заказа по UUID
 final orderDetailsStreamProvider = StreamProvider.autoDispose
     .family<OrderModelComposite, String>((ref, orderUuid) {

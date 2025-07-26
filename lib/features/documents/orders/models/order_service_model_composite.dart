@@ -1,113 +1,91 @@
 import 'package:part_catalog/features/core/item_core_data.dart';
 import 'package:part_catalog/features/core/document_item_specific_data.dart';
-import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart'; // Импорт новой модели
+import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:uuid/uuid.dart';
 
 class OrderServiceModelComposite implements IDocumentItemEntity {
-  final ItemCoreData _coreData;
-  final DocumentItemSpecificData _docItemData;
-  final ServiceSpecificData _serviceData; // Используем новую модель
+  final ItemCoreData coreData;
+  final DocumentItemSpecificData docItemData;
+  final ServiceSpecificData serviceData;
 
-  // Приватный конструктор
-  OrderServiceModelComposite._(
-      this._coreData, this._docItemData, this._serviceData);
+  const OrderServiceModelComposite({
+    required this.coreData,
+    required this.docItemData,
+    required this.serviceData,
+  });
 
-  // Новый публичный фабричный конструктор для создания из данных
-  factory OrderServiceModelComposite.fromData(
-    ItemCoreData coreData,
-    DocumentItemSpecificData docItemData,
-    ServiceSpecificData serviceData,
-  ) {
-    // Можно добавить проверки на соответствие типов и данных, если нужно
-    if (coreData.itemType != BaseItemType.service) {
-      throw ArgumentError(
-          'ItemCoreData must have itemType BaseItemType.service for OrderServiceModelComposite');
-    }
-    return OrderServiceModelComposite._(coreData, docItemData, serviceData);
-  }
-
-  // Фабричный конструктор для создания новой услуги
   factory OrderServiceModelComposite.create({
     required String documentUuid,
     required String name,
-    String? description, // <--- Добавлен параметр
+    String? description,
     required double price,
-    double quantity =
-        1.0, // Услуги тоже могут иметь количество (например, нормо-часы)
+    double quantity = 1.0,
     double? duration,
     String? performedBy,
     int lineNumber = 0,
     Map<String, dynamic> data = const {},
   }) {
-    return OrderServiceModelComposite._(
-      ItemCoreData(
+    return OrderServiceModelComposite(
+      coreData: ItemCoreData(
         uuid: const Uuid().v4(),
         name: name,
-        itemType: BaseItemType.service, // Явно указываем тип
+        itemType: BaseItemType.service,
         lineNumber: lineNumber,
         data: data,
       ),
-      DocumentItemSpecificData(
+      docItemData: DocumentItemSpecificData(
         price: price,
         quantity: quantity,
-        isCompleted: false, // По умолчанию не завершено
+        isCompleted: false,
       ),
-      ServiceSpecificData(
+      serviceData: ServiceSpecificData(
         documentUuid: documentUuid,
-        description: description, // <--- Используем параметр
+        description: description,
         duration: duration,
         performedBy: performedBy,
       ),
     );
   }
 
-  // --- Реализация интерфейса IItemEntity ---
   @override
-  String get uuid => _coreData.uuid;
+  String get uuid => coreData.uuid;
   @override
-  String get name => _coreData.name;
+  String get name => coreData.name;
   @override
-  BaseItemType get itemType => _coreData.itemType;
+  BaseItemType get itemType => coreData.itemType;
   @override
-  int get lineNumber => _coreData.lineNumber;
+  int get lineNumber => coreData.lineNumber;
   @override
-  Map<String, dynamic> get data => _coreData.data;
+  Map<String, dynamic> get data => coreData.data;
 
   @override
   bool containsSearchText(String searchText) {
     final lowercaseSearch = searchText.toLowerCase();
     return name.toLowerCase().contains(lowercaseSearch) ||
-        (_serviceData.performedBy?.toLowerCase().contains(lowercaseSearch) ??
+        (serviceData.performedBy?.toLowerCase().contains(lowercaseSearch) ??
             false);
   }
 
   @override
-  T? getValue<T>(String key) {
-    final value = data[key];
-    if (value == null) return null;
-    if (value is T) return value;
-    // ... (логика преобразования типов, если нужна) ...
-    return null;
-  }
+  T? getValue<T>(String key) => data[key] is T ? data[key] as T : null;
 
   @override
   OrderServiceModelComposite withUpdatedData(Map<String, dynamic> newData) {
-    return OrderServiceModelComposite._(
-      _coreData.copyWith(data: {..._coreData.data, ...newData}),
-      _docItemData,
-      _serviceData,
+    return OrderServiceModelComposite(
+      coreData: coreData.copyWith(data: {...coreData.data, ...newData}),
+      docItemData: docItemData,
+      serviceData: serviceData,
     );
   }
 
-  // --- Реализация интерфейса IDocumentItemEntity ---
   @override
-  double? get price => _docItemData.price;
+  double? get price => docItemData.price;
   @override
-  double? get quantity => _docItemData.quantity;
+  double? get quantity => docItemData.quantity;
   @override
-  bool get isCompleted => _docItemData.isCompleted;
+  bool get isCompleted => docItemData.isCompleted;
   @override
   BaseItemType get documentItemType => BaseItemType.service;
 
@@ -115,42 +93,36 @@ class OrderServiceModelComposite implements IDocumentItemEntity {
   double? get totalPrice =>
       (price != null && quantity != null) ? price! * quantity! : price;
 
-  // --- Специфичные геттеры для OrderService ---
-  String get documentUuid => _serviceData.documentUuid;
-  String? get description => _serviceData.description;
-  double? get duration => _serviceData.duration;
-  String? get performedBy => _serviceData.performedBy;
+  String get documentUuid => serviceData.documentUuid;
+  String? get description => serviceData.description;
+  double? get duration => serviceData.duration;
+  String? get performedBy => serviceData.performedBy;
 
-  // --- Публичные геттеры для доступа к внутренним данным ---
-  ItemCoreData get coreData => _coreData;
-  DocumentItemSpecificData get docItemData => _docItemData;
-  ServiceSpecificData get serviceData => _serviceData;
-
-  // --- Иммутабельные методы обновления статусов ---
-  OrderServiceModelComposite withCompletionStatus(bool newIsCompleted) {
-    return OrderServiceModelComposite._(
-      _coreData,
-      _docItemData.copyWith(isCompleted: newIsCompleted),
-      _serviceData,
+  factory OrderServiceModelComposite.fromJson(Map<String, dynamic> json) {
+    return OrderServiceModelComposite(
+      coreData: ItemCoreData.fromJson(json['coreData'] as Map<String, dynamic>),
+      docItemData: DocumentItemSpecificData.fromJson(json['docItemData'] as Map<String, dynamic>),
+      serviceData: ServiceSpecificData.fromJson(json['serviceData'] as Map<String, dynamic>),
     );
   }
 
-  // --- Сериализация/Десериализация ---
   Map<String, dynamic> toJson() {
-    // Собрать JSON из _coreData, _docItemData, _serviceData
     return {
-      ..._coreData.toJson(),
-      ..._docItemData.toJson(),
-      ..._serviceData.toJson(),
+      'coreData': coreData.toJson(),
+      'docItemData': docItemData.toJson(),
+      'serviceData': serviceData.toJson(),
     };
   }
 
-  factory OrderServiceModelComposite.fromJson(Map<String, dynamic> json) {
-    // Разобрать JSON и создать экземпляры _coreData, _docItemData, _serviceData
-    return OrderServiceModelComposite._(
-      ItemCoreData.fromJson(json),
-      DocumentItemSpecificData.fromJson(json),
-      ServiceSpecificData.fromJson(json),
+  OrderServiceModelComposite copyWith({
+    ItemCoreData? coreData,
+    DocumentItemSpecificData? docItemData,
+    ServiceSpecificData? serviceData,
+  }) {
+    return OrderServiceModelComposite(
+      coreData: coreData ?? this.coreData,
+      docItemData: docItemData ?? this.docItemData,
+      serviceData: serviceData ?? this.serviceData,
     );
   }
 }

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze:*)",
+      "Bash(mkdir:*)",
+      "Bash(flutter pub:*)",
+      "Bash(dart run build_runner:*)",
+      "Bash(flutter test:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter doctor:*)",
+      "Bash(dart run:*)",
+      "Bash(flutter:*)",
+      "mcp__tavily-server__tavily_search",
+      "mcp__tavily-server__tavily_extract",
+      "WebFetch(domain:api2.autotrade.su)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

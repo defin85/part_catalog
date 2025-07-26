@@ -61,10 +61,11 @@ class ApiClientManager {
     required String supplierCode,
     String? username, // Для прямого режима
     String? password, // Для прямого режима
+    String? vkorg, // Для Armtek API
     // String? proxyAuthToken, // Можно добавить для прокси, если требуется
   }) async {
     _logger.d(
-        'Getting client for supplier: $supplierCode, mode: $_currentMode, username: $username');
+        'Getting client for supplier: $supplierCode, mode: $_currentMode, username: $username, vkorg: $vkorg');
 
     // Пример для Armtek
     // В реальном приложении здесь может быть фабрика или switch по supplierCode
@@ -76,7 +77,7 @@ class ApiClientManager {
         if (username != null && password != null) {
           _logger.i(
               'Creating new ArmtekApiClient (direct) with provided credentials for $supplierCode.');
-          return ArmtekApiClient(_dio, username: username, password: password);
+          return ArmtekApiClient(_dio, username: username, password: password, vkorg: vkorg);
         } else {
           // Если учетные данные не переданы, можно вернуть кэшированный/стандартный клиент
           // или создать клиент без учетных данных, если это поддерживается.
@@ -104,14 +105,14 @@ class ApiClientManager {
         // Для простоты, кэшируем только по supplierCode, предполагая, что _proxyUrl глобален для режима
         if (_cachedProxyClients[supplierCode] == null) {
           _cachedProxyClients[supplierCode] =
-              ArmtekApiClient(_dio, baseUrl: _proxyUrl);
+              ArmtekApiClient(_dio, baseUrl: _proxyUrl, vkorg: vkorg);
         }
         // Если _proxyUrl мог измениться с момента кэширования, нужно пересоздать клиент
         final cachedClient =
             _cachedProxyClients[supplierCode] as ArmtekApiClient?;
         if (cachedClient?.baseUrl != _proxyUrl) {
           _cachedProxyClients[supplierCode] =
-              ArmtekApiClient(_dio, baseUrl: _proxyUrl);
+              ArmtekApiClient(_dio, baseUrl: _proxyUrl, vkorg: vkorg);
         }
         return _cachedProxyClients[supplierCode];
       }

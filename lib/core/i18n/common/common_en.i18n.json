@@ -28,5 +28,11 @@
     "undo": "Undo",
     "clear": "Clear",
     "selectDate": "Select date",
-    "resetSearch": "Reset search"
+    "resetSearch": "Reset search",
+    "name": "Name",
+    "price": "Price",
+    "quantity": "Quantity",
+    "print": "Print",
+    "description": "Description",
+    "close": "Close"
 }

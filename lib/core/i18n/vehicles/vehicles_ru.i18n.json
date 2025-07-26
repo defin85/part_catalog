@@ -45,5 +45,6 @@
     "restored(name: String)": "Автомобиль \"{name}\" восстановлен",
     "added(name: String)": "Автомобиль \"{name}\" добавлен",
     "updated(name: String)": "Автомобиль \"{name}\" обновлен",
-    "vinCheckError": "Ошибка проверки VIN"
+    "vinCheckError": "Ошибка проверки VIN",
+    "noCarsFoundForClient": "У данного клиента нет автомобилей"
 }

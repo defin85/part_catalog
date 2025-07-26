@@ -3,13 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Импорт Riverpo
 import 'package:intl/intl.dart';
 // --- Обновленные импорты ---
 import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/core/widgets/custom_text_form_field.dart';
+import 'package:part_catalog/core/widgets/section_title.dart';
+import 'package:part_catalog/core/widgets/selection_list_tile.dart';
+import 'package:part_catalog/core/widgets/app_dialog.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
 // Импортируем Notifier и State
 import 'package:part_catalog/features/documents/orders/notifiers/order_form_notifier.dart';
 import 'package:part_catalog/features/documents/orders/state/order_form_state.dart';
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
+import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
+import 'package:part_catalog/features/references/vehicles/providers/car_providers.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
 
 // Преобразуем в ConsumerStatefulWidget
@@ -252,69 +258,46 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Секция выбора клиента
-              _buildSectionTitle(theme, t.orders.clientInfoTitle),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(formState.selectedClient?.displayName ??
-                    t.orders.selectClientHint),
-                leading: const Icon(Icons.person),
-                trailing: const Icon(Icons.chevron_right),
+              SectionTitle(title: t.orders.clientInfoTitle),
+              SelectionListTile(
+                title: formState.selectedClient?.displayName ?? t.orders.selectClientHint,
+                icon: Icons.person,
                 onTap: _selectClient,
-                subtitle: formState.selectedClient == null
-                    ? Text(t.errors.fieldRequired,
-                        style: TextStyle(
-                            color: theme.colorScheme.error, fontSize: 12))
-                    : null,
+                subtitle: formState.selectedClient == null ? t.errors.fieldRequired : null,
+                subtitleColor: theme.colorScheme.error,
               ),
               const Divider(),
 
-              // Секция выбора автомобиля
-              _buildSectionTitle(theme, t.orders.vehicleInfoTitle),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(formState.selectedCar != null
+              SectionTitle(title: t.orders.vehicleInfoTitle),
+              SelectionListTile(
+                title: formState.selectedCar != null
                     ? '${formState.selectedCar!.displayName} (${formState.selectedCar!.displayLicensePlate})'
-                    : t.orders.selectVehicleHint),
-                leading: const Icon(Icons.directions_car),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: formState.selectedClient != null
-                    ? () => _selectCar(formState.selectedClient!.uuid)
-                    : null,
+                    : t.orders.selectVehicleHint,
+                icon: Icons.directions_car,
+                onTap: () => _selectCar(formState.selectedClient!.uuid),
                 enabled: formState.selectedClient != null,
-                subtitle: formState.selectedCar == null
-                    ? Text(t.errors.fieldRequired,
-                        style: TextStyle(
-                            color: theme.colorScheme.error, fontSize: 12))
-                    : null,
+                subtitle: formState.selectedCar == null ? t.errors.fieldRequired : null,
+                subtitleColor: theme.colorScheme.error,
               ),
               const Divider(),
 
               // Секция описания проблемы
-              _buildSectionTitle(theme, t.orders.problemDescription),
-              TextFormField(
-                controller:
-                    _descriptionController, // Контроллер обновляет Notifier
-                decoration: InputDecoration(
-                  hintText: t.orders.problemDescriptionHint,
-                  border: const OutlineInputBorder(),
-                ),
+              SectionTitle(title: t.orders.problemDescription),
+              CustomTextFormField(
+                controller: _descriptionController,
+                hintText: t.orders.problemDescriptionHint,
+                labelText: t.orders.problemDescription,
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
 
-              // Секция запланированной даты
-              _buildSectionTitle(theme, t.orders.scheduledDate),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                // Берем дату из состояния
-                title: Text(formState.scheduledDate != null
+              SectionTitle(title: t.orders.scheduledDate),
+              SelectionListTile(
+                title: formState.scheduledDate != null
                     ? dateFormat.format(formState.scheduledDate!)
-                    : t.common.selectDate), // Используем slang
-                leading: const Icon(Icons.calendar_today),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () =>
-                    _selectDate(formState.scheduledDate ?? DateTime.now()),
+                    : t.common.selectDate,
+                icon: Icons.calendar_today,
+                onTap: () => _selectDate(formState.scheduledDate ?? DateTime.now()),
               ),
               const Divider(),
 
@@ -322,7 +305,7 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildSectionTitle(theme, t.orders.servicesList),
+                  SectionTitle(title: t.orders.servicesList),
                   TextButton.icon(
                     icon: const Icon(Icons.add),
                     label: Text(t.common.add),
@@ -340,7 +323,7 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildSectionTitle(theme, t.orders.partsList),
+                  SectionTitle(title: t.orders.partsList),
                   TextButton.icon(
                     icon: const Icon(Icons.add),
                     label: Text(t.common.add),
@@ -379,18 +362,6 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
 
   // --- Методы _build... остаются почти без изменений, ---
   // --- только принимают данные из formState или напрямую ---
-
-  Widget _buildSectionTitle(ThemeData theme, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
 
   Widget _buildEmptyPlaceholder(String message) {
     return Center(
@@ -546,21 +517,37 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
 // Возможно, их тоже стоит сделать ConsumerWidget'ами для доступа к сервисам через ref
 
 class _ClientSelectionDialog extends ConsumerWidget {
-  // Сделаем ConsumerWidget
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Добавляем ref
     final t = context.t;
-    // TODO: Адаптировать для работы с ClientService (через ref) и ClientModelComposite
-    // final clientsAsync = ref.watch(activeClientsProvider); // Пример
-    return AlertDialog(
+    final clientsAsync = ref.watch(clientsNotifierProvider);
+
+    return AppDialog(
       title: Text(t.orders.selectClient),
-      content: const Text('Здесь будет список клиентов (ClientModelComposite)'),
-      // content: clientsAsync.when(
-      //   data: (clients) => ListView.builder(...),
-      //   loading: () => CircularProgressIndicator(),
-      //   error: (e, s) => Text('Error'),
-      // ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: clientsAsync.when(
+          data: (clients) {
+            if (clients.isEmpty) {
+              return Center(child: Text(t.clients.noClientsFound));
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: clients.length,
+              itemBuilder: (context, index) {
+                final client = clients[index];
+                return ListTile(
+                  title: Text(client.displayName),
+                  subtitle: Text(client.contactInfo ?? ''),
+                  onTap: () => Navigator.pop(context, client),
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Center(child: Text('${t.errors.dataLoadingError}: $e')),
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -571,22 +558,63 @@ class _ClientSelectionDialog extends ConsumerWidget {
   }
 }
 
-class _CarSelectionDialog extends ConsumerWidget {
-  // Сделаем ConsumerWidget
+class _CarSelectionDialog extends ConsumerStatefulWidget {
   final String clientUuid;
 
   const _CarSelectionDialog({required this.clientUuid});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Добавляем ref
+  ConsumerState<_CarSelectionDialog> createState() => _CarSelectionDialogState();
+}
+
+class _CarSelectionDialogState extends ConsumerState<_CarSelectionDialog> {
+  @override
+  void initState() {
+    super.initState();
+    // Устанавливаем фильтр при инициализации
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(carsNotifierProvider.notifier).setClientFilter(widget.clientUuid);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Сбрасываем фильтр при закрытии диалога
+    Future.microtask(() => ref.read(carsNotifierProvider.notifier).setClientFilter(null));
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final t = context.t;
-    // TODO: Адаптировать для работы с CarService (через ref) и CarModelComposite, используя clientUuid
-    // final carsAsync = ref.watch(carsByClientProvider(clientUuid)); // Пример
-    return AlertDialog(
+    final carsAsync = ref.watch(carsNotifierProvider);
+
+    return AppDialog(
       title: Text(t.orders.selectVehicle),
-      content: const Text(
-          'Здесь будет список автомобилей клиента (CarModelComposite)'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: carsAsync.when(
+          data: (cars) {
+            if (cars.isEmpty) {
+              return Center(child: Text(t.vehicles.noCarsFoundForClient));
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: cars.length,
+              itemBuilder: (context, index) {
+                final car = cars[index].car; // Используем CarWithOwnerModel
+                return ListTile(
+                  title: Text(car.displayName),
+                  subtitle: Text(car.displayLicensePlate),
+                  onTap: () => Navigator.pop(context, car),
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Center(child: Text('${t.errors.dataLoadingError}: $e')),
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -598,7 +626,6 @@ class _CarSelectionDialog extends ConsumerWidget {
 }
 
 class _ServiceFormDialog extends ConsumerStatefulWidget {
-  // Stateful для формы
   final OrderServiceModelComposite? service;
 
   const _ServiceFormDialog({this.service});
@@ -608,44 +635,104 @@ class _ServiceFormDialog extends ConsumerStatefulWidget {
 }
 
 class _ServiceFormDialogState extends ConsumerState<_ServiceFormDialog> {
-  // TODO: Адаптировать форму для создания/редактирования OrderServiceModelComposite
-  // final _formKey = GlobalKey<FormState>();
-  // late TextEditingController _nameController; ...
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _durationController;
 
   @override
   void initState() {
     super.initState();
-    // _nameController = TextEditingController(text: widget.service?.name ?? ''); ...
+    _nameController = TextEditingController(text: widget.service?.name ?? '');
+    _descriptionController = TextEditingController(text: widget.service?.description ?? '');
+    _priceController = TextEditingController(text: widget.service?.price?.toString() ?? '');
+    _durationController = TextEditingController(text: widget.service?.duration?.toString() ?? '');
   }
 
   @override
   void dispose() {
-    // _nameController.dispose(); ...
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _durationController.dispose();
     super.dispose();
+  }
+
+  void _save() {
+    if (_formKey.currentState!.validate()) {
+      final name = _nameController.text;
+      final description = _descriptionController.text;
+      final price = double.tryParse(_priceController.text) ?? 0.0;
+      final duration = double.tryParse(_durationController.text);
+
+      final result = widget.service == null
+          ? OrderServiceModelComposite.create(
+              documentUuid: '', // UUID будет присвоен в Notifier
+              name: name,
+              description: description,
+              price: price,
+              duration: duration,
+            )
+          : widget.service!.copyWith(
+              coreData: widget.service!.coreData.copyWith(name: name),
+              docItemData: widget.service!.docItemData.copyWith(
+                price: price,
+              ),
+              serviceData: widget.service!.serviceData.copyWith(
+                description: description,
+                duration: duration,
+              ),
+            );
+      Navigator.pop(context, result);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    return AlertDialog(
-      title: Text(
-          widget.service == null ? t.orders.addService : t.orders.editService),
-      content: const Text('Здесь будет форма для OrderServiceModelComposite'),
-      // content: Form(key: _formKey, child: Column(...)),
+    return AppDialog(
+      title: Text(widget.service == null ? t.orders.addService : t.orders.editService),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: t.common.name),
+                validator: (value) => (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: t.common.description),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _priceController,
+                decoration: InputDecoration(labelText: t.common.price),
+                keyboardType: TextInputType.number,
+                validator: (value) => (double.tryParse(value ?? '') == null) ? t.errors.invalidNumber : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _durationController,
+                decoration: InputDecoration(labelText: t.orders.durationHours),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(t.common.cancelButtonLabel),
         ),
         TextButton(
-          onPressed: () {
-            // TODO: Валидация, создание/обновление OrderServiceModelComposite
-            // if (_formKey.currentState!.validate()) {
-            //   final updatedService = OrderServiceModelComposite.create(...); // или widget.service.with...
-            //   Navigator.pop(context, updatedService);
-            // }
-            Navigator.pop(context); // Пока просто закрываем
-          },
+          onPressed: _save,
           child: Text(t.common.saveButtonLabel),
         ),
       ],
@@ -654,7 +741,6 @@ class _ServiceFormDialogState extends ConsumerState<_ServiceFormDialog> {
 }
 
 class _PartFormDialog extends ConsumerStatefulWidget {
-  // Stateful для формы
   final OrderPartModelComposite? part;
 
   const _PartFormDialog({this.part});
@@ -664,25 +750,117 @@ class _PartFormDialog extends ConsumerStatefulWidget {
 }
 
 class _PartFormDialogState extends ConsumerState<_PartFormDialog> {
-  // TODO: Адаптировать форму для создания/редактирования OrderPartModelComposite
-  // final _formKey = GlobalKey<FormState>(); ...
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  late final TextEditingController _partNumberController;
+  late final TextEditingController _brandController;
+  late final TextEditingController _priceController;
+  late final TextEditingController _quantityController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.part?.name ?? '');
+    _partNumberController = TextEditingController(text: widget.part?.partNumber ?? '');
+    _brandController = TextEditingController(text: widget.part?.brand ?? '');
+    _priceController = TextEditingController(text: widget.part?.price?.toString() ?? '');
+    _quantityController = TextEditingController(text: widget.part?.quantity?.toString() ?? '1');
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _partNumberController.dispose();
+    _brandController.dispose();
+    _priceController.dispose();
+    _quantityController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (_formKey.currentState!.validate()) {
+      final name = _nameController.text;
+      final partNumber = _partNumberController.text;
+      final brand = _brandController.text;
+      final price = double.tryParse(_priceController.text) ?? 0.0;
+      final quantity = double.tryParse(_quantityController.text) ?? 1.0;
+
+      final result = widget.part == null
+          ? OrderPartModelComposite.create(
+              documentUuid: '', // UUID будет присвоен в Notifier
+              name: name,
+              partNumber: partNumber,
+              brand: brand,
+              price: price,
+              quantity: quantity,
+            )
+          : widget.part!.copyWith(
+              coreData: widget.part!.coreData.copyWith(name: name),
+              docItemData: widget.part!.docItemData.copyWith(
+                price: price,
+                quantity: quantity,
+              ),
+              partData: widget.part!.partData.copyWith(
+                partNumber: partNumber,
+                brand: brand,
+              ),
+            );
+      Navigator.pop(context, result);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    return AlertDialog(
+    return AppDialog(
       title: Text(widget.part == null ? t.orders.addPart : t.orders.editPart),
-      content: const Text('Здесь будет форма для OrderPartModelComposite'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(labelText: t.common.name),
+                validator: (value) => (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _partNumberController,
+                decoration: InputDecoration(labelText: t.parts.partNumberLabel),
+                validator: (value) => (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _brandController,
+                decoration: InputDecoration(labelText: t.parts.brandLabel),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _priceController,
+                decoration: InputDecoration(labelText: t.common.price),
+                keyboardType: TextInputType.number,
+                validator: (value) => (double.tryParse(value ?? '') == null) ? t.errors.invalidNumber : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _quantityController,
+                decoration: InputDecoration(labelText: t.common.quantity),
+                keyboardType: TextInputType.number,
+                validator: (value) => (double.tryParse(value ?? '') == null) ? t.errors.invalidNumber : null,
+              ),
+            ],
+          ),
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(t.common.cancelButtonLabel),
         ),
         TextButton(
-          onPressed: () {
-            // TODO: Валидация, создание/обновление OrderPartModelComposite
-            Navigator.pop(context); // Пока просто закрываем
-          },
+          onPressed: _save,
           child: Text(t.common.saveButtonLabel),
         ),
       ],

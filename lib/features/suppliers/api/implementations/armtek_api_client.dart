@@ -58,11 +58,62 @@ abstract class ArmtekRestInterface {
     @Query("format") String format = "json",
   });
 
+  /// Получение статуса обработки прайса по ключу
+  @POST("/ws_user/getPriceStatusByKey")
+  @FormUrlEncoded()
+  Future<ArmtekResponseWrapper<Map<String, dynamic>>> getPriceStatusByKey({
+    @Field("KEY") required String key,
+    @Field("format") String format = "json",
+  });
+
   // --- ServiceSearch ---
-  // TODO: Добавить методы для поиска (например, getSearch)
-  // @POST("/ws_search/search")
-  // @FormUrlEncoded()
-  // Future<ArmtekResponseWrapper<SearchResponse>> searchParts(...);
+  /// Поиск запчастей по артикулу и бренду
+  @POST("/ws_search/search")
+  @FormUrlEncoded()
+  Future<ArmtekResponseWrapper<List<Map<String, dynamic>>>> searchParts({
+    @Field("VKORG") required String vkorg,
+    @Field("PIN") required String articleNumber, // Артикул (в API используется PIN)
+    @Field("BRAND") String? brand,
+    @Field("format") String format = "json",
+    @Field("KUNNR_RG") String? kunnrRg, // Код покупателя
+    @Field("KUNNR_ZA") String? kunnrZa, // Код адреса доставки
+    @Field("QUERY_TYPE") String? queryType, // Тип запроса
+    @Field("INCOTERMS") String? incoterms, // Условия доставки
+    @Field("VBELN") String? vbeln, // Номер договора
+  });
+
+  /// Получение цен и наличия для конкретной запчасти
+  @POST("/ws_search/getPrice")
+  @FormUrlEncoded()
+  Future<ArmtekResponseWrapper<List<Map<String, dynamic>>>> getPrices({
+    @Field("VKORG") required String vkorg,
+    @Field("PIN") required String articleNumber, // Артикул (в API используется PIN)
+    @Field("BRAND") String? brand,
+    @Field("format") String format = "json",
+    @Field("KUNNR_RG") String? kunnrRg, // Код покупателя
+    @Field("KUNNR_ZA") String? kunnrZa, // Код адреса доставки
+    @Field("INCOTERMS") String? incoterms, // Условия доставки
+    @Field("VBELN") String? vbeln, // Номер договора
+  });
+
+  // --- ServiceOrder ---
+  /// Создание тестового заказа
+  @POST("/ws_order/createTestOrder")
+  @FormUrlEncoded()
+  Future<ArmtekResponseWrapper<Map<String, dynamic>>> createTestOrder({
+    @Field("VKORG") required String vkorg,
+    @Field("KUNRG") required String kunnrRg, // Код покупателя (плательщика)
+    @Field("KUNWE") String? kunnrWe, // Код грузополучателя
+    @Field("KUNZA") String? kunnrZa, // Код адреса доставки
+    @Field("INCOTERMS") String? incoterms, // Условия доставки
+    @Field("PARNR") String? parnr, // Код контактного лица
+    @Field("VBELN") String? vbeln, // Номер договора
+    @Field("TEXT_ORD") String? textOrd, // Комментарий к заказу
+    @Field("TEXT_EXP") String? textExp, // Комментарий к отгрузке
+    @Field("DBTYP") String? dbtyp, // Тип базы данных
+    @Field("ITEMS") required String items, // JSON массив позиций заказа
+    @Field("format") String format = "json",
+  });
 }
 
 class ArmtekApiClient implements BaseSupplierApiClient {
@@ -70,13 +121,16 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   final ArmtekRestInterface _client;
   final _logger = AppLoggers.suppliers;
   final String _effectiveBaseUrl;
+  final String? _vkorg; // Идентификатор организации
 
   ArmtekApiClient(this._dio,
       {String? username,
       String? password,
       String? baseUrl,
-      String? proxyAuthToken})
-      : _effectiveBaseUrl = baseUrl ?? armtekBaseUrl, // Инициализируем поле
+      String? proxyAuthToken,
+      String? vkorg})
+      : _effectiveBaseUrl = baseUrl ?? armtekBaseUrl,
+        _vkorg = vkorg,
         _client = ArmtekRestInterface(_dio, baseUrl: baseUrl ?? armtekBaseUrl) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
@@ -123,25 +177,76 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   @override
   Future<List<PartPriceModel>> getPricesByArticle(String articleNumber,
       {String? brand}) async {
-    // TODO: Реализовать получение цен через метод поиска Armtek API (ServiceSearch)
-    // Это потребует создания моделей запроса и ответа для поиска,
-    // а затем маппинга ответа Armtek в унифицированную модель PartPriceModel.
-    // Пример:
-    // final searchRequest = SearchRequest(article: articleNumber, brand: brand, ...);
-    // final response = await _client.searchParts(request: searchRequest);
-    // if (response.status == 200 && response.responseData != null) {
-    //   return response.responseData.items.map((item) => PartPriceModel(
-    //     article: item.article,
-    //     brand: item.brand,
-    //     name: item.name,
-    //     price: item.price,
-    //     quantity: item.quantity,
-    //     deliveryDays: item.deliveryDays,
-    //     supplierName: supplierName,
-    //   )).toList();
-    // }
-    throw UnimplementedError(
-        'getPricesByArticle for Armtek is not yet implemented.');
+    if (_vkorg == null) {
+      throw Exception('VKORG not configured for Armtek API client');
+    }
+
+    _logger.i('Поиск цен на запчасть: $articleNumber (бренд: ${brand ?? "любой"})');
+    
+    try {
+      // Используем метод getPrices для получения цен
+      final response = await _client.getPrices(
+        vkorg: _vkorg!,
+        articleNumber: articleNumber,
+        brand: brand,
+      );
+
+      if (response.status != 200 || response.responseData == null) {
+        _logger.w('Armtek API вернул пустой ответ для артикула $articleNumber');
+        return [];
+      }
+
+      final prices = response.responseData!;
+      _logger.i('Получено ${prices.length} предложений для артикула $articleNumber');
+
+      return prices.map((item) {
+        return PartPriceModel(
+          article: item['number'] as String? ?? articleNumber,
+          brand: item['brand'] as String? ?? brand ?? '',
+          name: item['name'] as String? ?? '',
+          price: _parseDouble(item['price']),
+          quantity: _parseInt(item['quantity']),
+          deliveryDays: _parseInt(item['deliveryDays']) ?? _parseInt(item['delivery']) ?? 0,
+          supplierName: supplierName,
+          originalArticle: item['originalNumber'] as String?,
+          comment: item['comment'] as String?,
+          priceUpdatedAt: _parseDateTime(item['priceDate']),
+          additionalProperties: {
+            'store': item['store'],
+            'availability': item['availability'],
+            'manager': item['manager'],
+            'currency': item['currency'] ?? 'RUB',
+          },
+        );
+      }).toList();
+    } catch (e, stackTrace) {
+      _logger.e('Ошибка при получении цен от Armtek для артикула $articleNumber',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  // Вспомогательные методы для парсинга данных
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
   }
 
   @override
@@ -216,5 +321,56 @@ class ArmtekApiClient implements BaseSupplierApiClient {
       String vkorg) async {
     _logger.i('Getting store list for VKORG: $vkorg');
     return _client.getStoreList(vkorg: vkorg);
+  }
+
+  /// Поиск запчастей по артикулу (расширенный поиск)
+  Future<List<PartPriceModel>> searchPartsByArticle(String articleNumber,
+      {String? brand}) async {
+    if (_vkorg == null) {
+      throw Exception('VKORG not configured for Armtek API client');
+    }
+
+    _logger.i('Поиск запчастей: $articleNumber (бренд: ${brand ?? "любой"})');
+    
+    try {
+      final response = await _client.searchParts(
+        vkorg: _vkorg!,
+        articleNumber: articleNumber,
+        brand: brand,
+      );
+
+      if (response.status != 200 || response.responseData == null) {
+        _logger.w('Armtek поиска вернул пустой ответ для артикула $articleNumber');
+        return [];
+      }
+
+      final searchResults = response.responseData!;
+      _logger.i('Найдено ${searchResults.length} вариантов для артикула $articleNumber');
+
+      return searchResults.map((item) {
+        return PartPriceModel(
+          article: item['number'] as String? ?? articleNumber,
+          brand: item['brand'] as String? ?? brand ?? '',
+          name: item['name'] as String? ?? '',
+          price: _parseDouble(item['price']),
+          quantity: _parseInt(item['quantity']),
+          deliveryDays: _parseInt(item['deliveryDays']) ?? _parseInt(item['delivery']) ?? 0,
+          supplierName: supplierName,
+          originalArticle: item['originalNumber'] as String?,
+          comment: item['comment'] as String?,
+          priceUpdatedAt: _parseDateTime(item['priceDate']),
+          additionalProperties: {
+            'store': item['store'],
+            'availability': item['availability'],
+            'manager': item['manager'],
+            'currency': item['currency'] ?? 'RUB',
+          },
+        );
+      }).toList();
+    } catch (e, stackTrace) {
+      _logger.e('Ошибка при поиске запчастей Armtek для артикула $articleNumber',
+          error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
 }

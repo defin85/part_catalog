@@ -137,6 +137,21 @@ class CarsNotifier extends _$CarsNotifier {
   // Future<void> searchCars(String query) async { ... }
 }
 
+// Провайдер для получения одного автомобиля по UUID
+@riverpod
+Future<CarModelComposite?> car(Ref ref, String carUuid) async {
+  final logger = ref.read(vehiclesLoggerProvider);
+  logger.d('carProvider: Getting car with UUID: $carUuid');
+  
+  final carService = ref.watch(carServiceProvider);
+  try {
+    return await carService.getCarByUuid(carUuid);
+  } catch (e, s) {
+    logger.e('carProvider: Error getting car: $carUuid', error: e, stackTrace: s);
+    return null;
+  }
+}
+
 // Провайдер для проверки уникальности VIN (асинхронный)
 @riverpod
 Future<bool> isVinUnique(Ref ref,

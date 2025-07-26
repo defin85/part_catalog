@@ -9,6 +9,7 @@ import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:part_catalog/core/observers/provider_observer.dart';
 
 void main() {
   // Выполнение в защищенной зоне для перехвата всех ошибок
@@ -40,7 +41,7 @@ void main() {
     // Оборачиваем приложение в ProviderScope и TranslationProvider
     runApp(
       ProviderScope(
-        // <--- Обертка для Riverpod
+        observers: [AppProviderObserver()],
         child: TranslationProvider(
           child: const MyApp(),
         ),

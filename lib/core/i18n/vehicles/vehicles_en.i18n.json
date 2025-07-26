@@ -45,5 +45,6 @@
     "restored(name: String)": "Vehicle \"{name}\" restored",
     "added(name: String)": "Vehicle \"{name}\" added",
     "updated(name: String)": "Vehicle \"{name}\" updated",
-    "vinCheckError": "VIN check error"
+    "vinCheckError": "VIN check error",
+    "noCarsFoundForClient": "No vehicles found for this client"
 }

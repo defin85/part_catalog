@@ -8,13 +8,13 @@ part 'document_specific_data.g.dart';
 @freezed
 abstract class DocumentSpecificData with _$DocumentSpecificData {
   const factory DocumentSpecificData({
-    required DocumentStatus status,
     required DateTime documentDate,
-    @Default(false) bool isPosted,
+    required DocumentStatus status,
+    DateTime? scheduledDate,
+    DateTime? completedAt,
     DateTime? postedAt,
-    DateTime? scheduledDate, // Планируемая дата
-    DateTime? completedAt, // Дата завершения
-    double? totalAmount, // Итоговая сумма
+    @Default(false) bool isPosted,
+    double? totalAmount,
   }) = _DocumentSpecificData;
 
   factory DocumentSpecificData.fromJson(Map<String, dynamic> json) =>

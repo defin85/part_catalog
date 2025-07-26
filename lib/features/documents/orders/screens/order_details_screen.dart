@@ -12,6 +12,9 @@ import 'package:part_catalog/features/documents/orders/models/order_model_compos
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
+import 'package:part_catalog/features/documents/orders/services/pdf_service.dart';
+import 'package:part_catalog/core/service_locator.dart';
+import 'package:printing/printing.dart';
 // Импортируем провайдеры
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
@@ -51,6 +54,11 @@ class OrderDetailsScreen extends ConsumerWidget {
               }
               return Row(
                 children: [
+                  IconButton(
+                    icon: const Icon(Icons.print),
+                    tooltip: t.common.print,
+                    onPressed: () => _printOrder(order),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.edit),
                     tooltip: t.common.edit,
@@ -160,9 +168,9 @@ class OrderDetailsScreen extends ConsumerWidget {
           if (order.isDeleted) {
             return const SizedBox.shrink();
           }
-          final nextStatusAction = _getNextStatusAction(order.status, t);
-          if (nextStatusAction == null) {
-            return const SizedBox.shrink(); // Нет доступных действий
+          final availableActions = _getAvailableStatusActions(order.status, t);
+          if (availableActions.isEmpty) {
+            return const SizedBox.shrink();
           }
 
           return Container(
@@ -177,28 +185,47 @@ class OrderDetailsScreen extends ConsumerWidget {
                 )
               ],
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
+            child: availableActions.length == 1
+                ? ElevatedButton(
                     onPressed: () => _changeStatus(
-                        context,
-                        ref,
-                        order,
-                        nextStatusAction.status,
-                        logger), // Передаем context, ref, logger
+                        context, ref, order, availableActions.first.status, logger),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: nextStatusAction.color,
+                      backgroundColor: availableActions.first.color,
                     ),
-                    child: Text(nextStatusAction.text),
+                    child: Text(availableActions.first.text),
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: PopupMenuButton<DocumentStatus>(
+                          onSelected: (status) =>
+                              _changeStatus(context, ref, order, status, logger),
+                          itemBuilder: (context) => availableActions
+                              .map((action) => PopupMenuItem(
+                                    value: action.status,
+                                    child: Text(action.text),
+                                  ))
+                              .toList(),
+                          child: ElevatedButton(
+                            onPressed: null, // Отключена, так как меню открывается по нажатию
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(theme.primaryColor),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(t.orders.changeStatus),
+                                const Icon(Icons.arrow_drop_down),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           );
         },
-        orElse: () =>
-            const SizedBox.shrink(), // Не показывать панель при загрузке/ошибке
+        orElse: () => const SizedBox.shrink(),
       ),
     );
   }
@@ -602,6 +629,12 @@ class OrderDetailsScreen extends ConsumerWidget {
 
   // --- Методы действий (теперь принимают BuildContext и WidgetRef) ---
 
+  Future<void> _printOrder(OrderModelComposite order) async {
+    final pdfService = locator<PdfService>();
+    final pdfData = await pdfService.generateOrderPdf(order);
+    await Printing.layoutPdf(onLayout: (format) async => pdfData);
+  }
+
   void _editOrder(BuildContext context, OrderModelComposite order) {
     Navigator.push(
       context,
@@ -819,40 +852,42 @@ class OrderDetailsScreen extends ConsumerWidget {
 
   // --- Вспомогательные функции (остаются без изменений) ---
 
-  ({String text, Color color, DocumentStatus status})? _getNextStatusAction(
+  List<({String text, Color color, DocumentStatus status})> _getAvailableStatusActions(
       DocumentStatus currentStatus, Translations t) {
     switch (currentStatus) {
       case DocumentStatus.newDoc:
-        return (
+        return [(
           text: t.orders.startWorkAction,
           color: Colors.orange,
           status: DocumentStatus.inProgress
-        );
+        )];
       case DocumentStatus.inProgress:
-        // TODO: Добавить логику проверки ожидания запчастей
-        return (
-          text: t.orders.markReadyAction,
-          color: Colors.teal,
-          status: DocumentStatus.readyForPickup
-        );
+        return [
+          (
+            text: t.orders.waitForPartsAction,
+            color: Colors.blueGrey,
+            status: DocumentStatus.waitingForParts
+          ),
+          (
+            text: t.orders.markReadyAction,
+            color: Colors.teal,
+            status: DocumentStatus.readyForPickup
+          ),
+        ];
       case DocumentStatus.waitingForParts:
-        return (
+        return [(
           text: t.orders.resumeWorkAction,
           color: Colors.orange,
           status: DocumentStatus.inProgress
-        );
+        )];
       case DocumentStatus.readyForPickup:
-        return (
+        return [(
           text: t.orders.completeOrderAction,
           color: Colors.green,
           status: DocumentStatus.completed
-        );
-      case DocumentStatus.completed:
-      case DocumentStatus.cancelled:
-      case DocumentStatus
-            .posted: // Считаем проведенный завершенным для UI действий
-      case DocumentStatus.unknown:
-        return null; // Нет действий для этих статусов
+        )];
+      default:
+        return [];
     }
   }
 }

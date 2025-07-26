@@ -1,6 +1,6 @@
 targets:
   $default:
-    builders:      
+    builders:
       slang_build_runner:
         options:
           base_locale: en
@@ -13,9 +13,13 @@ targets:
           locale_handling: true
           flutter_integration: true
           namespaces: true
-          translate_var: t          
+          translate_var: t
           translation_class_visibility: public
           key_case: camel
           key_map_case: camel
           param_case: camel
           string_interpolation: braces
+      source_gen|combining_builder:
+        generate_for:
+          - lib/**.dart
+          - test/**.dart

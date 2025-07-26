@@ -1,5 +1,6 @@
 {
     "dataLoadingError": "Data loading error",
     "saveError": "Error saving data",
-    "fieldRequired": "This field is required"
+    "fieldRequired": "This field is required",
+    "invalidNumber": "Invalid number"
 }

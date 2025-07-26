@@ -38,19 +38,28 @@ dependencies:
   go_router: ^15.1.1
   flutter_riverpod: ^2.6.1
   riverpod_annotation: ^2.6.1
+  pdf: ^3.11.3
+  printing: ^5.14.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  test: ^1.25.2
   flutter_lints: ^5.0.0
   json_serializable: ^6.9.4
   build_runner: ^2.4.15
   slang_build_runner: ^4.6.0
   riverpod_generator: ^2.6.5
   drift_dev: ^2.27.0
+  # Testing dependencies
+  mockito: ^5.4.4
+  mocktail: ^1.0.3
+  integration_test:
+    sdk: flutter
 
 flutter:
   generate: true  # Включаем генерацию файлов локализации
   uses-material-design: true
   assets:
     - .env
+    - assets/fonts/

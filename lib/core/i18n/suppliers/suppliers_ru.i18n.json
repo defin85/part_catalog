@@ -1,0 +1,29 @@
+{
+  "partsSearch": {
+    "screenTitle": "Поиск запчастей",
+    "searchParameters": "Параметры поиска",
+    "articleNumber": "Артикул",
+    "articleNumberHint": "Введите артикул запчасти",
+    "articleNumberRequired": "Артикул обязателен для заполнения",
+    "brand": "Бренд",
+    "brandHint": "Укажите бренд (необязательно)",
+    "search": "Найти",
+    "clearSearch": "Очистить поиск",
+    "enterArticleToSearch": "Введите артикул для поиска запчастей",
+    "noPartsFound": "Запчасти не найдены",
+    "tryDifferentArticle": "Попробуйте изменить артикул или бренд",
+    "foundResults": "Найдено результатов: {count}",
+    "searchError": "Ошибка поиска",
+    "retrySearch": "Повторить поиск",
+    "article": "Артикул",
+    "name": "Наименование",
+    "price": "Цена",
+    "quantity": "Количество",
+    "deliveryDays": "Срок доставки",
+    "supplier": "Поставщик",
+    "originalArticle": "Оригинальный артикул",
+    "comment": "Комментарий",
+    "priceUpdated": "Цена обновлена",
+    "daysCount": "{days} дн."
+  }
+}

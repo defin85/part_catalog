@@ -1,5 +1,6 @@
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart';
+import 'package:part_catalog/core/database/database_error_recovery.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart'; // Содержит ClientFullData
 import 'package:part_catalog/core/database/daos/cars_dao.dart'; // Нужен для транзакции с машинами
 // Импорт бизнес-модели (композитора)
@@ -20,10 +21,12 @@ import 'package:part_catalog/features/references/vehicles/models/car_model_compo
 class ClientService {
   /// {@macro client_service}
   ClientService(this._db)
-      : _logger = AppLoggers.clients; // Используем настроенный логгер
+      : _logger = AppLoggers.clients, // Используем настроенный логгер
+        _errorRecovery = DatabaseErrorRecovery(_db);
 
   final AppDatabase _db;
   final Logger _logger;
+  final DatabaseErrorRecovery _errorRecovery;
 
   /// Получение DAO для работы с клиентами
   ClientsDao get _clientsDao => _db.clientsDao;
@@ -52,12 +55,18 @@ class ClientService {
   /// Получает клиента [ClientModelComposite] по UUID.
   Future<ClientModelComposite?> getClientByUuid(String uuid) async {
     _logger.i(LogMessages.clientGetByUuid.replaceAll('{uuid}', uuid));
-    final clientData = await _clientsDao.getClientByUuid(uuid);
-    if (clientData == null) {
-      _logger.w(LogMessages.clientNotFoundByUuid.replaceAll('{uuid}', uuid));
-      return null;
-    }
-    return _mapDataToComposite(clientData);
+    
+    return _errorRecovery.executeWithRetry(
+      () async {
+        final clientData = await _clientsDao.getClientByUuid(uuid);
+        if (clientData == null) {
+          _logger.w(LogMessages.clientNotFoundByUuid.replaceAll('{uuid}', uuid));
+          return null;
+        }
+        return _mapDataToComposite(clientData);
+      },
+      operationName: 'getClientByUuid($uuid)',
+    );
   }
 
   /// Получает клиента [ClientModelComposite] по коду.
@@ -86,14 +95,14 @@ class ClientService {
     final coreData = client.coreData;
     final clientData = client.clientData;
 
-    try {
-      await _clientsDao.insertClient(coreData, clientData);
-      _logger.i(LogMessages.clientCreated.replaceAll('{uuid}', client.uuid));
-      return client.uuid;
-    } catch (e, s) {
-      _logger.e(LogMessages.clientAddError, error: e, stackTrace: s);
-      rethrow; // Пробрасываем ошибку дальше
-    }
+    return _errorRecovery.executeWithRetry(
+      () async {
+        await _clientsDao.insertClient(coreData, clientData);
+        _logger.i(LogMessages.clientCreated.replaceAll('{uuid}', client.uuid));
+        return client.uuid;
+      },
+      operationName: 'addClient(${client.uuid})',
+    );
   }
 
   /// Обновляет существующего клиента.
@@ -155,9 +164,15 @@ class ClientService {
   Future<List<ClientModelComposite>> getAllClients(
       {bool includeDeleted = false}) async {
     _logger.i(LogMessages.clientGetAll(includeDeleted));
-    final clientDataList =
-        await _clientsDao.getAllClients(includeDeleted: includeDeleted);
-    return clientDataList.map(_mapDataToComposite).toList();
+    
+    return _errorRecovery.executeWithRetry(
+      () async {
+        final clientDataList =
+            await _clientsDao.getAllClients(includeDeleted: includeDeleted);
+        return clientDataList.map(_mapDataToComposite).toList();
+      },
+      operationName: 'getAllClients(includeDeleted: $includeDeleted)',
+    );
   }
 
   /// Фильтрует клиентов по типу.

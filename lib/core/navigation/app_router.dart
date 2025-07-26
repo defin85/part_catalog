@@ -4,6 +4,7 @@ import 'package:part_catalog/features/home/screens/home_screen.dart';
 import 'package:part_catalog/features/references/clients/screens/clients_screen.dart'; // Пример
 import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
 import 'package:part_catalog/features/documents/orders/screens/orders_screen.dart'; // Пример
+import 'package:part_catalog/features/suppliers/screens/parts_search_screen.dart';
 import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
 import 'package:part_catalog/features/settings/armtek/screens/armtek_settings_screen.dart';
 // Импортируйте другие экраны...
@@ -49,6 +50,12 @@ final GoRouter router = GoRouter(
           path: AppRoutes.orders,
           builder: (BuildContext context, GoRouterState state) {
             return const OrdersScreen(); // Экран списка заказов
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.partsSearch,
+          builder: (BuildContext context, GoRouterState state) {
+            return const PartsSearchScreen(); // Экран поиска запчастей
           },
         ),
         GoRoute(

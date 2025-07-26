@@ -1,6 +1,7 @@
 import 'package:part_catalog/core/database/daos/cars_dao.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
 import 'package:part_catalog/core/database/database.dart';
+import 'package:part_catalog/core/database/database_error_recovery.dart';
 import 'package:part_catalog/core/database/daos/orders_dao.dart'; // Содержит OrderHeaderData, FullOrderItemData, Tuple3
 import 'package:part_catalog/core/utils/log_messages.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
@@ -25,6 +26,7 @@ import 'package:rxdart/rxdart.dart';
 class OrderService {
   final AppDatabase _database;
   final _logger = AppLoggers.orders;
+  late final DatabaseErrorRecovery _errorRecovery;
 
   /// Получение DAO для работы с заказ-нарядами из базы данных
   OrdersDao get _ordersDao => _database.ordersDao;
@@ -38,7 +40,9 @@ class OrderService {
   /// Создает экземпляр сервиса заказ-нарядов
   ///
   /// @param database Экземпляр базы данных для доступа к данным
-  OrderService(this._database);
+  OrderService(this._database) {
+    _errorRecovery = DatabaseErrorRecovery(_database);
+  }
 
   // --- Вспомогательный метод для маппинга данных из DAO в композитор ---
   Future<OrderModelComposite> _mapDataToComposite(String uuid) async {
@@ -69,13 +73,13 @@ class OrderService {
 
       if (itemType == BaseItemType.part && fullItemData.partData != null) {
         // Используем публичный фабричный конструктор fromData
-        itemEntity = OrderPartModelComposite.fromData(
-            itemCore, itemDoc, fullItemData.partData!);
+        itemEntity = OrderPartModelComposite(
+            coreData: itemCore, docItemData: itemDoc, partData: fullItemData.partData!);
       } else if (itemType == BaseItemType.service &&
           fullItemData.serviceData != null) {
         // Используем публичный фабричный конструктор fromData
-        itemEntity = OrderServiceModelComposite.fromData(
-            itemCore, itemDoc, fullItemData.serviceData!);
+        itemEntity = OrderServiceModelComposite(
+            coreData: itemCore, docItemData: itemDoc, serviceData: fullItemData.serviceData!);
       } else {
         // Используем константу
         _logger.w(LogMessages.orderItemInvalidData
@@ -123,13 +127,11 @@ class OrderService {
 
           if (itemType == BaseItemType.part && fullItemData.partData != null) {
             // Используем публичный фабричный конструктор fromData
-            itemEntity = OrderPartModelComposite.fromData(
-                itemCore, itemDoc, fullItemData.partData!);
+            itemEntity = OrderPartModelComposite(coreData: itemCore, docItemData: itemDoc, partData: fullItemData.partData!);
           } else if (itemType == BaseItemType.service &&
               fullItemData.serviceData != null) {
             // Используем публичный фабричный конструктор fromData
-            itemEntity = OrderServiceModelComposite.fromData(
-                itemCore, itemDoc, fullItemData.serviceData!);
+            itemEntity = OrderServiceModelComposite(coreData: itemCore, docItemData: itemDoc, serviceData: fullItemData.serviceData!);
           } else {
             // Используем константу
             _logger.w(LogMessages.orderItemInvalidData
@@ -211,6 +213,16 @@ class OrderService {
     } catch (e, stackTrace) {
       _logger.e(LogMessages.orderWatchError, error: e, stackTrace: stackTrace);
       // Возвращаем стрим с ошибкой, если исключение возникло синхронно
+      return Stream.error(e);
+    }
+  }
+
+  /// Реактивно наблюдает за пагинированным списком заголовков заказ-нарядов.
+  Stream<List<OrderHeaderData>> watchOrderHeadersPaginated({required int limit, int? offset}) {
+    try {
+      return _ordersDao.watchActiveOrderHeadersPaginated(limit: limit, offset: offset);
+    } catch (e, stackTrace) {
+      _logger.e('Error watching paginated order headers', error: e, stackTrace: stackTrace);
       return Stream.error(e);
     }
   }
@@ -305,50 +317,52 @@ class OrderService {
     String? description,
     DateTime? scheduledDate,
   }) async {
-    try {
-      // Получаем базовые данные клиента и автомобиля
-      final clientCoreData = await _clientsDao
-          .getClientCoreData(clientUuid); // Используем новый метод
-      final carCoreData =
-          await _carsDao.getCarCoreData(carUuid); // Используем новый метод
+    return _errorRecovery.executeWithRetry(
+      () async {
+        // Получаем базовые данные клиента
+        final clientCoreData = await _clientsDao
+            .getClientCoreData(clientUuid); // Используем новый метод
 
-      if (clientCoreData == null) {
-        final errorMsg =
-            LogMessages.clientNotFoundByUuid.replaceAll('{uuid}', clientUuid);
-        _logger.e(errorMsg);
-        throw Exception(errorMsg);
-      }
-      if (carCoreData == null) {
-        final errorMsg =
-            LogMessages.carNotFoundByUuid.replaceAll('{uuid}', carUuid);
-        _logger.e(errorMsg);
-        throw Exception(errorMsg);
-      }
+        if (clientCoreData == null) {
+          final errorMsg =
+              LogMessages.clientNotFoundByUuid.replaceAll('{uuid}', clientUuid);
+          _logger.e(errorMsg);
+          throw Exception(errorMsg);
+        }
 
-      // Создаем бизнес-модель (композитор)
-      final orderModel = OrderModelComposite.create(
-        // Используем фабричный конструктор композитора
-        code: '', // Генерировать или получать из настроек/DAO
-        displayName:
-            'Заказ-наряд от ${DateTime.now().toLocal().toString().substring(0, 10)}', // Пример
-        documentDate: DateTime.now(),
-        clientId: clientUuid,
-        carId: carUuid,
-        description: description,
-        scheduledDate: scheduledDate, // Передаем в конструктор
-        // clientName и carInfo больше не нужны как параметры
-      );
+        // Получаем базовые данные автомобиля
+        final carCoreData =
+            await _carsDao.getCarCoreData(carUuid); // Используем новый метод
 
-      // Сохраняем в базу данных
-      await _saveOrder(orderModel);
-      // Используем константу
-      _logger.i(LogMessages.orderCreated.replaceAll('{uuid}', orderModel.uuid));
-      return orderModel;
-    } catch (e, stackTrace) {
-      _logger.e(LogMessages.orderNewCreateError,
-          error: e, stackTrace: stackTrace);
-      rethrow;
-    }
+        if (carCoreData == null) {
+          final errorMsg =
+              LogMessages.carNotFoundByUuid.replaceAll('{uuid}', carUuid);
+          _logger.e(errorMsg);
+          throw Exception(errorMsg);
+        }
+
+        // Создаем бизнес-модель (композитор)
+        final orderModel = OrderModelComposite.create(
+          // Используем фабричный конструктор композитора
+          code: '', // Генерировать или получать из настроек/DAO
+          displayName:
+              'Заказ-наряд от ${DateTime.now().toLocal().toString().substring(0, 10)}', // Пример
+          documentDate: DateTime.now(),
+          clientId: clientUuid,
+          carId: carUuid,
+          description: description,
+          scheduledDate: scheduledDate, // Передаем в конструктор
+          // clientName и carInfo больше не нужны как параметры
+        );
+
+        // Сохраняем в базу данных
+        await _saveOrder(orderModel);
+        // Используем константу
+        _logger.i(LogMessages.orderCreated.replaceAll('{uuid}', orderModel.uuid));
+        return orderModel;
+      },
+      operationName: 'createNewOrder(client: $clientUuid, car: $carUuid)',
+    );
   }
 
   /// Обновляет существующий заказ-наряд
@@ -357,7 +371,9 @@ class OrderService {
   Future<void> updateOrder(OrderModelComposite order) async {
     try {
       // Обновляем modifiedAt перед сохранением (предполагаем, что метод есть)
-      final updatedOrder = order.withModifiedDate(DateTime.now());
+      final updatedOrder = order.copyWith(
+        coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
+      );
       await _saveOrder(updatedOrder);
       // Используем константу
       _logger.d(LogMessages.orderUpdated.replaceAll('{uuid}', order.uuid));
@@ -378,7 +394,10 @@ class OrderService {
       final order = await getOrderByUuid(orderUuid);
       // Используем метод `with...` композитора для иммутабельного обновления
       // Предполагаем, что метод withStatus существует
-      final updatedOrder = order.withStatus(newStatus);
+      final updatedOrder = order.copyWith(
+        docData: order.docData.copyWith(status: newStatus),
+        coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
+      );
       await updateOrder(updatedOrder);
       // Используем константу
       _logger.i(LogMessages.orderStatusUpdated
@@ -480,7 +499,13 @@ class OrderService {
     try {
       final order = await getOrderByUuid(orderUuid);
       // Предполагаем, что метод markAsDeleted существует
-      final deletedOrder = order.markAsDeleted();
+      final deletedOrder = order.copyWith(
+        coreData: order.coreData.copyWith(
+          isDeleted: true,
+          deletedAt: DateTime.now(),
+          modifiedAt: DateTime.now(),
+        ),
+      );
       await updateOrder(deletedOrder);
       // Используем константу
       _logger.i(LogMessages.orderDeleted.replaceAll('{uuid}', orderUuid));
@@ -513,7 +538,13 @@ class OrderService {
         return;
       }
       // Предполагаем, что метод restore существует
-      final restoredOrder = order.restore();
+      final restoredOrder = order.copyWith(
+        coreData: order.coreData.copyWith(
+          isDeleted: false,
+          deletedAt: null,
+          modifiedAt: DateTime.now(),
+        ),
+      );
       await updateOrder(restoredOrder);
       // Используем константу
       _logger.i(LogMessages.orderRestored.replaceAll('{uuid}', orderUuid));
@@ -693,7 +724,10 @@ class OrderService {
       // ... логика создания движений в регистрах (если есть) ...
 
       // Обновляем флаг isPosted в композиторе (предполагаем, что метод есть)
-      final updatedOrder = order.withProveden(true);
+      final updatedOrder = order.copyWith(
+        docData: order.docData.copyWith(isPosted: true, postedAt: DateTime.now()),
+        coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
+      );
 
       await updateOrder(updatedOrder);
       // Используем константу
@@ -720,7 +754,10 @@ class OrderService {
       // ... логика удаления движений в регистрах (если есть) ...
 
       // Обновляем флаг isPosted (предполагаем, что метод есть)
-      final updatedOrder = order.withProveden(false);
+      final updatedOrder = order.copyWith(
+        docData: order.docData.copyWith(isPosted: false, postedAt: null),
+        coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
+      );
 
       await updateOrder(updatedOrder);
       // Используем константу

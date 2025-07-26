@@ -9,7 +9,16 @@ class SuppliersService {
   SuppliersService(this._apiClientManager);
 
   /// Получает цены от всех доступных поставщиков для указанного артикула.
+  /// Алиас для getPricesFromAllSuppliers для обратной совместимости.
   Future<Map<String, List<PartPriceModel>>> getAllPricesByArticle(
+    String articleNumber, {
+    String? brand,
+  }) async {
+    return getPricesFromAllSuppliers(articleNumber, brand: brand);
+  }
+
+  /// Получает цены от всех доступных поставщиков для указанного артикула.
+  Future<Map<String, List<PartPriceModel>>> getPricesFromAllSuppliers(
     String articleNumber, {
     String? brand,
   }) async {

@@ -64,5 +64,8 @@
     "editService": "Edit Service",
     "addPart": "Add Part",
     "editPart": "Edit Part",
-    "scheduledShort": "Sched"
+    "scheduledShort": "Sched",
+    "durationHours": "Duration (hours)",
+    "changeStatus": "Change Status",
+    "waitForPartsAction": "Wait for Parts"
 }

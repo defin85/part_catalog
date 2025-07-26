@@ -64,5 +64,8 @@
     "editService": "Редактировать услугу",
     "addPart": "Добавить запчасть",
     "editPart": "Редактировать запчасть",
-    "scheduledShort": "План"
+    "scheduledShort": "План",
+    "durationHours": "Продолжительность (часы)",
+    "changeStatus": "Изменить статус",
+    "waitForPartsAction": "Ожидание запчастей"
 }

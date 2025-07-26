@@ -742,7 +742,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                 )
                             : ClientModelComposite.create(
                                 code: codeController.text.trim(),
-                                name: nameController.text.trim(),
+                                displayName: nameController.text.trim(),
                                 type: selectedType,
                                 contactInfo: contactInfoController.text.trim(),
                                 additionalInfo:

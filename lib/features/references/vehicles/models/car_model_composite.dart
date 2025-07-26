@@ -46,7 +46,8 @@ class CarModelComposite implements IReferenceEntity {
 
   /// Фабричный конструктор для создания нового экземпляра автомобиля.
   factory CarModelComposite.create({
-    required String code, // Код может быть VIN или другим уникальным значением
+    required String code,
+    required String displayName, // Стандартизировано
     required String make,
     required String model,
     required int year,
@@ -54,14 +55,12 @@ class CarModelComposite implements IReferenceEntity {
     required String clientId,
     String? licensePlate,
     String? additionalInfo,
-    String? parentId, // Можно передать, если нужна иерархия
+    String? parentId,
   }) {
     final now = DateTime.now();
-    // Используем комбинацию марки и модели для displayName
-    final displayName = '$make $model ($year)';
     final core = EntityCoreData(
       uuid: const Uuid().v4(),
-      code: code, // Используем переданный код
+      code: code,
       displayName: displayName,
       createdAt: now,
       modifiedAt: now,

@@ -212,6 +212,17 @@ class OrdersDao extends DatabaseAccessor<AppDatabase> with _$OrdersDaoMixin {
         .map((rows) => rows.map(_mapToOrderHeaderData).toList());
   }
 
+  /// Возвращает пагинированный поток списка заголовков активных заказ-нарядов.
+  Stream<List<OrderHeaderData>> watchActiveOrderHeadersPaginated({required int limit, int? offset}) {
+    final query = select(ordersItems)
+      ..where((o) => o.deletedAt.isNull())
+      ..orderBy([(o) => OrderingTerm.desc(o.createdAt)]) // Сортируем по дате создания
+      ..limit(limit, offset: offset);
+    return query
+        .watch()
+        .map((rows) => rows.map(_mapToOrderHeaderData).toList());
+  }
+
   /// Возвращает заголовок заказ-наряда по UUID.
   Future<OrderHeaderData?> getOrderHeaderByUuid(String uuid) async {
     final item = await (select(ordersItems)
