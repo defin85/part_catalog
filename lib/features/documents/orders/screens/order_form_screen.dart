@@ -538,7 +538,7 @@ class _ClientSelectionDialog extends ConsumerWidget {
                 final client = clients[index];
                 return ListTile(
                   title: Text(client.displayName),
-                  subtitle: Text(client.contactInfo ?? ''),
+                  subtitle: Text(client.contactInfo),
                   onTap: () => Navigator.pop(context, client),
                 );
               },

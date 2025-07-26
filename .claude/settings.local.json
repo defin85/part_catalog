@@ -13,7 +13,13 @@
       "mcp__tavily-server__tavily_search",
       "mcp__tavily-server__tavily_extract",
       "WebFetch(domain:api2.autotrade.su)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(rmdir:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(del \"C:\\FlutterProject\\part_catalog\\lib\\features\\suppliers\\api\\implementations\\armtek_api_client.g.dart\")"
     ],
     "deny": []
   }

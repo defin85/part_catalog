@@ -209,7 +209,7 @@ class OrderDetailsScreen extends ConsumerWidget {
                           child: ElevatedButton(
                             onPressed: null, // Отключена, так как меню открывается по нажатию
                             style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(theme.primaryColor),
+                              backgroundColor: WidgetStateProperty.all(theme.primaryColor),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,

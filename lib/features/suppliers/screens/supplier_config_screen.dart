@@ -4,7 +4,6 @@ import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 import 'package:part_catalog/core/widgets/custom_text_form_field.dart';
 import 'package:part_catalog/core/widgets/section_title.dart';
-import 'package:part_catalog/core/i18n/strings.g.dart';
 
 /// Экран настройки поставщика
 class SupplierConfigScreen extends ConsumerStatefulWidget {
@@ -95,7 +94,6 @@ class _SupplierConfigScreenState extends ConsumerState<SupplierConfigScreen> {
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(supplierConfigFormProvider(widget.supplierCode));
-    final t = Translations.of(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -286,9 +284,12 @@ class _SupplierConfigScreenState extends ConsumerState<SupplierConfigScreen> {
                 : null,
           ),
           const SizedBox(height: 16),
-          CustomTextFormField(
+          TextFormField(
             controller: _passwordController,
-            labelText: 'Пароль',
+            decoration: const InputDecoration(
+              labelText: 'Пароль',
+              border: OutlineInputBorder(),
+            ),
             obscureText: true,
             validator: (value) => value?.isEmpty ?? true 
                 ? 'Введите пароль' 

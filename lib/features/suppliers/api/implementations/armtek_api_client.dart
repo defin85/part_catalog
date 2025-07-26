@@ -12,12 +12,16 @@ import 'package:part_catalog/features/suppliers/models/armtek/armtek_response_wr
 import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/price_status_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/search_result.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/order_response.dart';
 // TODO: Импортировать модели для getBrandList и getStoreList, когда они будут созданы
 
 part 'armtek_api_client.g.dart';
 
 const String armtekBaseUrl =
     "http://ws.armtek.ru/api"; // Можно вынести в конфигурацию
+
 
 @RestApi(baseUrl: armtekBaseUrl)
 abstract class ArmtekRestInterface {
@@ -61,7 +65,7 @@ abstract class ArmtekRestInterface {
   /// Получение статуса обработки прайса по ключу
   @POST("/ws_user/getPriceStatusByKey")
   @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<Map<String, dynamic>>> getPriceStatusByKey({
+  Future<ArmtekResponseWrapper<PriceStatusResponse>> getPriceStatusByKey({
     @Field("KEY") required String key,
     @Field("format") String format = "json",
   });
@@ -70,7 +74,7 @@ abstract class ArmtekRestInterface {
   /// Поиск запчастей по артикулу и бренду
   @POST("/ws_search/search")
   @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<List<Map<String, dynamic>>>> searchParts({
+  Future<ArmtekResponseWrapper<List<SearchResult>>> searchParts({
     @Field("VKORG") required String vkorg,
     @Field("PIN") required String articleNumber, // Артикул (в API используется PIN)
     @Field("BRAND") String? brand,
@@ -85,7 +89,7 @@ abstract class ArmtekRestInterface {
   /// Получение цен и наличия для конкретной запчасти
   @POST("/ws_search/getPrice")
   @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<List<Map<String, dynamic>>>> getPrices({
+  Future<ArmtekResponseWrapper<List<SearchResult>>> getPrices({
     @Field("VKORG") required String vkorg,
     @Field("PIN") required String articleNumber, // Артикул (в API используется PIN)
     @Field("BRAND") String? brand,
@@ -100,7 +104,7 @@ abstract class ArmtekRestInterface {
   /// Создание тестового заказа
   @POST("/ws_order/createTestOrder")
   @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<Map<String, dynamic>>> createTestOrder({
+  Future<ArmtekResponseWrapper<OrderResponse>> createTestOrder({
     @Field("VKORG") required String vkorg,
     @Field("KUNRG") required String kunnrRg, // Код покупателя (плательщика)
     @Field("KUNWE") String? kunnrWe, // Код грузополучателя
@@ -186,7 +190,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     try {
       // Используем метод getPrices для получения цен
       final response = await _client.getPrices(
-        vkorg: _vkorg!,
+        vkorg: _vkorg ?? '',
         articleNumber: articleNumber,
         brand: brand,
       );
@@ -196,26 +200,27 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         return [];
       }
 
-      final prices = response.responseData!;
+      final prices = response.responseData ?? [];
       _logger.i('Получено ${prices.length} предложений для артикула $articleNumber');
 
       return prices.map((item) {
         return PartPriceModel(
-          article: item['number'] as String? ?? articleNumber,
-          brand: item['brand'] as String? ?? brand ?? '',
-          name: item['name'] as String? ?? '',
-          price: _parseDouble(item['price']),
-          quantity: _parseInt(item['quantity']),
-          deliveryDays: _parseInt(item['deliveryDays']) ?? _parseInt(item['delivery']) ?? 0,
+          article: item.articleNumber ?? articleNumber,
+          brand: item.brand ?? brand ?? '',
+          name: item.name ?? '',
+          price: item.price ?? 0.0,
+          quantity: item.quantity ?? 0,
+          deliveryDays: item.deliveryTime ?? 0,
           supplierName: supplierName,
-          originalArticle: item['originalNumber'] as String?,
-          comment: item['comment'] as String?,
-          priceUpdatedAt: _parseDateTime(item['priceDate']),
+          originalArticle: item.additionalData?['originalNumber'] as String?,
+          comment: item.additionalData?['comment'] as String?,
+          priceUpdatedAt: _parseDateTime(item.additionalData?['priceDate']),
           additionalProperties: {
-            'store': item['store'],
-            'availability': item['availability'],
-            'manager': item['manager'],
-            'currency': item['currency'] ?? 'RUB',
+            'store': item.additionalData?['store'],
+            'availability': item.additionalData?['availability'],
+            'manager': item.additionalData?['manager'],
+            'currency': item.additionalData?['currency'] ?? 'RUB',
+            'supplier': item.supplier,
           },
         );
       }).toList();
@@ -227,22 +232,6 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   }
 
   // Вспомогательные методы для парсинга данных
-  double _parseDouble(dynamic value) {
-    if (value == null) return 0.0;
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? 0.0;
-    return 0.0;
-  }
-
-  int _parseInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
-  }
-
   DateTime? _parseDateTime(dynamic value) {
     if (value == null) return null;
     if (value is String) return DateTime.tryParse(value);
@@ -256,8 +245,8 @@ class ArmtekApiClient implements BaseSupplierApiClient {
       final response = await pingService();
 
       if (response.status == 200 && response.responseData != null) {
-        _logger.i('API Armtek доступно. IP: ${response.responseData!.ip}, '
-            'Время выполнения: ${response.responseData!.time}');
+        _logger.i('API Armtek доступно. IP: ${response.responseData?.ip}, '
+            'Время выполнения: ${response.responseData?.time}');
         return true;
       } else {
         _logger.w('API Armtek недоступно. Статус ответа: ${response.status}');
@@ -334,7 +323,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     
     try {
       final response = await _client.searchParts(
-        vkorg: _vkorg!,
+        vkorg: _vkorg ?? '',
         articleNumber: articleNumber,
         brand: brand,
       );
@@ -344,26 +333,27 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         return [];
       }
 
-      final searchResults = response.responseData!;
+      final searchResults = response.responseData ?? [];
       _logger.i('Найдено ${searchResults.length} вариантов для артикула $articleNumber');
 
       return searchResults.map((item) {
         return PartPriceModel(
-          article: item['number'] as String? ?? articleNumber,
-          brand: item['brand'] as String? ?? brand ?? '',
-          name: item['name'] as String? ?? '',
-          price: _parseDouble(item['price']),
-          quantity: _parseInt(item['quantity']),
-          deliveryDays: _parseInt(item['deliveryDays']) ?? _parseInt(item['delivery']) ?? 0,
+          article: item.articleNumber ?? articleNumber,
+          brand: item.brand ?? brand ?? '',
+          name: item.name ?? '',
+          price: item.price ?? 0.0,
+          quantity: item.quantity ?? 0,
+          deliveryDays: item.deliveryTime ?? 0,
           supplierName: supplierName,
-          originalArticle: item['originalNumber'] as String?,
-          comment: item['comment'] as String?,
-          priceUpdatedAt: _parseDateTime(item['priceDate']),
+          originalArticle: item.additionalData?['originalNumber'] as String?,
+          comment: item.additionalData?['comment'] as String?,
+          priceUpdatedAt: _parseDateTime(item.additionalData?['priceDate']),
           additionalProperties: {
-            'store': item['store'],
-            'availability': item['availability'],
-            'manager': item['manager'],
-            'currency': item['currency'] ?? 'RUB',
+            'store': item.additionalData?['store'],
+            'availability': item.additionalData?['availability'],
+            'manager': item.additionalData?['manager'],
+            'currency': item.additionalData?['currency'] ?? 'RUB',
+            'supplier': item.supplier,
           },
         );
       }).toList();

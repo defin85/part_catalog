@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart';
 

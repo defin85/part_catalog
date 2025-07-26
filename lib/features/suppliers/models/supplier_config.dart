@@ -14,7 +14,9 @@ enum AuthenticationType {
 
 /// Базовая конфигурация для любого поставщика
 @freezed
-class SupplierConfig with _$SupplierConfig {
+abstract class SupplierConfig with _$SupplierConfig {
+  const SupplierConfig._();
+  
   const factory SupplierConfig({
     required String supplierCode, // Уникальный код поставщика (armtek, autotrade, etc.)
     required String displayName, // Отображаемое название
@@ -32,7 +34,9 @@ class SupplierConfig with _$SupplierConfig {
 
 /// Конфигурация API поставщика
 @freezed
-class SupplierApiConfig with _$SupplierApiConfig {
+abstract class SupplierApiConfig with _$SupplierApiConfig {
+  const SupplierApiConfig._();
+  
   const factory SupplierApiConfig({
     required String baseUrl, // Базовый URL API
     String? proxyUrl, // URL прокси-сервера (если используется)
@@ -50,7 +54,9 @@ class SupplierApiConfig with _$SupplierApiConfig {
 
 /// Учетные данные для аутентификации
 @freezed
-class SupplierCredentials with _$SupplierCredentials {
+abstract class SupplierCredentials with _$SupplierCredentials {
+  const SupplierCredentials._();
+  
   const factory SupplierCredentials({
     String? username, // Для Basic Auth
     String? password, // Для Basic Auth
@@ -67,7 +73,9 @@ class SupplierCredentials with _$SupplierCredentials {
 
 /// Конфигурация лимитов API
 @freezed
-class RateLimitConfig with _$RateLimitConfig {
+abstract class RateLimitConfig with _$RateLimitConfig {
+  const RateLimitConfig._();
+  
   const factory RateLimitConfig({
     int? dailyLimit, // Дневной лимит запросов
     int? hourlyLimit, // Часовой лимит запросов
@@ -81,7 +89,9 @@ class RateLimitConfig with _$RateLimitConfig {
 
 /// Бизнес-конфигурация поставщика
 @freezed
-class SupplierBusinessConfig with _$SupplierBusinessConfig {
+abstract class SupplierBusinessConfig with _$SupplierBusinessConfig {
+  const SupplierBusinessConfig._();
+  
   const factory SupplierBusinessConfig({
     // Параметры специфичные для бизнес-логики
     String? customerCode, // Код клиента (KUNNR_RG для Armtek)

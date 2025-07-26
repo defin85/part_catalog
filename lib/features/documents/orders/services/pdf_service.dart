@@ -1,9 +1,7 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 
 class PdfService {
   Future<Uint8List> generateOrderPdf(OrderModelComposite order) async {
@@ -69,7 +67,7 @@ class PdfService {
       ];
     }).toList();
 
-    return pw.Table.fromTextArray(
+    return pw.TableHelper.fromTextArray(
       headers: headers,
       data: data,
       headerStyle: pw.TextStyle(font: boldFont),

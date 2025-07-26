@@ -6,7 +6,6 @@ import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:uuid/uuid.dart';
-import 'package:collection/collection.dart';
 
 class OrderModelComposite implements IDocumentEntity {
   final EntityCoreData coreData;

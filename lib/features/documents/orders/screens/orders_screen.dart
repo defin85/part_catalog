@@ -98,7 +98,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   }
 
   void _createNewOrder() async {
-    final t = context.t;
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(

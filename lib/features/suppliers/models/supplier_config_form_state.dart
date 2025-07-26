@@ -5,7 +5,9 @@ part 'supplier_config_form_state.freezed.dart';
 
 /// Состояние для формы редактирования конфигурации
 @freezed
-class SupplierConfigFormState with _$SupplierConfigFormState {
+abstract class SupplierConfigFormState with _$SupplierConfigFormState {
+  const SupplierConfigFormState._();
+
   const factory SupplierConfigFormState({
     SupplierConfig? config,
     @Default(false) bool isLoading,
