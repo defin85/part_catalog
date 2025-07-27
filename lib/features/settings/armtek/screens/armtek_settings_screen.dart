@@ -219,10 +219,20 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
       return Text(t.settings.armtekSettings.userInfoUnavailable);
     }
 
-    // Используем новый master-detail виджет с ограниченной высотой
-    // для предотвращения конфликта с родительским ScrollView
+    // Используем новый master-detail виджет с адаптивной высотой
+    // Высота зависит от размера экрана
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Для больших экранов используем больше пространства
+    double heightFactor = screenWidth > 1200 ? 0.7 : 0.6;
+    
+    // Минимальная и максимальная высота для лучшего UX
+    double calculatedHeight = screenHeight * heightFactor;
+    double widgetHeight = calculatedHeight.clamp(400.0, 800.0);
+    
     return SizedBox(
-      height: 600, // Фиксированная высота для предотвращения ошибки viewport
+      height: widgetHeight,
       child: ArmtekInfoMasterDetail(structure: structure),
     );
   }

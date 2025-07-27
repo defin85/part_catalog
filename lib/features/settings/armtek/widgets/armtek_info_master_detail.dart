@@ -44,7 +44,31 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
-              child: _buildNavigationTree(t),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(4),
+                        topRight: Radius.circular(4),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.menu_book),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Навигация',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(child: _buildNavigationTree(t)),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 16),
