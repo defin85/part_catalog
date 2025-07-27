@@ -20,15 +20,16 @@ void setupLocator(AppDatabase database) {
   // Регистрируем Dio
   locator.registerLazySingleton(() {
     final dio = Dio();
-    // Добавляем логирование для отладки
-    dio.interceptors.add(LogInterceptor(
-      request: true,
-      requestHeader: true,
-      requestBody: true,
-      responseHeader: true,
-      responseBody: true,
-      error: true,
-    ));
+    // Логирование отключено для чистоты лога
+    // При необходимости раскомментируйте следующие строки:
+    // dio.interceptors.add(LogInterceptor(
+    //   request: true,
+    //   requestHeader: true,
+    //   requestBody: true,
+    //   responseHeader: true,
+    //   responseBody: true,
+    //   error: true,
+    // ));
     return dio;
   });
 

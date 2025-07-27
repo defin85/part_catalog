@@ -41,10 +41,17 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         children: [
           // Master panel - навигационное дерево с адаптивной шириной
           ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: 350,
-              maxWidth: screenWidth * 0.3, // 30% от ширины экрана
-            ),
+            constraints: () {
+              // Вычисляем оптимальную ширину навигационной панели
+              final desiredWidth = screenWidth * 0.3;
+              final minWidth = screenWidth < 1200 ? 300.0 : 350.0;
+              final actualWidth = desiredWidth < minWidth ? minWidth : desiredWidth;
+              
+              return BoxConstraints(
+                minWidth: actualWidth,
+                maxWidth: actualWidth,
+              );
+            }(),
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
@@ -89,11 +96,13 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
               child: Column(
                 children: [
                   Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
                       color: Theme.of(context).colorScheme.surfaceContainer,
                     ),
                     child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(_getDetailIcon(), 
                           color: Theme.of(context).colorScheme.onSurfaceVariant),
@@ -857,45 +866,54 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   }) {
     return Card(
       elevation: 1,
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
+      child: InkWell(
+        onTap: () {}, // Можно добавить функциональность клика в будущем
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
           ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  Text(
-                    '$count',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.bold,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      '$count',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
