@@ -871,8 +871,8 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Адаптивные отступы в зависимости от ширины
-            final horizontalPadding = constraints.maxWidth < 100 ? 8.0 : 16.0;
-            final verticalPadding = constraints.maxWidth < 100 ? 8.0 : 12.0;
+            final horizontalPadding = constraints.maxWidth < 100 ? 6.0 : 12.0;
+            final verticalPadding = constraints.maxWidth < 100 ? 4.0 : 8.0; // Уменьшили для исправления bottom overflow
             
             return Container(
               padding: EdgeInsets.symmetric(
@@ -925,10 +925,9 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
-                          const SizedBox(height: 1), // Уменьшенный отступ
                           Text(
                             '$count',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith( // Уменьшенный размер
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith( // Еще меньше для компактности
                               color: color,
                               fontWeight: FontWeight.bold,
                             ),
