@@ -305,7 +305,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   }
   
   Widget _buildDetailView(Translations t) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: _buildDetailContent(t),
     );
