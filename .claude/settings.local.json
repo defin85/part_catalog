@@ -19,7 +19,8 @@
       "Bash(rmdir:*)",
       "Bash(rm:*)",
       "WebFetch(domain:github.com)",
-      "Bash(del \"C:\\FlutterProject\\part_catalog\\lib\\features\\suppliers\\api\\implementations\\armtek_api_client.g.dart\")"
+      "Bash(del \"C:\\FlutterProject\\part_catalog\\lib\\features\\suppliers\\api\\implementations\\armtek_api_client.g.dart\")",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

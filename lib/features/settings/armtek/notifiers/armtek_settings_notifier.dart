@@ -357,20 +357,9 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
       
       _logger.i('Armtek client created with base URL: ${client.baseUrl}');
 
-      // Параллельная загрузка
-      final results = await Future.wait([
-        client.getUserInfo(
-            UserInfoRequest(vkorg: vkorg, structure: '1', ftpData: '1')),
-        client.getStoreList(vkorg),
-        client.getBrandList(vkorg),
-      ]);
-
-      final userInfoResponse =
-          results[0] as ArmtekResponseWrapper<UserInfoResponse>;
-      final storeListResponse =
-          results[1] as ArmtekResponseWrapper<List<StoreItem>>;
-      final brandListResponse =
-          results[2] as ArmtekResponseWrapper<List<BrandItem>>;
+      // Сначала загружаем только getUserInfo
+      final userInfoResponse = await client.getUserInfo(
+          UserInfoRequest(vkorg: vkorg, structure: '1', ftpData: '1'));
 
       UserInfoResponse? userInfoResult;
       if (userInfoResponse.status == 200 &&
@@ -398,35 +387,16 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
         // Можно решить, нужно ли сбрасывать userInfo в state или показывать ошибку
       }
 
-      List<StoreItem>? storeListResult;
-      if (storeListResponse.status == 200 &&
-          storeListResponse.responseData != null) {
-        storeListResult = storeListResponse.responseData;
-        _logger.i('StoreList loaded successfully, items count: ${storeListResult!.length}');
-        if (storeListResult.isNotEmpty) {
-          final firstStore = storeListResult.first;
-          _logger.d('First store: keyzak=${firstStore.keyzak}, sklCode=${firstStore.sklCode}, sklName=${firstStore.sklName}');
-        }
-      } else {
-        _logger.w(
-            'Ошибка при получении StoreList: ${storeListResponse.status} - ${storeListResponse.messages?.map((m) => m.text).join(', ')}');
-      }
+      // Обработка storeList и brandList перенесена в _loadAdditionalData
 
-      List<BrandItem>? brandListResult;
-      if (brandListResponse.status == 200 &&
-          brandListResponse.responseData != null) {
-        brandListResult = brandListResponse.responseData;
-      } else {
-        _logger.w(
-            'Ошибка при получении BrandList: ${brandListResponse.status} - ${brandListResponse.messages?.map((m) => m.text).join(', ')}');
-      }
-
+      // Обновляем state с информацией о пользователе
       state = state.copyWith(
         userInfo: userInfoResult,
-        storeList: storeListResult,
-        brandList: brandListResult,
         isLoadingArmtekData: false,
       );
+      
+      // Теперь загружаем остальные данные в фоне
+      _loadAdditionalData(client, vkorg);
     } catch (e, s) {
       _logger.e('Error fetching Armtek specific data for VKORG $vkorg',
           error: e, stackTrace: s);
@@ -440,6 +410,52 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
           isLoadingArmtekData: false,
           connectionStatusMessage:
               'Ошибка загрузки данных для VKORG: ${e.toString()}');
+    }
+  }
+
+  /// Загружает дополнительные данные в фоне после успешного получения getUserInfo
+  Future<void> _loadAdditionalData(ArmtekApiClient client, String vkorg) async {
+    try {
+      _logger.i('Loading additional data (storeList and brandList) for VKORG: $vkorg');
+      
+      // Загружаем дополнительные данные параллельно
+      final results = await Future.wait([
+        client.getStoreList(vkorg),
+        client.getBrandList(vkorg),
+      ]);
+
+      final storeListResponse = results[0] as ArmtekResponseWrapper<List<StoreItem>>;
+      final brandListResponse = results[1] as ArmtekResponseWrapper<List<BrandItem>>;
+
+      List<StoreItem>? storeListResult;
+      if (storeListResponse.status == 200 && storeListResponse.responseData != null) {
+        storeListResult = storeListResponse.responseData;
+        _logger.i('StoreList loaded successfully, items count: ${storeListResult!.length}');
+        if (storeListResult.isNotEmpty) {
+          final firstStore = storeListResult.first;
+          _logger.d('First store: keyzak=${firstStore.keyzak}, sklCode=${firstStore.sklCode}, sklName=${firstStore.sklName}');
+        }
+      } else {
+        _logger.w('Ошибка при получении StoreList: ${storeListResponse.status} - ${storeListResponse.messages?.map((m) => m.text).join(', ')}');
+      }
+
+      List<BrandItem>? brandListResult;
+      if (brandListResponse.status == 200 && brandListResponse.responseData != null) {
+        brandListResult = brandListResponse.responseData;
+      } else {
+        _logger.w('Ошибка при получении BrandList: ${brandListResponse.status} - ${brandListResponse.messages?.map((m) => m.text).join(', ')}');
+      }
+
+      // Обновляем state с дополнительными данными
+      state = state.copyWith(
+        storeList: storeListResult,
+        brandList: brandListResult,
+      );
+      
+      _logger.i('Additional data loaded successfully');
+    } catch (e, s) {
+      _logger.w('Error loading additional data for VKORG $vkorg', error: e, stackTrace: s);
+      // Не показываем ошибку пользователю, так как основные данные уже загружены
     }
   }
 

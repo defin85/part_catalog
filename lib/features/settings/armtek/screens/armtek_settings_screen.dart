@@ -7,6 +7,7 @@ import 'package:part_catalog/features/settings/armtek/notifiers/armtek_settings_
 import 'package:part_catalog/features/settings/armtek/state/armtek_settings_state.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/exw_item.dart'; // Corrected import
 import 'package:part_catalog/features/suppliers/models/armtek/dogovor_item.dart'; // Corrected import
 import 'package:part_catalog/features/suppliers/models/armtek/contact_tab_item.dart'; // Corrected import
@@ -236,6 +237,64 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
       return Text(t.settings.armtekSettings.userInfoUnavailable);
     }
 
+    // Определяем размер экрана для адаптивности
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLargeScreen = screenWidth > 800; // Планшеты и десктопы
+
+    if (isLargeScreen) {
+      // На больших экранах показываем всё сразу в сетке
+      return _buildUserInfoDesktopLayout(context, structure, t);
+    } else {
+      // На мобильных устройствах используем вкладки
+      return _buildUserInfoMobileLayout(context, structure, t);
+    }
+  }
+
+  Widget _buildUserInfoMobileLayout(BuildContext context, UserStructureRoot structure, Translations t) {
+    return DefaultTabController(
+      length: 4,
+      child: Card(
+        elevation: 2,
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Column(
+          children: [
+            // Заголовок
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                t.settings.armtekSettings.clientInfoTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            // Вкладки
+            const TabBar(
+              isScrollable: true,
+              tabs: [
+                Tab(icon: Icon(Icons.person), text: 'Основное'),
+                Tab(icon: Icon(Icons.account_balance), text: 'Плательщики'),
+                Tab(icon: Icon(Icons.contact_phone), text: 'Контакты'),
+                Tab(icon: Icon(Icons.description), text: 'Договоры'),
+              ],
+            ),
+            // Содержимое вкладок
+            SizedBox(
+              height: 400, // Фиксированная высота для предотвращения переполнения
+              child: TabBarView(
+                children: [
+                  _buildBasicInfoTab(context, structure, t),
+                  _buildPayersTab(context, structure, t),
+                  _buildContactsTab(context, structure, t),
+                  _buildContractsTab(context, structure, t),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserInfoDesktopLayout(BuildContext context, UserStructureRoot structure, Translations t) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -244,70 +303,354 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t.settings.armtekSettings.clientInfoTitle,
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            _buildDetailRow(t.settings.armtekSettings.clientStructureKUNAG,
-                structure.kunag, t),
-            _buildDetailRow(t.settings.armtekSettings.clientStructureVKORG,
-                structure.vkorg, t),
-            _buildDetailRow(t.settings.armtekSettings.clientStructureSNAME,
-                structure.sname, t),
-            _buildDetailRow(t.settings.armtekSettings.clientStructureFNAME,
-                structure.fname, t),
-            _buildDetailRow(t.settings.armtekSettings.clientStructureADRESS,
-                structure.adress, t),
-            _buildDetailRow(t.settings.armtekSettings.clientStructurePHONE,
-                structure.phone, t),
-            if (structure.rgTab != null && structure.rgTab!.isNotEmpty) ...[
-              const Divider(height: 30),
-              Text(t.settings.armtekSettings.rgTabInfoTitle,
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 8),
-              ...structure.rgTab!.map((rgItem) {
-                return Card(
-                  elevation: 1,
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ExpansionTile(
-                    title: Text(rgItem.sname ?? t.core.unnamedEntry),
-                    subtitle: Text(
-                        '${t.settings.armtekSettings.rgTabKUNNR}: ${rgItem.kunnr ?? '-'}'),
-                    childrenPadding: const EdgeInsets.all(16.0),
-                    expandedCrossAxisAlignment: CrossAxisAlignment.start,
+            Text(
+              t.settings.armtekSettings.clientInfoTitle,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 16),
+            // Сетка из 2 колонок на больших экранах
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Левая колонка - Основная информация и контакты
+                Expanded(
+                  child: Column(
                     children: [
-                      _buildDetailRow(t.settings.armtekSettings.rgTabSNAME,
-                          rgItem.sname, t),
-                      _buildDetailRow(t.settings.armtekSettings.rgTabFNAME,
-                          rgItem.fname, t),
-                      _buildDetailRow(t.settings.armtekSettings.rgTabADRESS,
-                          rgItem.adress, t),
-                      _buildDetailRow(t.settings.armtekSettings.rgTabPHONE,
-                          rgItem.phone, t),
-                      _buildDetailRow(
-                          t.settings.armtekSettings.rgTabDEFAULT,
-                          (rgItem.defaultFlag ?? false)
-                              ? t.core.yes
-                              : t.core.no,
-                          t),
-                      if (rgItem.exwTab != null && rgItem.exwTab!.isNotEmpty)
-                        _buildExwTabWidget(context, rgItem.exwTab!, t),
-                      if (rgItem.dogovorTab != null &&
-                          rgItem.dogovorTab!.isNotEmpty)
-                        _buildDogovorTabWidget(context, rgItem.dogovorTab!, t),
-                      if (rgItem.contactTab != null &&
-                          rgItem.contactTab!.isNotEmpty)
-                        _buildContactTabWidget(context, rgItem.contactTab!, t),
+                      Card(
+                        elevation: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.person),
+                                  const SizedBox(width: 8),
+                                  Text('Основная информация', style: Theme.of(context).textTheme.titleSmall),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              _buildDetailRow(t.settings.armtekSettings.clientStructureKUNAG, structure.kunag, t),
+                              _buildDetailRow(t.settings.armtekSettings.clientStructureVKORG, structure.vkorg, t),
+                              _buildDetailRow(t.settings.armtekSettings.clientStructureSNAME, structure.sname, t),
+                              _buildDetailRow(t.settings.armtekSettings.clientStructureFNAME, structure.fname, t),
+                              _buildDetailRow(t.settings.armtekSettings.clientStructureADRESS, structure.adress, t),
+                              _buildDetailRow(t.settings.armtekSettings.clientStructurePHONE, structure.phone, t),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Контакты
+                      Card(
+                        elevation: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.contact_phone),
+                                  const SizedBox(width: 8),
+                                  Text('Контакты', style: Theme.of(context).textTheme.titleSmall),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (structure.contactTab != null && structure.contactTab!.isNotEmpty)
+                                ...structure.contactTab!.take(3).map((contact) {
+                                  final fullName = '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'.trim();
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          fullName.isNotEmpty ? fullName : t.core.unnamedEntry,
+                                          style: const TextStyle(fontWeight: FontWeight.w500),
+                                        ),
+                                        if (contact.phone != null)
+                                          Text('📞 ${contact.phone}', style: Theme.of(context).textTheme.bodySmall),
+                                        if (contact.email != null)
+                                          Text('✉️ ${contact.email}', style: Theme.of(context).textTheme.bodySmall),
+                                        const Divider(height: 8),
+                                      ],
+                                    ),
+                                  );
+                                }).toList()
+                              else
+                                const Text('Нет данных о контактах'),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                );
-              }),
-            ],
-            // Removed direct access to structure.exwTab as it's not a direct property of UserStructureRoot
-            // If there's a top-level exwTab, it should be handled differently based on API response structure.
-            // For now, assuming exwTab is only within rgTab items.
+                ),
+                const SizedBox(width: 16),
+                // Правая колонка - Плательщики и договоры
+                Expanded(
+                  child: Column(
+                    children: [
+                      Card(
+                        elevation: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.account_balance),
+                                  const SizedBox(width: 8),
+                                  Text('Плательщики', style: Theme.of(context).textTheme.titleSmall),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (structure.rgTab != null && structure.rgTab!.isNotEmpty)
+                                ...structure.rgTab!.take(2).map((rgItem) {
+                                  return Card(
+                                    elevation: 0.5,
+                                    margin: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: ExpansionTile(
+                                      title: Text(rgItem.sname ?? t.core.unnamedEntry),
+                                      subtitle: Text('${t.settings.armtekSettings.rgTabKUNNR}: ${rgItem.kunnr ?? '-'}'),
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.all(16.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              _buildDetailRow(t.settings.armtekSettings.rgTabSNAME, rgItem.sname, t),
+                                              _buildDetailRow(t.settings.armtekSettings.rgTabFNAME, rgItem.fname, t),
+                                              _buildDetailRow(t.settings.armtekSettings.rgTabADRESS, rgItem.adress, t),
+                                              _buildDetailRow(t.settings.armtekSettings.rgTabPHONE, rgItem.phone, t),
+                                              _buildDetailRow(
+                                                  t.settings.armtekSettings.rgTabDEFAULT,
+                                                  (rgItem.defaultFlag ?? false) ? t.core.yes : t.core.no, t),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList()
+                              else
+                                const Text('Нет данных о плательщиках'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Договоры
+                      Card(
+                        elevation: 1,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.description),
+                                  const SizedBox(width: 8),
+                                  Text('Договоры', style: Theme.of(context).textTheme.titleSmall),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (structure.dogovorTab != null && structure.dogovorTab!.isNotEmpty)
+                                ...structure.dogovorTab!.take(2).map((dogovor) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          dogovor.bstkd ?? t.settings.armtekSettings.dogovorDefaultTitle,
+                                          style: const TextStyle(fontWeight: FontWeight.w500),
+                                        ),
+                                        _buildDetailRow(t.settings.armtekSettings.dogovorNumber, dogovor.vbeln, t),
+                                        _buildDetailRow(
+                                          t.settings.armtekSettings.dogovorCreditLimit,
+                                          '${dogovor.klimk ?? "0.00"} ${dogovor.waers ?? ""}',
+                                          t
+                                        ),
+                                        const Divider(height: 8),
+                                      ],
+                                    ),
+                                  );
+                                }).toList()
+                              else
+                                const Text('Нет данных о договорах'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBasicInfoTab(BuildContext context, UserStructureRoot structure, Translations t) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDetailRow(t.settings.armtekSettings.clientStructureKUNAG,
+              structure.kunag, t),
+          _buildDetailRow(t.settings.armtekSettings.clientStructureVKORG,
+              structure.vkorg, t),
+          _buildDetailRow(t.settings.armtekSettings.clientStructureSNAME,
+              structure.sname, t),
+          _buildDetailRow(t.settings.armtekSettings.clientStructureFNAME,
+              structure.fname, t),
+          _buildDetailRow(t.settings.armtekSettings.clientStructureADRESS,
+              structure.adress, t),
+          _buildDetailRow(t.settings.armtekSettings.clientStructurePHONE,
+              structure.phone, t),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPayersTab(BuildContext context, UserStructureRoot structure, Translations t) {
+    if (structure.rgTab == null || structure.rgTab!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('Нет данных о плательщиках')),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: structure.rgTab!.length,
+      itemBuilder: (context, index) {
+        final rgItem = structure.rgTab![index];
+        return Card(
+          elevation: 1,
+          margin: const EdgeInsets.symmetric(vertical: 4.0),
+          child: ExpansionTile(
+            title: Text(rgItem.sname ?? t.core.unnamedEntry),
+            subtitle: Text('${t.settings.armtekSettings.rgTabKUNNR}: ${rgItem.kunnr ?? '-'}'),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailRow(t.settings.armtekSettings.rgTabSNAME, rgItem.sname, t),
+                    _buildDetailRow(t.settings.armtekSettings.rgTabFNAME, rgItem.fname, t),
+                    _buildDetailRow(t.settings.armtekSettings.rgTabADRESS, rgItem.adress, t),
+                    _buildDetailRow(t.settings.armtekSettings.rgTabPHONE, rgItem.phone, t),
+                    _buildDetailRow(
+                        t.settings.armtekSettings.rgTabDEFAULT,
+                        (rgItem.defaultFlag ?? false) ? t.core.yes : t.core.no, t),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContactsTab(BuildContext context, UserStructureRoot structure, Translations t) {
+    if (structure.contactTab == null || structure.contactTab!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('Нет данных о контактах')),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: structure.contactTab!.length,
+      itemBuilder: (context, index) {
+        final contact = structure.contactTab![index];
+        final fullName = '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'.trim();
+        
+        return Card(
+          elevation: 1,
+          margin: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fullName.isNotEmpty ? fullName : t.core.unnamedEntry,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                _buildDetailRow(t.settings.armtekSettings.contactPhone, contact.phone, t),
+                _buildDetailRow(t.settings.armtekSettings.contactEmail, contact.email, t),
+                _buildDetailRow(
+                  t.settings.armtekSettings.contactDefault,
+                  (contact.defaultFlag ?? false) ? t.core.yes : t.core.no,
+                  t
+                ),
+                _buildDetailRow(t.settings.armtekSettings.contactInternalId, contact.parnr, t),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContractsTab(BuildContext context, UserStructureRoot structure, Translations t) {
+    if (structure.dogovorTab == null || structure.dogovorTab!.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('Нет данных о договорах')),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: structure.dogovorTab!.length,
+      itemBuilder: (context, index) {
+        final dogovor = structure.dogovorTab![index];
+        
+        return Card(
+          elevation: 1,
+          margin: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dogovor.bstkd ?? t.settings.armtekSettings.dogovorDefaultTitle,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                _buildDetailRow(t.settings.armtekSettings.dogovorNumber, dogovor.vbeln, t),
+                _buildDetailRow(
+                  t.settings.armtekSettings.dogovorCreditLimit,
+                  '${dogovor.klimk ?? "0.00"} ${dogovor.waers ?? ""}',
+                  t
+                ),
+                _buildDetailRow(t.settings.armtekSettings.dogovorDateEnd, dogovor.datbi, t),
+                _buildDetailRow(
+                  t.settings.armtekSettings.dogovorDefault,
+                  (dogovor.defaultFlag ?? false) ? t.core.yes : t.core.no,
+                  t
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

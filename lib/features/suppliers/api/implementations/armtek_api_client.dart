@@ -140,6 +140,11 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         _logger.d('Interceptor onRequest: ${options.method} ${options.uri}');
         _logger.d('Base URL: ${options.baseUrl}, Effective URL: $_effectiveBaseUrl');
         
+        // Логируем тело запроса для POST
+        if (options.method == 'POST') {
+          _logger.d('Request body: ${options.data}');
+        }
+        
         // Используем _effectiveBaseUrl для проверки, так как options.baseUrl может быть изменен Dio
         if (_effectiveBaseUrl == armtekBaseUrl ||
             _effectiveBaseUrl.contains('ws.armtek.ru')) {
@@ -169,6 +174,20 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         
         _logger.d('Final headers: ${options.headers}');
         return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        // Логируем ответ для getStoreList
+        if (response.requestOptions.uri.path.contains('getStoreList')) {
+          _logger.d('getStoreList raw response: ${response.data}');
+          if (response.data is Map && response.data['RESP'] != null) {
+            _logger.d('RESP type: ${response.data['RESP'].runtimeType}');
+            if (response.data['RESP'] is List && response.data['RESP'].isNotEmpty) {
+              _logger.d('First RESP item: ${response.data['RESP'][0]}');
+              _logger.d('First RESP item type: ${response.data['RESP'][0].runtimeType}');
+            }
+          }
+        }
+        return handler.next(response);
       },
     ));
   }
@@ -338,17 +357,32 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(
       String vkorg) async {
     _logger.i('Getting store list for VKORG: $vkorg');
-    // Преобразуем VKORG в число, если это строка с числом
-    final vkorgValue = int.tryParse(vkorg) ?? vkorg;
-    _logger.d('Sending getStoreList request with VKORG: $vkorgValue (type: ${vkorgValue.runtimeType})');
+    // Преобразуем VKORG в число
+    final vkorgNum = int.parse(vkorg);
+    _logger.d('Sending getStoreList request with VKORG: $vkorgNum (type: ${vkorgNum.runtimeType})');
     
     try {
-      final response = await _client.getStoreList(body: {'VKORG': vkorgValue});
+      // Отправляем VKORG как число
+      final response = await _client.getStoreList(body: {'VKORG': vkorgNum});
       _logger.i('getStoreList response status: ${response.status}');
       _logger.d('getStoreList response data count: ${response.responseData?.length ?? 0}');
+      
+      // Добавим логирование типа данных
+      if (response.responseData != null && response.responseData!.isNotEmpty) {
+        _logger.d('Response data type: ${response.responseData.runtimeType}');
+        _logger.d('First item type: ${response.responseData!.first.runtimeType}');
+      }
+      
       return response;
     } catch (e, stackTrace) {
       _logger.e('Error in getStoreList', error: e, stackTrace: stackTrace);
+      
+      // Если это DioException, выведем больше информации
+      if (e is DioException) {
+        _logger.e('DioException response data: ${e.response?.data}');
+        _logger.e('DioException response data type: ${e.response?.data.runtimeType}');
+      }
+      
       rethrow;
     }
   }
