@@ -8,9 +8,6 @@ import 'package:part_catalog/features/settings/armtek/state/armtek_settings_stat
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/exw_item.dart'; // Corrected import
-import 'package:part_catalog/features/suppliers/models/armtek/dogovor_item.dart'; // Corrected import
-import 'package:part_catalog/features/suppliers/models/armtek/contact_tab_item.dart'; // Corrected import
 
 class ArmtekSettingsScreen extends ConsumerStatefulWidget {
   const ArmtekSettingsScreen({super.key});
@@ -229,6 +226,41 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
     );
   }
 
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+          child: Text(
+            '$label:',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+          child: Text(value),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTableHeaderCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildTableDataCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+      child: Text(text),
+    );
+  }
+
   Widget _buildUserInfo(
       BuildContext context, UserInfoResponse userInfo, Translations t) {
     final structure = userInfo.structure;
@@ -308,190 +340,214 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-            // Сетка из 2 колонок на больших экранах
+            // Основная информация в виде таблицы
+            Card(
+              elevation: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.person),
+                        const SizedBox(width: 8),
+                        Text('Основная информация', style: Theme.of(context).textTheme.titleMedium),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(1),
+                        1: FlexColumnWidth(2),
+                      },
+                      children: [
+                        _buildTableRow(t.settings.armtekSettings.clientStructureKUNAG, structure.kunag ?? '-'),
+                        _buildTableRow(t.settings.armtekSettings.clientStructureVKORG, structure.vkorg ?? '-'),
+                        _buildTableRow(t.settings.armtekSettings.clientStructureSNAME, structure.sname ?? '-'),
+                        _buildTableRow(t.settings.armtekSettings.clientStructureFNAME, structure.fname ?? '-'),
+                        _buildTableRow(t.settings.armtekSettings.clientStructureADRESS, structure.adress ?? '-'),
+                        _buildTableRow(t.settings.armtekSettings.clientStructurePHONE, structure.phone ?? '-'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Таблицы контактов и плательщиков в строку
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Левая колонка - Основная информация и контакты
+                // Контакты
                 Expanded(
-                  child: Column(
-                    children: [
-                      Card(
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Card(
+                    elevation: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.person),
-                                  const SizedBox(width: 8),
-                                  Text('Основная информация', style: Theme.of(context).textTheme.titleSmall),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              _buildDetailRow(t.settings.armtekSettings.clientStructureKUNAG, structure.kunag, t),
-                              _buildDetailRow(t.settings.armtekSettings.clientStructureVKORG, structure.vkorg, t),
-                              _buildDetailRow(t.settings.armtekSettings.clientStructureSNAME, structure.sname, t),
-                              _buildDetailRow(t.settings.armtekSettings.clientStructureFNAME, structure.fname, t),
-                              _buildDetailRow(t.settings.armtekSettings.clientStructureADRESS, structure.adress, t),
-                              _buildDetailRow(t.settings.armtekSettings.clientStructurePHONE, structure.phone, t),
+                              const Icon(Icons.contact_phone),
+                              const SizedBox(width: 8),
+                              Text('Контакты', style: Theme.of(context).textTheme.titleMedium),
                             ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Контакты
-                      Card(
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.contact_phone),
-                                  const SizedBox(width: 8),
-                                  Text('Контакты', style: Theme.of(context).textTheme.titleSmall),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              if (structure.contactTab != null && structure.contactTab!.isNotEmpty)
-                                ...structure.contactTab!.take(3).map((contact) {
+                          const SizedBox(height: 16),
+                          if (structure.contactTab != null && structure.contactTab!.isNotEmpty)
+                            Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(2),
+                                1: FlexColumnWidth(1),
+                                2: FlexColumnWidth(2),
+                              },
+                              children: [
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                  ),
+                                  children: [
+                                    _buildTableHeaderCell('ФИО'),
+                                    _buildTableHeaderCell('Тел.'),
+                                    _buildTableHeaderCell('Email'),
+                                  ],
+                                ),
+                                ...structure.contactTab!.map((contact) {
                                   final fullName = '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'.trim();
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          fullName.isNotEmpty ? fullName : t.core.unnamedEntry,
-                                          style: const TextStyle(fontWeight: FontWeight.w500),
-                                        ),
-                                        if (contact.phone != null)
-                                          Text('📞 ${contact.phone}', style: Theme.of(context).textTheme.bodySmall),
-                                        if (contact.email != null)
-                                          Text('✉️ ${contact.email}', style: Theme.of(context).textTheme.bodySmall),
-                                        const Divider(height: 8),
-                                      ],
-                                    ),
+                                  return TableRow(
+                                    children: [
+                                      _buildTableDataCell(fullName.isNotEmpty ? fullName : t.core.unnamedEntry),
+                                      _buildTableDataCell(contact.phone ?? '-'),
+                                      _buildTableDataCell(contact.email ?? '-'),
+                                    ],
                                   );
-                                }).toList()
-                              else
-                                const Text('Нет данных о контактах'),
-                            ],
-                          ),
-                        ),
+                                }),
+                              ],
+                            )
+                          else
+                            const Text('Нет данных о контактах'),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Правая колонка - Плательщики и договоры
+                
+                // Плательщики
                 Expanded(
-                  child: Column(
-                    children: [
-                      Card(
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Card(
+                    elevation: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.account_balance),
-                                  const SizedBox(width: 8),
-                                  Text('Плательщики', style: Theme.of(context).textTheme.titleSmall),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              if (structure.rgTab != null && structure.rgTab!.isNotEmpty)
-                                ...structure.rgTab!.take(2).map((rgItem) {
-                                  return Card(
-                                    elevation: 0.5,
-                                    margin: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: ExpansionTile(
-                                      title: Text(rgItem.sname ?? t.core.unnamedEntry),
-                                      subtitle: Text('${t.settings.armtekSettings.rgTabKUNNR}: ${rgItem.kunnr ?? '-'}'),
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              _buildDetailRow(t.settings.armtekSettings.rgTabSNAME, rgItem.sname, t),
-                                              _buildDetailRow(t.settings.armtekSettings.rgTabFNAME, rgItem.fname, t),
-                                              _buildDetailRow(t.settings.armtekSettings.rgTabADRESS, rgItem.adress, t),
-                                              _buildDetailRow(t.settings.armtekSettings.rgTabPHONE, rgItem.phone, t),
-                                              _buildDetailRow(
-                                                  t.settings.armtekSettings.rgTabDEFAULT,
-                                                  (rgItem.defaultFlag ?? false) ? t.core.yes : t.core.no, t),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList()
-                              else
-                                const Text('Нет данных о плательщиках'),
+                              const Icon(Icons.account_balance),
+                              const SizedBox(width: 8),
+                              Text('Плательщики', style: Theme.of(context).textTheme.titleMedium),
                             ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Договоры
-                      Card(
-                        elevation: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.description),
-                                  const SizedBox(width: 8),
-                                  Text('Договоры', style: Theme.of(context).textTheme.titleSmall),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              if (structure.dogovorTab != null && structure.dogovorTab!.isNotEmpty)
-                                ...structure.dogovorTab!.take(2).map((dogovor) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          dogovor.bstkd ?? t.settings.armtekSettings.dogovorDefaultTitle,
-                                          style: const TextStyle(fontWeight: FontWeight.w500),
-                                        ),
-                                        _buildDetailRow(t.settings.armtekSettings.dogovorNumber, dogovor.vbeln, t),
-                                        _buildDetailRow(
-                                          t.settings.armtekSettings.dogovorCreditLimit,
-                                          '${dogovor.klimk ?? "0.00"} ${dogovor.waers ?? ""}',
-                                          t
-                                        ),
-                                        const Divider(height: 8),
-                                      ],
-                                    ),
+                          const SizedBox(height: 16),
+                          if (structure.rgTab != null && structure.rgTab!.isNotEmpty)
+                            Table(
+                              columnWidths: const {
+                                0: FlexColumnWidth(1),
+                                1: FlexColumnWidth(2),
+                                2: FlexColumnWidth(1),
+                              },
+                              children: [
+                                TableRow(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                  ),
+                                  children: [
+                                    _buildTableHeaderCell('Код'),
+                                    _buildTableHeaderCell('Наименование'),
+                                    _buildTableHeaderCell('По умолч.'),
+                                  ],
+                                ),
+                                ...structure.rgTab!.map((rgItem) {
+                                  return TableRow(
+                                    children: [
+                                      _buildTableDataCell(rgItem.kunnr ?? '-'),
+                                      _buildTableDataCell(rgItem.sname ?? t.core.unnamedEntry),
+                                      _buildTableDataCell((rgItem.defaultFlag ?? false) ? t.core.yes : t.core.no),
+                                    ],
                                   );
-                                }).toList()
-                              else
-                                const Text('Нет данных о договорах'),
-                            ],
-                          ),
-                        ),
+                                }),
+                              ],
+                            )
+                          else
+                            const Text('Нет данных о плательщиках'),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            
+            // Договоры
+            if (structure.dogovorTab != null && structure.dogovorTab!.isNotEmpty)
+              Card(
+                elevation: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.description),
+                          const SizedBox(width: 8),
+                          Text('Договоры', style: Theme.of(context).textTheme.titleMedium),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Table(
+                        columnWidths: const {
+                          0: FlexColumnWidth(1),
+                          1: FlexColumnWidth(2),
+                          2: FlexColumnWidth(1),
+                          3: FlexColumnWidth(1),
+                          4: FlexColumnWidth(1),
+                        },
+                        children: [
+                          TableRow(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                            ),
+                            children: [
+                              _buildTableHeaderCell('Номер'),
+                              _buildTableHeaderCell('Название'),
+                              _buildTableHeaderCell('Кредитный лимит'),
+                              _buildTableHeaderCell('Дата окончания'),
+                              _buildTableHeaderCell('По умолч.'),
+                            ],
+                          ),
+                          ...structure.dogovorTab!.map((dogovor) {
+                            return TableRow(
+                              children: [
+                                _buildTableDataCell(dogovor.vbeln ?? '-'),
+                                _buildTableDataCell(dogovor.bstkd ?? t.settings.armtekSettings.dogovorDefaultTitle),
+                                _buildTableDataCell('${dogovor.klimk ?? "0.00"} ${dogovor.waers ?? ""}'),
+                                _buildTableDataCell(dogovor.datbi ?? '-'),
+                                _buildTableDataCell((dogovor.defaultFlag ?? false) ? t.core.yes : t.core.no),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -654,127 +710,6 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
     );
   }
 
-  Widget _buildExwTabWidget(
-      BuildContext context, List<ExwItem> exwTab, Translations t,
-      {bool isTopLevel = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-              isTopLevel
-                  ? t.settings.armtekSettings.exwTabTopLevelInfoTitle
-                  : t.settings.armtekSettings.exwTabInfoTitle,
-              style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: exwTab.map((exw) {
-              return Tooltip(
-                message: '${t.settings.armtekSettings.exwTabId}: ${exw.id}',
-                child: Chip(
-                  label: Text(exw.name ?? exw.id ?? t.core.unnamedEntry),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDogovorTabWidget(
-      BuildContext context, List<DogovorItem> dogovorTab, Translations t) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(t.settings.armtekSettings.dogovorTabInfoTitle,
-              style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          ...dogovorTab.map((dogovor) {
-            return Card(
-              elevation: 0.5,
-              margin: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                        dogovor.bstkd ??
-                            t.settings.armtekSettings.dogovorDefaultTitle,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    _buildDetailRow(t.settings.armtekSettings.dogovorNumber,
-                        dogovor.vbeln, t),
-                    _buildDetailRow(
-                        t.settings.armtekSettings.dogovorCreditLimit,
-                        '${dogovor.klimk ?? "0.00"} ${dogovor.waers ?? ""}',
-                        t),
-                    _buildDetailRow(t.settings.armtekSettings.dogovorDateEnd,
-                        dogovor.datbi, t),
-                    _buildDetailRow(
-                        t.settings.armtekSettings.dogovorDefault,
-                        (dogovor.defaultFlag ?? false) ? t.core.yes : t.core.no,
-                        t),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactTabWidget(
-      BuildContext context, List<ContactTabItem> contactTab, Translations t) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(t.settings.armtekSettings.contactTabInfoTitle,
-              style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          ...contactTab.map((contact) {
-            final fullName =
-                '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'
-                    .trim();
-            return Card(
-              elevation: 0.5,
-              margin: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(fullName.isNotEmpty ? fullName : t.core.unnamedEntry,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    _buildDetailRow(t.settings.armtekSettings.contactPhone,
-                        contact.phone, t),
-                    _buildDetailRow(t.settings.armtekSettings.contactEmail,
-                        contact.email, t),
-                    _buildDetailRow(
-                        t.settings.armtekSettings.contactDefault,
-                        (contact.defaultFlag ?? false) ? t.core.yes : t.core.no,
-                        t),
-                    _buildDetailRow(t.settings.armtekSettings.contactInternalId,
-                        contact.parnr, t),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
 }
 
 class AppBarLoadingIndicator extends StatelessWidget
