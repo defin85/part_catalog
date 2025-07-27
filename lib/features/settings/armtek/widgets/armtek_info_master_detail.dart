@@ -38,18 +38,21 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Master panel - навигационное дерево
-          SizedBox(
-            width: 300,
+          // Master panel - навигационное дерево с адаптивной шириной
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: 350,
+              maxWidth: screenWidth * 0.3, // 30% от ширины экрана
+            ),
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
+                      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(4),
                         topRight: Radius.circular(4),
@@ -57,15 +60,20 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.menu_book),
-                        const SizedBox(width: 8),
+                        Icon(Icons.menu_book, 
+                          color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 12),
                         Text(
                           'Навигация',
-                          style: Theme.of(context).textTheme.titleSmall,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                   ),
+                  const Divider(height: 1),
                   Expanded(child: _buildNavigationTree(t)),
                 ],
               ),
@@ -77,7 +85,29 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
-              child: _buildDetailView(t),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(_getDetailIcon(), 
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        const SizedBox(width: 12),
+                        Text(
+                          _getDetailTitle(),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(child: _buildDetailView(t)),
+                ],
+              ),
             ),
           ),
         ],
@@ -392,31 +422,42 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        // Сводная информация
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: [
-            _buildInfoCard(
-              icon: Icons.account_balance,
-              title: 'Плательщики',
-              count: widget.structure.rgTab?.length ?? 0,
-              color: Colors.blue,
-            ),
-            _buildInfoCard(
-              icon: Icons.contacts,
-              title: 'Контакты',
-              count: widget.structure.contactTab?.length ?? 0,
-              color: Colors.green,
-            ),
-            _buildInfoCard(
-              icon: Icons.description,
-              title: 'Договоры',
-              count: widget.structure.dogovorTab?.length ?? 0,
-              color: Colors.orange,
-            ),
-          ],
+        const SizedBox(height: 24),
+        // Сводная информация в виде сетки
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: _buildInfoCard(
+                    icon: Icons.account_balance,
+                    title: 'Плательщики',
+                    count: widget.structure.rgTab?.length ?? 0,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildInfoCard(
+                    icon: Icons.contacts,
+                    title: 'Контакты',
+                    count: widget.structure.contactTab?.length ?? 0,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildInfoCard(
+                    icon: Icons.description,
+                    title: 'Договоры',
+                    count: widget.structure.dogovorTab?.length ?? 0,
+                    color: Colors.orange,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -467,43 +508,58 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        // Сводная информация о плательщике
-        Wrap(
-          spacing: 16,
-          runSpacing: 16,
-          children: [
-            _buildInfoCard(
-              icon: Icons.local_shipping,
-              title: 'Грузополучатели',
-              count: payer.weTab?.length ?? 0,
-              color: Colors.purple,
-            ),
-            _buildInfoCard(
-              icon: Icons.location_on,
-              title: 'Адреса доставки',
-              count: payer.zaTab?.length ?? 0,
-              color: Colors.red,
-            ),
-            _buildInfoCard(
-              icon: Icons.local_offer,
-              title: 'Условия поставки',
-              count: payer.exwTab?.length ?? 0,
-              color: Colors.teal,
-            ),
-            _buildInfoCard(
-              icon: Icons.article,
-              title: 'Договоры',
-              count: payer.dogovorTab?.length ?? 0,
-              color: Colors.orange,
-            ),
-            _buildInfoCard(
-              icon: Icons.person,
-              title: 'Контакты',
-              count: payer.contactTab?.length ?? 0,
-              color: Colors.green,
-            ),
-          ],
+        const SizedBox(height: 24),
+        // Сводная информация о плательщике в виде сетки
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Адаптивная сетка - 3 или 2 колонки в зависимости от ширины
+            final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
+            final cards = [
+              _buildInfoCard(
+                icon: Icons.local_shipping,
+                title: 'Грузополучатели',
+                count: payer.weTab?.length ?? 0,
+                color: Colors.purple,
+              ),
+              _buildInfoCard(
+                icon: Icons.location_on,
+                title: 'Адреса доставки',
+                count: payer.zaTab?.length ?? 0,
+                color: Colors.red,
+              ),
+              _buildInfoCard(
+                icon: Icons.local_offer,
+                title: 'Условия поставки',
+                count: payer.exwTab?.length ?? 0,
+                color: Colors.teal,
+              ),
+              _buildInfoCard(
+                icon: Icons.article,
+                title: 'Договоры',
+                count: payer.dogovorTab?.length ?? 0,
+                color: Colors.orange,
+              ),
+              _buildInfoCard(
+                icon: Icons.person,
+                title: 'Контакты',
+                count: payer.contactTab?.length ?? 0,
+                color: Colors.green,
+              ),
+            ];
+            
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.5,
+              ),
+              itemCount: cards.length,
+              itemBuilder: (context, index) => cards[index],
+            );
+          },
         ),
       ],
     );
@@ -717,22 +773,60 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     required Color color,
   }) {
     return Card(
-      color: color.withValues(alpha: 0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(icon, size: 40, color: color),
-            const SizedBox(height: 8),
-            Text(
-              '$count',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+      elevation: 1,
+      child: InkWell(
+        onTap: count > 0 ? () {
+          // Можно добавить навигацию к соответствующему разделу
+        } : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withValues(alpha: 0.1),
+                color.withValues(alpha: 0.05),
+              ],
             ),
-            Text(title),
-          ],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 32, color: color),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$count',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -766,5 +860,51 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         ],
       ),
     );
+  }
+  
+  IconData _getDetailIcon() {
+    switch (_selectedItemType) {
+      case 'root':
+        return Icons.business;
+      case 'payer':
+        return Icons.account_balance;
+      case 'root_contacts':
+      case 'payer_contacts':
+        return Icons.contacts;
+      case 'root_contracts':
+      case 'payer_contracts':
+        return Icons.description;
+      case 'we_tab':
+        return Icons.local_shipping;
+      case 'za_tab':
+        return Icons.location_on;
+      case 'exw_tab':
+        return Icons.local_offer;
+      default:
+        return Icons.info;
+    }
+  }
+  
+  String _getDetailTitle() {
+    switch (_selectedItemType) {
+      case 'root':
+        return 'Основная организация';
+      case 'payer':
+        return 'Информация о плательщике';
+      case 'root_contacts':
+      case 'payer_contacts':
+        return 'Контакты';
+      case 'root_contracts':
+      case 'payer_contracts':
+        return 'Договоры';
+      case 'we_tab':
+        return 'Грузополучатели';
+      case 'za_tab':
+        return 'Адреса доставки';
+      case 'exw_tab':
+        return 'Условия поставки';
+      default:
+        return 'Детальная информация';
+    }
   }
 }
