@@ -219,8 +219,12 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
       return Text(t.settings.armtekSettings.userInfoUnavailable);
     }
 
-    // Используем новый master-detail виджет
-    return ArmtekInfoMasterDetail(structure: structure);
+    // Используем новый master-detail виджет с ограниченной высотой
+    // для предотвращения конфликта с родительским ScrollView
+    return SizedBox(
+      height: 600, // Фиксированная высота для предотвращения ошибки viewport
+      child: ArmtekInfoMasterDetail(structure: structure),
+    );
   }
 
 
