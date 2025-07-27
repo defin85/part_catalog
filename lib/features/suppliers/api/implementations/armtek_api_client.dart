@@ -215,7 +215,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     try {
       // Используем метод getPrices для получения цен
       final response = await _client.getPrices(
-        vkorg: _vkorg ?? '',
+        vkorg: _vkorg,
         articleNumber: articleNumber,
         brand: brand,
       );
@@ -399,7 +399,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     
     try {
       final response = await _client.searchParts(
-        vkorg: _vkorg ?? '',
+        vkorg: _vkorg,
         articleNumber: articleNumber,
         brand: brand,
       );
