@@ -868,51 +868,78 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       child: InkWell(
         onTap: () {}, // Можно добавить функциональность клика в будущем
         borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-              width: 1,
-            ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 20),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Адаптивные отступы в зависимости от ширины
+            final horizontalPadding = constraints.maxWidth < 100 ? 8.0 : 16.0;
+            final verticalPadding = constraints.maxWidth < 100 ? 8.0 : 12.0;
+            
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding, 
+                vertical: verticalPadding
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: color.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
                   children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    // Гибкая иконка - может исчезнуть на очень узких экранах
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        // Показываем иконку только если достаточно места (минимум 80px)
+                        if (constraints.maxWidth > 80) {
+                          return Container(
+                            padding: const EdgeInsets.all(6), // Уменьшенный padding
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(icon, color: color, size: 16), // Уменьшенная иконка
+                          );
+                        } else {
+                          return const SizedBox.shrink(); // Скрываем иконку на узких экранах
+                        }
+                      },
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$count',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.bold,
+                    // Адаптивный отступ
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SizedBox(width: constraints.maxWidth > 80 ? 8 : 0);
+                      },
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          const SizedBox(height: 1), // Уменьшенный отступ
+                          Text(
+                            '$count',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith( // Уменьшенный размер
+                              color: color,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
