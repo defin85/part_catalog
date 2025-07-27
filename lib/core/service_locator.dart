@@ -18,7 +18,19 @@ final locator = GetIt.instance;
 // Изменяем функцию, чтобы принимать существующий экземпляр базы данных
 void setupLocator(AppDatabase database) {
   // Регистрируем Dio
-  locator.registerLazySingleton(() => Dio());
+  locator.registerLazySingleton(() {
+    final dio = Dio();
+    // Добавляем логирование для отладки
+    dio.interceptors.add(LogInterceptor(
+      request: true,
+      requestHeader: true,
+      requestBody: true,
+      responseHeader: true,
+      responseBody: true,
+      error: true,
+    ));
+    return dio;
+  });
 
   // Регистрируем ApiClientPartsCatalogs
   locator.registerLazySingleton(() => ApiClientPartsCatalogs(locator<Dio>()));

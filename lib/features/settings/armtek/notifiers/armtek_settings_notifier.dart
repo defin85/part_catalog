@@ -341,6 +341,8 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
     }
     state = state.copyWith(isLoadingArmtekData: true);
     try {
+      _logger.i('Getting Armtek client with login: $login, vkorg: $vkorg');
+      
       final armtekClient = await _apiClientManager.getClient(
         supplierCode: armtekSupplierCode,
         username: login,
@@ -352,6 +354,8 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
             'Не удалось получить Armtek API клиент для загрузки специфичных данных.');
       }
       final client = armtekClient;
+      
+      _logger.i('Armtek client created with base URL: ${client.baseUrl}');
 
       // Параллельная загрузка
       final results = await Future.wait([
@@ -398,6 +402,11 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
       if (storeListResponse.status == 200 &&
           storeListResponse.responseData != null) {
         storeListResult = storeListResponse.responseData;
+        _logger.i('StoreList loaded successfully, items count: ${storeListResult!.length}');
+        if (storeListResult.isNotEmpty) {
+          final firstStore = storeListResult.first;
+          _logger.d('First store: keyzak=${firstStore.keyzak}, sklCode=${firstStore.sklCode}, sklName=${firstStore.sklName}');
+        }
       } else {
         _logger.w(
             'Ошибка при получении StoreList: ${storeListResponse.status} - ${storeListResponse.messages?.map((m) => m.text).join(', ')}');
@@ -421,6 +430,12 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
     } catch (e, s) {
       _logger.e('Error fetching Armtek specific data for VKORG $vkorg',
           error: e, stackTrace: s);
+      
+      // Добавим более детальный вывод ошибки
+      if (e is TypeError) {
+        _logger.e('Type error details: ${e.toString()}');
+      }
+      
       state = state.copyWith(
           isLoadingArmtekData: false,
           connectionStatusMessage:

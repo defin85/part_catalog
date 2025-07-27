@@ -47,6 +47,11 @@ class _SupplierConfigScreenState extends ConsumerState<SupplierConfigScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.supplierCode != null) {
         _loadExistingConfig();
+        
+        // Установить дефолтный URL для Armtek если пустой
+        if (widget.supplierCode == 'armtek' && _baseUrlController.text.isEmpty) {
+          _baseUrlController.text = 'http://ws.armtek.ru/api';
+        }
       }
     });
   }

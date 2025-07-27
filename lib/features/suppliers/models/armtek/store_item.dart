@@ -7,9 +7,8 @@ part 'store_item.g.dart';
 abstract class StoreItem with _$StoreItem {
   const factory StoreItem({
     @JsonKey(name: 'KEYZAK') required String keyzak,
-    @JsonKey(name: 'KEYZAK_NAME') required String keyzakName,
-    @JsonKey(name: 'WERKS') String? werks,
-    @JsonKey(name: 'ACTIVE') String? active,
+    @JsonKey(name: 'SKLCODE') required String sklCode,
+    @JsonKey(name: 'SKLNAME') required String sklName,
   }) = _StoreItem;
 
   factory StoreItem.fromJson(Map<String, dynamic> json) =>

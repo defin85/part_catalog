@@ -55,11 +55,10 @@ abstract class ArmtekRestInterface {
     @Query("format") String format = "json",
   });
 
-  // Добавляем метод getStoreList
-  @GET("/ws_user/getStoreList")
+  // getStoreList - получение списка складов (POST с JSON)
+  @POST("/ws_user/getStoreList")
   Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList({
-    @Query("VKORG") required String vkorg,
-    @Query("format") String format = "json",
+    @Body() required Map<String, dynamic> body,
   });
 
   /// Получение статуса обработки прайса по ключу
@@ -138,6 +137,9 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         _client = ArmtekRestInterface(_dio, baseUrl: baseUrl ?? armtekBaseUrl) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
+        _logger.d('Interceptor onRequest: ${options.method} ${options.uri}');
+        _logger.d('Base URL: ${options.baseUrl}, Effective URL: $_effectiveBaseUrl');
+        
         // Используем _effectiveBaseUrl для проверки, так как options.baseUrl может быть изменен Dio
         if (_effectiveBaseUrl == armtekBaseUrl ||
             _effectiveBaseUrl.contains('ws.armtek.ru')) {
@@ -146,6 +148,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
             final basicAuth =
                 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
             options.headers['Authorization'] = basicAuth;
+            _logger.d('Added Authorization header for direct Armtek request');
           } else if (proxyAuthToken == null) {
             // Логика для случая, когда это прямой запрос, но нет username/password
             // Возможно, здесь стоит выбросить ошибку конфигурации, если они ожидаются
@@ -161,7 +164,10 @@ class ArmtekApiClient implements BaseSupplierApiClient {
                 armtekBaseUrl /* Убедимся, что это действительно прокси URL */) {
           options.headers['X-Proxy-Auth-Token'] =
               proxyAuthToken; // Пример заголовка для прокси
+          _logger.d('Added X-Proxy-Auth-Token header for proxy request');
         }
+        
+        _logger.d('Final headers: ${options.headers}');
         return handler.next(options);
       },
     ));
@@ -291,11 +297,34 @@ class ArmtekApiClient implements BaseSupplierApiClient {
 
   Future<ArmtekResponseWrapper<UserInfoResponse>> getUserInfo(
       UserInfoRequest request) async {
-    return _client.getUserInfo(
-      vkorg: request.vkorg,
-      structure: request.structure,
-      ftpData: request.ftpData,
-    );
+    _logger.i('Getting user info for VKORG: ${request.vkorg}, structure: ${request.structure}, ftpData: ${request.ftpData}');
+    _logger.d('Current base URL: $_effectiveBaseUrl');
+    
+    try {
+      final response = await _client.getUserInfo(
+        vkorg: request.vkorg,
+        structure: request.structure,
+        ftpData: request.ftpData,
+      );
+      
+      _logger.i('getUserInfo response status: ${response.status}');
+      return response;
+    } catch (e, stackTrace) {
+      _logger.e('Error in getUserInfo', error: e, stackTrace: stackTrace);
+      
+      // Если это DioException, давайте посмотрим на детали
+      if (e is DioException) {
+        _logger.e('DioException details:');
+        _logger.e('- Status code: ${e.response?.statusCode}');
+        _logger.e('- Status message: ${e.response?.statusMessage}');
+        _logger.e('- Response data: ${e.response?.data}');
+        _logger.e('- Request data: ${e.requestOptions.data}');
+        _logger.e('- Request headers: ${e.requestOptions.headers}');
+        _logger.e('- Request URI: ${e.requestOptions.uri}');
+      }
+      
+      rethrow;
+    }
   }
 
   // Добавляем метод getBrandList
@@ -309,8 +338,21 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(
       String vkorg) async {
     _logger.i('Getting store list for VKORG: $vkorg');
-    return _client.getStoreList(vkorg: vkorg);
+    // Преобразуем VKORG в число, если это строка с числом
+    final vkorgValue = int.tryParse(vkorg) ?? vkorg;
+    _logger.d('Sending getStoreList request with VKORG: $vkorgValue (type: ${vkorgValue.runtimeType})');
+    
+    try {
+      final response = await _client.getStoreList(body: {'VKORG': vkorgValue});
+      _logger.i('getStoreList response status: ${response.status}');
+      _logger.d('getStoreList response data count: ${response.responseData?.length ?? 0}');
+      return response;
+    } catch (e, stackTrace) {
+      _logger.e('Error in getStoreList', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
   }
+
 
   /// Поиск запчастей по артикулу (расширенный поиск)
   Future<List<PartPriceModel>> searchPartsByArticle(String articleNumber,
