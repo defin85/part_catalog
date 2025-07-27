@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/we_item.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
 class ArmtekInfoMasterDetail extends StatefulWidget {
@@ -97,9 +98,12 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                         Icon(_getDetailIcon(), 
                           color: Theme.of(context).colorScheme.onSurfaceVariant),
                         const SizedBox(width: 12),
-                        Text(
-                          _getDetailTitle(),
-                          style: Theme.of(context).textTheme.titleMedium,
+                        Expanded(
+                          child: Text(
+                            _getDetailTitle(),
+                            style: Theme.of(context).textTheme.titleMedium,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
@@ -359,9 +363,12 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   }
   
   Widget _buildDetailView(Translations t) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: _buildDetailContent(t),
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 1200), // Ограничиваем максимальную ширину
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: _buildDetailContent(t),
+      ),
     );
   }
   
@@ -378,7 +385,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       case 'payer_contracts':
         return _buildContractsTable(_selectedItem as List, t);
       case 'we_tab':
-        return _buildSimpleTable(_selectedItem as List, 'Грузополучатели', t);
+        return _buildWeTable(_selectedItem as List, t);
       case 'za_tab':
         return _buildAddressesTable(_selectedItem as List, t);
       case 'exw_tab':
@@ -392,72 +399,95 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(Icons.business, size: 32),
-            const SizedBox(width: 12),
-            Text(
-              'Основная организация',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
+        // Основная информация
         Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Table(
-              columnWidths: const {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(2),
-              },
-              children: [
-                _buildInfoRow('Код клиента (KUNAG)', widget.structure.kunag ?? '-'),
-                _buildInfoRow('Сбытовая организация (VKORG)', widget.structure.vkorg ?? '-'),
-                _buildInfoRow('Краткое наименование', widget.structure.sname ?? '-'),
-                _buildInfoRow('Полное наименование', widget.structure.fname ?? '-'),
-                _buildInfoRow('Адрес', widget.structure.adress ?? '-'),
-                _buildInfoRow('Телефон', widget.structure.phone ?? '-'),
-              ],
-            ),
+          elevation: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, 
+                      color: Theme.of(context).colorScheme.primary),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Основные данные',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Table(
+                  columnWidths: const {
+                    0: FlexColumnWidth(1),
+                    1: FlexColumnWidth(2),
+                  },
+                  children: [
+                    _buildInfoRow('Код клиента (KUNAG)', widget.structure.kunag ?? '-'),
+                    _buildInfoRow('Сбытовая организация (VKORG)', widget.structure.vkorg ?? '-'),
+                    _buildInfoRow('Краткое наименование', widget.structure.sname ?? '-'),
+                    _buildInfoRow('Полное наименование', widget.structure.fname ?? '-'),
+                    _buildInfoRow('Адрес', widget.structure.adress ?? '-'),
+                    _buildInfoRow('Телефон', widget.structure.phone ?? '-'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 24),
+        // Заголовок для статистики
+        Text(
+          'Сводная информация',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
         // Сводная информация в виде сетки
-        LayoutBuilder(
-          builder: (context, constraints) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: _buildInfoCard(
-                    icon: Icons.account_balance,
-                    title: 'Плательщики',
-                    count: widget.structure.rgTab?.length ?? 0,
-                    color: Colors.blue,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildInfoCard(
-                    icon: Icons.contacts,
-                    title: 'Контакты',
-                    count: widget.structure.contactTab?.length ?? 0,
-                    color: Colors.green,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildInfoCard(
-                    icon: Icons.description,
-                    title: 'Договоры',
-                    count: widget.structure.dogovorTab?.length ?? 0,
-                    color: Colors.orange,
-                  ),
-                ),
-              ],
-            );
-          },
+        Row(
+          children: [
+            Expanded(
+              child: _buildCompactInfoCard(
+                icon: Icons.account_balance,
+                title: 'Плательщики',
+                count: widget.structure.rgTab?.length ?? 0,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildCompactInfoCard(
+                icon: Icons.contacts,
+                title: 'Контакты',
+                count: widget.structure.contactTab?.length ?? 0,
+                color: Colors.green,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildCompactInfoCard(
+                icon: Icons.description,
+                title: 'Договоры',
+                count: widget.structure.dogovorTab?.length ?? 0,
+                color: Colors.orange,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -515,31 +545,31 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             // Адаптивная сетка - 3 или 2 колонки в зависимости от ширины
             final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
             final cards = [
-              _buildInfoCard(
+              _buildCompactInfoCard(
                 icon: Icons.local_shipping,
                 title: 'Грузополучатели',
                 count: payer.weTab?.length ?? 0,
                 color: Colors.purple,
               ),
-              _buildInfoCard(
+              _buildCompactInfoCard(
                 icon: Icons.location_on,
                 title: 'Адреса доставки',
                 count: payer.zaTab?.length ?? 0,
                 color: Colors.red,
               ),
-              _buildInfoCard(
+              _buildCompactInfoCard(
                 icon: Icons.local_offer,
                 title: 'Условия поставки',
                 count: payer.exwTab?.length ?? 0,
                 color: Colors.teal,
               ),
-              _buildInfoCard(
+              _buildCompactInfoCard(
                 icon: Icons.article,
                 title: 'Договоры',
                 count: payer.dogovorTab?.length ?? 0,
                 color: Colors.orange,
               ),
-              _buildInfoCard(
+              _buildCompactInfoCard(
                 icon: Icons.person,
                 title: 'Контакты',
                 count: payer.contactTab?.length ?? 0,
@@ -660,32 +690,6 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     );
   }
   
-  Widget _buildSimpleTable(List items, String title, Translations t) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: DataTable(
-            columns: const [
-              DataColumn(label: Text('ID')),
-              DataColumn(label: Text('Название')),
-            ],
-            rows: items.map((item) {
-              return DataRow(cells: [
-                DataCell(Text(item.id ?? '-')),
-                DataCell(Text(item.name ?? '-')),
-              ]);
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
   
   Widget _buildAddressesTable(List addresses, Translations t) {
     return Column(
@@ -766,71 +770,54 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     );
   }
   
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required int count,
-    required Color color,
-  }) {
-    return Card(
-      elevation: 1,
-      child: InkWell(
-        onTap: count > 0 ? () {
-          // Можно добавить навигацию к соответствующему разделу
-        } : null,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withValues(alpha: 0.1),
-                color.withValues(alpha: 0.05),
-              ],
+  Widget _buildWeTable(List weItems, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.local_shipping, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Грузополучатели',
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 32, color: color),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '$count',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Код')),
+                DataColumn(label: Text('Склад')),
+                DataColumn(label: Text('Наименование')),
+                DataColumn(label: Text('Адрес')),
+                DataColumn(label: Text('Телефон')),
+                DataColumn(label: Text('По умолчанию')),
               ],
+              rows: weItems.map((weItem) {
+                return DataRow(cells: [
+                  DataCell(Text(weItem.kunnr ?? '-')),
+                  DataCell(Text(weItem.werks ?? '-')),
+                  DataCell(Text(weItem.sname ?? '-')),
+                  DataCell(Text(weItem.adress ?? '-')),
+                  DataCell(Text(weItem.phone ?? '-')),
+                  DataCell(
+                    (weItem.defaultFlag ?? false)
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : const Icon(Icons.close, color: Colors.grey),
+                  ),
+                ]);
+              }).toList(),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
+  
   
   TableRow _buildInfoRow(String label, String value) {
     return TableRow(
@@ -858,6 +845,58 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           _buildRootDetail(t),
           // Можно добавить навигацию через ExpansionTiles
         ],
+      ),
+    );
+  }
+  
+  Widget _buildCompactInfoCard({
+    required IconData icon,
+    required String title,
+    required int count,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 1,
+      child: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: color.withValues(alpha: 0.3),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    '$count',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
