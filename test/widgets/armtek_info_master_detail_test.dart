@@ -40,7 +40,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: ProvideI18n(
+              body: TranslationProvider(
                 child: ArmtekInfoMasterDetail(structure: testStructure),
               ),
             ),
@@ -62,7 +62,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProvideI18n(
+            body: TranslationProvider(
               child: ArmtekInfoMasterDetail(structure: testStructure),
             ),
           ),
@@ -85,7 +85,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProvideI18n(
+            body: TranslationProvider(
               child: ArmtekInfoMasterDetail(structure: testStructure),
             ),
           ),
@@ -109,7 +109,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProvideI18n(
+            body: TranslationProvider(
               child: ArmtekInfoMasterDetail(structure: testStructure),
             ),
           ),
@@ -128,7 +128,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProvideI18n(
+            body: TranslationProvider(
               child: ArmtekInfoMasterDetail(structure: testStructure),
             ),
           ),

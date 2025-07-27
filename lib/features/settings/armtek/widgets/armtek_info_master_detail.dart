@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/we_item.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
 class ArmtekInfoMasterDetail extends StatefulWidget {
