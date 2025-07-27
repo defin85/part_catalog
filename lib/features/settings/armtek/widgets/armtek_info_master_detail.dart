@@ -1,0 +1,746 @@
+import 'package:flutter/material.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
+import 'package:part_catalog/core/i18n/strings.g.dart';
+
+class ArmtekInfoMasterDetail extends StatefulWidget {
+  final UserStructureRoot structure;
+  
+  const ArmtekInfoMasterDetail({
+    super.key,
+    required this.structure,
+  });
+
+  @override
+  State<ArmtekInfoMasterDetail> createState() => _ArmtekInfoMasterDetailState();
+}
+
+class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
+  // Выбранный элемент для отображения деталей
+  Object? _selectedItem;
+  String _selectedItemType = '';
+  
+  @override
+  void initState() {
+    super.initState();
+    // По умолчанию показываем основную организацию
+    _selectedItem = widget.structure;
+    _selectedItemType = 'root';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Translations.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLargeScreen = screenWidth > 800;
+    
+    if (isLargeScreen) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Master panel - навигационное дерево
+          SizedBox(
+            width: 300,
+            child: Card(
+              margin: EdgeInsets.zero,
+              elevation: 2,
+              child: _buildNavigationTree(t),
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Detail panel - детальная информация
+          Expanded(
+            child: Card(
+              margin: EdgeInsets.zero,
+              elevation: 2,
+              child: _buildDetailView(t),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Для мобильных устройств - полноэкранное отображение
+      return _buildMobileView(t);
+    }
+  }
+  
+  Widget _buildNavigationTree(Translations t) {
+    return ListView(
+      padding: const EdgeInsets.all(8.0),
+      children: [
+        // Основная организация
+        _buildTreeItem(
+          icon: Icons.business,
+          title: widget.structure.sname ?? 'Основная организация',
+          subtitle: 'KUNAG: ${widget.structure.kunag}',
+          isSelected: _selectedItemType == 'root',
+          onTap: () {
+            setState(() {
+              _selectedItem = widget.structure;
+              _selectedItemType = 'root';
+            });
+          },
+        ),
+        
+        // Плательщики
+        if (widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          _buildSectionHeader('Плательщики'),
+          ...widget.structure.rgTab!.map((rgItem) => 
+            _buildExpandableTreeItem(
+              icon: Icons.account_balance,
+              title: rgItem.sname ?? 'Без названия',
+              subtitle: 'KUNNR: ${rgItem.kunnr}',
+              isDefault: rgItem.defaultFlag ?? false,
+              isSelected: _selectedItem == rgItem && _selectedItemType == 'payer',
+              onTap: () {
+                setState(() {
+                  _selectedItem = rgItem;
+                  _selectedItemType = 'payer';
+                });
+              },
+              children: _buildPayerSubItems(rgItem, t),
+            ),
+          ),
+        ],
+        
+        // Контакты организации
+        if (widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty)
+          _buildTreeItem(
+            icon: Icons.contacts,
+            title: 'Контакты организации',
+            subtitle: '${widget.structure.contactTab!.length} контактов',
+            isSelected: _selectedItemType == 'root_contacts',
+            onTap: () {
+              setState(() {
+                _selectedItem = widget.structure.contactTab;
+                _selectedItemType = 'root_contacts';
+              });
+            },
+          ),
+          
+        // Договоры организации
+        if (widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty)
+          _buildTreeItem(
+            icon: Icons.description,
+            title: 'Договоры организации',
+            subtitle: '${widget.structure.dogovorTab!.length} договоров',
+            isSelected: _selectedItemType == 'root_contracts',
+            onTap: () {
+              setState(() {
+                _selectedItem = widget.structure.dogovorTab;
+                _selectedItemType = 'root_contracts';
+              });
+            },
+          ),
+      ],
+    );
+  }
+  
+  List<Widget> _buildPayerSubItems(UserStructureItem payer, Translations t) {
+    final items = <Widget>[];
+    
+    // Грузополучатели
+    if (payer.weTab != null && payer.weTab!.isNotEmpty) {
+      items.add(_buildTreeSubItem(
+        icon: Icons.local_shipping,
+        title: 'Грузополучатели',
+        count: payer.weTab!.length,
+        onTap: () {
+          setState(() {
+            _selectedItem = payer.weTab;
+            _selectedItemType = 'we_tab';
+          });
+        },
+      ));
+    }
+    
+    // Адреса доставки
+    if (payer.zaTab != null && payer.zaTab!.isNotEmpty) {
+      items.add(_buildTreeSubItem(
+        icon: Icons.location_on,
+        title: 'Адреса доставки',
+        count: payer.zaTab!.length,
+        onTap: () {
+          setState(() {
+            _selectedItem = payer.zaTab;
+            _selectedItemType = 'za_tab';
+          });
+        },
+      ));
+    }
+    
+    // Условия поставки
+    if (payer.exwTab != null && payer.exwTab!.isNotEmpty) {
+      items.add(_buildTreeSubItem(
+        icon: Icons.local_offer,
+        title: 'Условия поставки',
+        count: payer.exwTab!.length,
+        onTap: () {
+          setState(() {
+            _selectedItem = payer.exwTab;
+            _selectedItemType = 'exw_tab';
+          });
+        },
+      ));
+    }
+    
+    // Договоры плательщика
+    if (payer.dogovorTab != null && payer.dogovorTab!.isNotEmpty) {
+      items.add(_buildTreeSubItem(
+        icon: Icons.article,
+        title: 'Договоры',
+        count: payer.dogovorTab!.length,
+        onTap: () {
+          setState(() {
+            _selectedItem = payer.dogovorTab;
+            _selectedItemType = 'payer_contracts';
+          });
+        },
+      ));
+    }
+    
+    // Контакты плательщика
+    if (payer.contactTab != null && payer.contactTab!.isNotEmpty) {
+      items.add(_buildTreeSubItem(
+        icon: Icons.person,
+        title: 'Контакты',
+        count: payer.contactTab!.length,
+        onTap: () {
+          setState(() {
+            _selectedItem = payer.contactTab;
+            _selectedItemType = 'payer_contacts';
+          });
+        },
+      ));
+    }
+    
+    return items;
+  }
+  
+  Widget _buildTreeItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: isSelected ? 2 : 0,
+      color: isSelected ? Theme.of(context).colorScheme.primaryContainer : null,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        onTap: onTap,
+        selected: isSelected,
+      ),
+    );
+  }
+  
+  Widget _buildExpandableTreeItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isDefault,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required List<Widget> children,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        leading: Icon(icon),
+        title: Row(
+          children: [
+            Expanded(child: Text(title)),
+            if (isDefault) 
+              const Chip(
+                label: Text('По умолч.', style: TextStyle(fontSize: 10)),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
+          ],
+        ),
+        subtitle: Text(subtitle),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        onExpansionChanged: (_) => onTap(),
+        children: children,
+      ),
+    );
+  }
+  
+  Widget _buildTreeSubItem({
+    required IconData icon,
+    required String title,
+    required int count,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: ListTile(
+        leading: Icon(icon, size: 20),
+        title: Text(title),
+        trailing: Chip(
+          label: Text('$count'),
+          padding: EdgeInsets.zero,
+          visualDensity: VisualDensity.compact,
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+  
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildDetailView(Translations t) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: _buildDetailContent(t),
+    );
+  }
+  
+  Widget _buildDetailContent(Translations t) {
+    switch (_selectedItemType) {
+      case 'root':
+        return _buildRootDetail(t);
+      case 'payer':
+        return _buildPayerDetail(_selectedItem as UserStructureItem, t);
+      case 'root_contacts':
+      case 'payer_contacts':
+        return _buildContactsTable(_selectedItem as List, t);
+      case 'root_contracts':
+      case 'payer_contracts':
+        return _buildContractsTable(_selectedItem as List, t);
+      case 'we_tab':
+        return _buildSimpleTable(_selectedItem as List, 'Грузополучатели', t);
+      case 'za_tab':
+        return _buildAddressesTable(_selectedItem as List, t);
+      case 'exw_tab':
+        return _buildDeliveryTermsTable(_selectedItem as List, t);
+      default:
+        return const Center(child: Text('Выберите элемент для просмотра'));
+    }
+  }
+  
+  Widget _buildRootDetail(Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.business, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Основная организация',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Table(
+              columnWidths: const {
+                0: FlexColumnWidth(1),
+                1: FlexColumnWidth(2),
+              },
+              children: [
+                _buildInfoRow('Код клиента (KUNAG)', widget.structure.kunag ?? '-'),
+                _buildInfoRow('Сбытовая организация (VKORG)', widget.structure.vkorg ?? '-'),
+                _buildInfoRow('Краткое наименование', widget.structure.sname ?? '-'),
+                _buildInfoRow('Полное наименование', widget.structure.fname ?? '-'),
+                _buildInfoRow('Адрес', widget.structure.adress ?? '-'),
+                _buildInfoRow('Телефон', widget.structure.phone ?? '-'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Сводная информация
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            _buildInfoCard(
+              icon: Icons.account_balance,
+              title: 'Плательщики',
+              count: widget.structure.rgTab?.length ?? 0,
+              color: Colors.blue,
+            ),
+            _buildInfoCard(
+              icon: Icons.contacts,
+              title: 'Контакты',
+              count: widget.structure.contactTab?.length ?? 0,
+              color: Colors.green,
+            ),
+            _buildInfoCard(
+              icon: Icons.description,
+              title: 'Договоры',
+              count: widget.structure.dogovorTab?.length ?? 0,
+              color: Colors.orange,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildPayerDetail(UserStructureItem payer, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.account_balance, size: 32),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    payer.sname ?? 'Плательщик',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  if (payer.defaultFlag ?? false)
+                    const Chip(
+                      label: Text('Плательщик по умолчанию'),
+                      backgroundColor: Colors.green,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Table(
+              columnWidths: const {
+                0: FlexColumnWidth(1),
+                1: FlexColumnWidth(2),
+              },
+              children: [
+                _buildInfoRow('Код плательщика (KUNNR)', payer.kunnr ?? '-'),
+                _buildInfoRow('Краткое наименование', payer.sname ?? '-'),
+                _buildInfoRow('Полное наименование', payer.fname ?? '-'),
+                _buildInfoRow('Адрес', payer.adress ?? '-'),
+                _buildInfoRow('Телефон', payer.phone ?? '-'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Сводная информация о плательщике
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            _buildInfoCard(
+              icon: Icons.local_shipping,
+              title: 'Грузополучатели',
+              count: payer.weTab?.length ?? 0,
+              color: Colors.purple,
+            ),
+            _buildInfoCard(
+              icon: Icons.location_on,
+              title: 'Адреса доставки',
+              count: payer.zaTab?.length ?? 0,
+              color: Colors.red,
+            ),
+            _buildInfoCard(
+              icon: Icons.local_offer,
+              title: 'Условия поставки',
+              count: payer.exwTab?.length ?? 0,
+              color: Colors.teal,
+            ),
+            _buildInfoCard(
+              icon: Icons.article,
+              title: 'Договоры',
+              count: payer.dogovorTab?.length ?? 0,
+              color: Colors.orange,
+            ),
+            _buildInfoCard(
+              icon: Icons.person,
+              title: 'Контакты',
+              count: payer.contactTab?.length ?? 0,
+              color: Colors.green,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildContactsTable(List contacts, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.contacts, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Контакты',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('ФИО')),
+                DataColumn(label: Text('Телефон')),
+                DataColumn(label: Text('Email')),
+                DataColumn(label: Text('По умолчанию')),
+                DataColumn(label: Text('ID')),
+              ],
+              rows: contacts.map((contact) {
+                final fullName = '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'.trim();
+                return DataRow(cells: [
+                  DataCell(Text(fullName.isNotEmpty ? fullName : '-')),
+                  DataCell(Text(contact.phone ?? '-')),
+                  DataCell(Text(contact.email ?? '-')),
+                  DataCell(
+                    (contact.defaultFlag ?? false)
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : const Icon(Icons.close, color: Colors.grey),
+                  ),
+                  DataCell(Text(contact.parnr ?? '-')),
+                ]);
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildContractsTable(List contracts, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.description, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Договоры',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Номер')),
+                DataColumn(label: Text('Название')),
+                DataColumn(label: Text('Кредитный лимит')),
+                DataColumn(label: Text('Валюта')),
+                DataColumn(label: Text('Дата окончания')),
+                DataColumn(label: Text('По умолчанию')),
+              ],
+              rows: contracts.map((contract) {
+                return DataRow(cells: [
+                  DataCell(Text(contract.vbeln ?? '-')),
+                  DataCell(Text(contract.bstkd ?? '-')),
+                  DataCell(Text(contract.klimk ?? '0.00')),
+                  DataCell(Text(contract.waers ?? '-')),
+                  DataCell(Text(contract.datbi ?? '-')),
+                  DataCell(
+                    (contract.defaultFlag ?? false)
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : const Icon(Icons.close, color: Colors.grey),
+                  ),
+                ]);
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildSimpleTable(List items, String title, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: DataTable(
+            columns: const [
+              DataColumn(label: Text('ID')),
+              DataColumn(label: Text('Название')),
+            ],
+            rows: items.map((item) {
+              return DataRow(cells: [
+                DataCell(Text(item.id ?? '-')),
+                DataCell(Text(item.name ?? '-')),
+              ]);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildAddressesTable(List addresses, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.location_on, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Адреса доставки',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Код')),
+                DataColumn(label: Text('Наименование')),
+                DataColumn(label: Text('Адрес')),
+                DataColumn(label: Text('Телефон')),
+                DataColumn(label: Text('По умолчанию')),
+              ],
+              rows: addresses.map((address) {
+                return DataRow(cells: [
+                  DataCell(Text(address.kunnr ?? '-')),
+                  DataCell(Text(address.sname ?? '-')),
+                  DataCell(Text(address.adress ?? '-')),
+                  DataCell(Text(address.phone ?? '-')),
+                  DataCell(
+                    (address.defaultFlag ?? false)
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : const Icon(Icons.close, color: Colors.grey),
+                  ),
+                ]);
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildDeliveryTermsTable(List terms, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.local_offer, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Условия поставки',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: DataTable(
+            columns: const [
+              DataColumn(label: Text('Код')),
+              DataColumn(label: Text('Условие')),
+            ],
+            rows: terms.map((term) {
+              return DataRow(cells: [
+                DataCell(Text(term.id ?? '-')),
+                DataCell(Text(term.name ?? '-')),
+              ]);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String title,
+    required int count,
+    required Color color,
+  }) {
+    return Card(
+      color: color.withValues(alpha: 0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Icon(icon, size: 40, color: color),
+            const SizedBox(height: 8),
+            Text(
+              '$count',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(title),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  TableRow _buildInfoRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            '$label:',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(value),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildMobileView(Translations t) {
+    // Для мобильных устройств - упрощенная навигация
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildRootDetail(t),
+          // Можно добавить навигацию через ExpansionTiles
+        ],
+      ),
+    );
+  }
+}
