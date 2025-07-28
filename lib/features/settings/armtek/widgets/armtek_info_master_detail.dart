@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
@@ -36,16 +37,18 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     final isLargeScreen = screenWidth >= 850;
     
     if (isLargeScreen) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      return Padding(
+        padding: const EdgeInsets.all(16.0), // Минимальные отступы
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Master panel - навигационное дерево с адаптивной шириной
           Flexible(
-            flex: 3, // 30% от общей ширины
+            flex: 1, // 20% от общей ширины - еще больше уменьшаем левую панель
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: 250.0,
-                maxWidth: screenWidth * 0.4, // Максимум 40%
+                minWidth: 200.0, // Еще больше уменьшаем минимальную ширину
+                maxWidth: screenWidth * 0.25, // Максимум 25%
               ),
               child: Card(
               margin: EdgeInsets.zero,
@@ -86,7 +89,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           const SizedBox(width: 16),
           // Detail panel - детальная информация
           Flexible(
-            flex: 7, // 70% от общей ширины
+            flex: 4, // 80% от общей ширины - максимально увеличиваем правую панель
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
@@ -120,7 +123,8 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
               ),
             ),
           ),
-        ],
+            ],
+        ),
       );
     } else {
       // Для мобильных устройств - полноэкранное отображение
@@ -318,7 +322,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         leading: Icon(icon),
         title: Row(
           children: [
-            Expanded(child: Text(title)),
+            Expanded(child: Text(title, overflow: TextOverflow.ellipsis)),
             if (isDefault) 
               const Chip(
                 label: Text('По умолч.', style: TextStyle(fontSize: 10)),
@@ -327,10 +331,18 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
               ),
           ],
         ),
-        subtitle: Text(subtitle),
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+        subtitle: Text(subtitle, overflow: TextOverflow.ellipsis),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         onExpansionChanged: (_) => onTap(),
-        children: children,
+        children: children.length > 5 
+          ? children.take(5).toList() + [
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text('...и еще', style: TextStyle(fontStyle: FontStyle.italic)),
+              )
+            ]
+          : children,
       ),
     );
   }

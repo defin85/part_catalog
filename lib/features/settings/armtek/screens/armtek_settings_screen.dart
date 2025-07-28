@@ -74,27 +74,17 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
 
   Widget _buildTabletLayout(BuildContext context, ArmtekSettingsState state,
       ArmtekSettingsNotifier notifier, Translations t) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: _buildFormContent(context, state, notifier, t),
-        ),
-      ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: _buildFormContent(context, state, notifier, t),
     );
   }
 
   Widget _buildDesktopLayout(BuildContext context, ArmtekSettingsState state,
       ArmtekSettingsNotifier notifier, Translations t) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 700),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
-          child: _buildFormContent(context, state, notifier, t),
-        ),
-      ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32.0),
+      child: _buildFormContent(context, state, notifier, t),
     );
   }
 
