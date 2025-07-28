@@ -4,7 +4,7 @@ import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
 
-import '../widget/screens/mock_widget_services.mocks.dart';
+import '../mocks/mock_services.mocks.dart';
 
 final GetIt locator = GetIt.instance;
 

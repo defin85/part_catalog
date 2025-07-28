@@ -119,7 +119,7 @@ void main() {
       // Проверяем наличие основных элементов
       expect(find.text('Test Company'), findsOneWidget);
       // expect(find.text('KUNAG: 12345'), findsOneWidget); // Этот текст может быть не виден в тестах
-      expect(find.byIcon(Icons.business), findsWidgets);
+      expect(find.byIcon(Icons.business), findsAtLeastNWidgets(1));
     });
 
     // Тест на компактные карточки
@@ -236,13 +236,16 @@ void main() {
         
         // Выводим информацию для отладки
         if (overflowErrors.isNotEmpty) {
+          // ignore: avoid_print
           print('DETECTED OVERFLOW ERRORS:');
           for (final error in overflowErrors) {
+            // ignore: avoid_print
             print('- $error');
           }
           // Можно раскомментировать эту строку, чтобы тест падал при обнаружении overflow:
           // fail('Detected ${overflowErrors.length} overflow errors');
         } else {
+          // ignore: avoid_print
           print('No overflow errors detected on 200px wide screen');
         }
         

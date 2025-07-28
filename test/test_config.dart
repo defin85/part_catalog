@@ -1,8 +1,7 @@
 /// Конфигурация для тестов
 /// 
 /// Этот файл содержит общие настройки и константы для тестов.
-
-import 'package:flutter_test/flutter_test.dart';
+library;
 
 /// Конфигурация тестов
 class TestConfig {

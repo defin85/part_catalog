@@ -175,7 +175,88 @@ class TestData {
     return testClients.where((client) =>
       client.displayName.toLowerCase().contains(query.toLowerCase()) ||
       client.code.toLowerCase().contains(query.toLowerCase()) ||
-      (client.contactInfo?.toLowerCase().contains(query.toLowerCase()) ?? false)
+      client.contactInfo.toLowerCase().contains(query.toLowerCase())
     ).toList();
   }
+
+  // Интеграционные тестовые данные
+  static final Map<String, dynamic> integrationTestData = {
+    'orders': {
+      'empty': [],
+      'loading': null,
+      'error': Exception('Ошибка загрузки заказов'),
+      'sample': testOrders,
+    },
+    'clients': {
+      'empty': [],
+      'loading': null,
+      'error': Exception('Ошибка загрузки клиентов'),
+      'sample': testClients,
+    },
+    'cars': {
+      'empty': [],
+      'loading': null,
+      'error': Exception('Ошибка загрузки автомобилей'),
+      'sample': testCars,
+    },
+  };
+
+  // Сценарии для интеграционных тестов
+  static const Map<String, Map<String, dynamic>> integrationScenarios = {
+    'happy_path': {
+      'description': 'Успешный путь пользователя',
+      'steps': [
+        'Открыть список клиентов',
+        'Выбрать клиента',
+        'Создать новый заказ',
+        'Добавить услуги и запчасти',
+        'Сохранить заказ',
+      ],
+    },
+    'error_handling': {
+      'description': 'Обработка ошибок',
+      'steps': [
+        'Отсутствие интернет соединения',
+        'Ошибка сервера',
+        'Некорректные данные',
+        'Тайм-аут операции',
+      ],
+    },
+    'edge_cases': {
+      'description': 'Граничные случаи',
+      'steps': [
+        'Пустые списки данных',
+        'Очень длинные строки',
+        'Специальные символы',
+        'Максимальные значения',
+      ],
+    },
+  };
+
+  // Тестовые пользовательские сценарии
+  static final List<Map<String, dynamic>> userJourneys = [
+    {
+      'name': 'Создание заказа от начала до конца',
+      'steps': [
+        {'action': 'navigate_to', 'screen': 'clients'},
+        {'action': 'select_client', 'clientId': testClientPhysical.uuid},
+        {'action': 'create_order', 'data': {'description': 'Ремонт двигателя'}},
+        {'action': 'add_service', 'data': {'name': 'Диагностика', 'price': 1500}},
+        {'action': 'add_part', 'data': {'name': 'Масло', 'price': 800}},
+        {'action': 'save_order'},
+        {'action': 'verify_order_created'},
+      ],
+    },
+    {
+      'name': 'Поиск и редактирование клиента',
+      'steps': [
+        {'action': 'navigate_to', 'screen': 'clients'},
+        {'action': 'search', 'query': 'Иван'},
+        {'action': 'select_client', 'clientId': testClientPhysical.uuid},
+        {'action': 'edit_client', 'data': {'phone': '+7 (900) 111-22-33'}},
+        {'action': 'save_client'},
+        {'action': 'verify_client_updated'},
+      ],
+    },
+  ];
 }

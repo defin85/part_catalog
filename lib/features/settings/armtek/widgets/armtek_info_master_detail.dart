@@ -32,26 +32,22 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    final isLargeScreen = screenWidth > 800;
+    // Более строгие условия для desktop layout - нужно минимум 850px
+    final isLargeScreen = screenWidth >= 850;
     
     if (isLargeScreen) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Master panel - навигационное дерево с адаптивной шириной
-          ConstrainedBox(
-            constraints: () {
-              // Вычисляем оптимальную ширину навигационной панели
-              final desiredWidth = screenWidth * 0.3;
-              final minWidth = screenWidth < 1200 ? 300.0 : 350.0;
-              final actualWidth = desiredWidth < minWidth ? minWidth : desiredWidth;
-              
-              return BoxConstraints(
-                minWidth: actualWidth,
-                maxWidth: actualWidth,
-              );
-            }(),
-            child: Card(
+          Flexible(
+            flex: 3, // 30% от общей ширины
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: 250.0,
+                maxWidth: screenWidth * 0.4, // Максимум 40%
+              ),
+              child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
               child: Column(
@@ -86,9 +82,11 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
               ),
             ),
           ),
+          ),
           const SizedBox(width: 16),
           // Detail panel - детальная информация
-          Expanded(
+          Flexible(
+            flex: 7, // 70% от общей ширины
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
@@ -427,11 +425,14 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                     Icon(Icons.info_outline, 
                       color: Theme.of(context).colorScheme.primary),
                     const SizedBox(width: 12),
-                    Text(
-                      'Основные данные',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        'Основные данные',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -870,9 +871,9 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         borderRadius: BorderRadius.circular(8),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Адаптивные отступы в зависимости от ширины
-            final horizontalPadding = constraints.maxWidth < 100 ? 6.0 : 12.0;
-            final verticalPadding = constraints.maxWidth < 100 ? 4.0 : 8.0; // Уменьшили для исправления bottom overflow
+            // Очень агрессивные отступы для узких экранов  
+            final horizontalPadding = constraints.maxWidth < 50 ? 2.0 : (constraints.maxWidth < 100 ? 4.0 : 12.0);
+            final verticalPadding = constraints.maxWidth < 50 ? 2.0 : (constraints.maxWidth < 100 ? 3.0 : 8.0);
             
             return Container(
               padding: EdgeInsets.symmetric(
@@ -893,13 +894,15 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                       builder: (context, constraints) {
                         // Показываем иконку только если достаточно места (минимум 80px)
                         if (constraints.maxWidth > 80) {
+                          final iconPadding = constraints.maxWidth < 120 ? 3.0 : 6.0;
+                          final iconSize = constraints.maxWidth < 120 ? 12.0 : 16.0;
                           return Container(
-                            padding: const EdgeInsets.all(6), // Уменьшенный padding
+                            padding: EdgeInsets.all(iconPadding),
                             decoration: BoxDecoration(
                               color: color.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(icon, color: color, size: 16), // Уменьшенная иконка
+                            child: Icon(icon, color: color, size: iconSize),
                           );
                         } else {
                           return const SizedBox.shrink(); // Скрываем иконку на узких экранах
@@ -909,7 +912,11 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                     // Адаптивный отступ
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        return SizedBox(width: constraints.maxWidth > 80 ? 8 : 0);
+                        if (constraints.maxWidth > 80) {
+                          return SizedBox(width: constraints.maxWidth < 120 ? 4 : 8);
+                        } else {
+                          return const SizedBox.shrink();
+                        }
                       },
                     ),
                     Expanded(

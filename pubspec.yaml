@@ -54,6 +54,7 @@ dev_dependencies:
   # Testing dependencies
   mockito: ^5.4.4
   mocktail: ^1.0.3
+  golden_toolkit: ^0.15.0
   integration_test:
     sdk: flutter
 

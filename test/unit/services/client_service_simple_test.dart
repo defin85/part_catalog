@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 
 import '../../mocks/mock_services.mocks.dart';

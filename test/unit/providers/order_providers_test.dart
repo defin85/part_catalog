@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
 

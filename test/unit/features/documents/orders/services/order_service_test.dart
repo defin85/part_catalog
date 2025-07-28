@@ -406,7 +406,7 @@ void main() {
         final capturedItems = verification.captured.first as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
         expect(capturedItems, hasLength(1));
         expect(capturedItems.first.item1.uuid, updatedPart.uuid);
-        final capturedCoreData = capturedItems.first.item1 as ItemCoreData;
+        final capturedCoreData = capturedItems.first.item1;
         expect(capturedCoreData.name, 'Updated Part Name');
       });
 

@@ -4,7 +4,6 @@ import 'package:part_catalog/features/references/vehicles/services/car_service.d
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/core/entity_core_data.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
-import 'package:part_catalog/core/database/daos/cars_dao.dart';
 
 import '../../mocks/mock_services.mocks.dart';
 import '../../test_config.dart';

@@ -7,7 +7,7 @@ import 'package:drift/drift.dart';
 /// {@endtemplate}
 class DriftJsonConverter<T> extends TypeConverter<T, String> {
   /// {@macro drift_json_converter}
-  /// [fromJsonInConverter] - функция, преобразующая JSON-объект (Map<String, dynamic>) в объект типа T.
+  /// [fromJsonInConverter] - функция, преобразующая JSON-объект (Map&lt;String, dynamic&gt;) в объект типа T.
   /// Имя изменено с fromJson, чтобы избежать конфликта с методом fromJson в freezed классах.
   final T Function(Map<String, dynamic> json) fromJsonInConverter;
 

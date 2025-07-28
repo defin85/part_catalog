@@ -1,10 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
-import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
-import 'package:part_catalog/features/references/clients/models/client_type.dart';
 
 import '../../mocks/mock_services.mocks.dart';
 import '../../fixtures/test_data.dart';
