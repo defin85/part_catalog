@@ -355,8 +355,13 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
       );
     }
 
-    // Без фиксированной высоты, виджет занимает всё доступное пространство
-    return ArmtekInfoMasterDetail(structure: structure);
+    // Возвращаем виджет с ограничением по высоте
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
+      child: ArmtekInfoMasterDetail(structure: structure),
+    );
   }
 
 

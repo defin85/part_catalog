@@ -7,11 +7,12 @@ import 'provider_test_helpers.dart';
 /// Базовые helper функции для тестирования
 class TestHelpers {
   /// Создает виджет с Riverpod и локализацией для тестирования
-  static Widget createTestApp({
-    required Widget child,
+  static Widget createTestApp(
+    Widget child, {
     List<Override>? overrides,
+    Size? screenSize,
   }) {
-    return ProviderScope(
+    final app = ProviderScope(
       overrides: overrides ?? ProviderTestHelpers.createStandardOverrides(),
       child: TranslationProvider(
         child: MaterialApp(
@@ -22,12 +23,21 @@ class TestHelpers {
         ),
       ),
     );
+    
+    if (screenSize != null) {
+      return MediaQuery(
+        data: MediaQueryData(size: screenSize),
+        child: app,
+      );
+    }
+    
+    return app;
   }
 
   /// Создает виджет с пустыми данными для тестирования
-  static Widget createEmptyTestApp({
-    required Widget child,
-  }) {
+  static Widget createEmptyTestApp(
+    Widget child,
+  ) {
     return ProviderScope(
       overrides: ProviderTestHelpers.createEmptyDataOverrides(),
       child: TranslationProvider(
@@ -39,9 +49,9 @@ class TestHelpers {
   }
 
   /// Создает виджет с ошибками для тестирования
-  static Widget createErrorTestApp({
-    required Widget child,
-  }) {
+  static Widget createErrorTestApp(
+    Widget child,
+  ) {
     return ProviderScope(
       overrides: ProviderTestHelpers.createErrorOverrides(),
       child: TranslationProvider(
@@ -53,15 +63,15 @@ class TestHelpers {
   }
 
   /// Создает тестовый виджет с базовым Scaffold
-  static Widget createScaffoldTestApp({
-    required Widget child,
+  static Widget createScaffoldTestApp(
+    Widget child, {
     List<Override>? overrides,
   }) {
     return createTestApp(
-      overrides: overrides,
-      child: Scaffold(
+      Scaffold(
         body: child,
       ),
+      overrides: overrides,
     );
   }
 
@@ -115,7 +125,7 @@ class TestHelpers {
       await tester.binding.setSurfaceSize(screenSize);
     }
 
-    await tester.pumpWidget(createTestApp(child: widget, overrides: overrides));
+    await tester.pumpWidget(createTestApp(widget, overrides: overrides));
     await tester.pump();
 
     expect(errors, isEmpty, reason: 'Widget should not have overflow errors');
@@ -155,7 +165,7 @@ class TestHelpers {
   }) async {
     final stopwatch = Stopwatch()..start();
     
-    await tester.pumpWidget(createTestApp(child: widget, overrides: overrides));
+    await tester.pumpWidget(createTestApp(widget, overrides: overrides));
     
     stopwatch.stop();
     expect(
@@ -183,7 +193,7 @@ extension WidgetTesterExtensions on WidgetTester {
   }) async {
     await pumpWidget(
       TestHelpers.createTestApp(
-        child: widget,
+        widget,
         overrides: overrides,
       ),
     );

@@ -40,64 +40,53 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Master panel - навигационное дерево с адаптивной шириной
-          Flexible(
-            flex: 2,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: 250.0,
-                maxWidth: screenWidth * 0.3,
-              ),
-              child: Card(
-                margin: EdgeInsets.zero,
-                elevation: 2,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(4),
-                          topRight: Radius.circular(4),
-                        ),
+          SizedBox(
+            width: screenWidth * 0.3,
+            child: Card(
+              margin: EdgeInsets.zero,
+              elevation: 2,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(4),
+                        topRight: Radius.circular(4),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.menu_book, 
-                            color: Theme.of(context).colorScheme.primary),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Навигация',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.menu_book, 
+                          color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Навигация',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    const Divider(height: 1),
-                    Flexible(
-                      child: _buildNavigationTree(t),
-                    ),
-                  ],
-                ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(child: _buildNavigationTree(t)),
+                ],
               ),
             ),
           ),
           const SizedBox(width: 16),
           // Detail panel - детальная информация
           Expanded(
-            flex: 5,
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: double.infinity,
@@ -121,9 +110,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                     ),
                   ),
                   const Divider(height: 1),
-                  Flexible(
-                    child: _buildDetailView(t),
-                  ),
+                  Expanded(child: _buildDetailView(t)),
                 ],
               ),
             ),

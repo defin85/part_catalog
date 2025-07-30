@@ -23,7 +23,9 @@
       "Bash(echo:*)",
       "Bash(mv:*)",
       "Bash(find:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(git rm:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
