@@ -400,7 +400,11 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      child: ArmtekInfoMasterDetail(structure: structure),
+      child: ArmtekInfoMasterDetail(
+        structure: structure,
+        brandList: state.brandList,
+        storeList: state.storeList,
+      ),
     );
   }
 

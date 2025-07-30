@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
 class ArmtekInfoMasterDetail extends StatefulWidget {
   final UserStructureRoot structure;
+  final List<BrandItem>? brandList;
+  final List<StoreItem>? storeList;
   
   const ArmtekInfoMasterDetail({
     super.key,
     required this.structure,
+    this.brandList,
+    this.storeList,
   });
 
   @override
@@ -397,6 +403,10 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         return _buildAddressesTable(_selectedItem as List, t);
       case 'exw_tab':
         return _buildDeliveryTermsTable(_selectedItem as List, t);
+      case 'stores':
+        return _buildStoresTable(_selectedItem as List<StoreItem>, t);
+      case 'brands':
+        return _buildBrandsTable(_selectedItem as List<BrandItem>, t);
       default:
         return const Center(child: Text('Выберите элемент для просмотра'));
     }
@@ -469,60 +479,17 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         ),
         const SizedBox(height: 16),
         // Сводная информация в виде сетки
-        Row(
-          children: [
-            Expanded(
-              child: _buildCompactInfoCard(
-                icon: Icons.account_balance,
-                title: 'Плательщики',
-                count: widget.structure.rgTab?.length ?? 0,
-                color: Colors.blue,
-                onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
-                    ? () {
-                        // Показываем первого плательщика при клике на карточку
-                        setState(() {
-                          _selectedItemType = 'payer';
-                          _selectedItem = widget.structure.rgTab!.first;
-                        });
-                      }
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildCompactInfoCard(
-                icon: Icons.contacts,
-                title: 'Контакты',
-                count: widget.structure.contactTab?.length ?? 0,
-                color: Colors.green,
-                onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'root_contacts';
-                          _selectedItem = widget.structure.contactTab;
-                        });
-                      }
-                    : null,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildCompactInfoCard(
-                icon: Icons.description,
-                title: 'Договоры',
-                count: widget.structure.dogovorTab?.length ?? 0,
-                color: Colors.orange,
-                onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'root_contracts';
-                          _selectedItem = widget.structure.dogovorTab;
-                        });
-                      }
-                    : null,
-              ),
-            ),
-          ],
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 250,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 2.5,
+          ),
+          itemCount: _getSummaryCards().length,
+          itemBuilder: (context, index) => _getSummaryCards()[index],
         ),
       ],
     );
@@ -922,6 +889,92 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     );
   }
   
+  List<Widget> _getSummaryCards() {
+    final cards = <Widget>[];
+    
+    // Плательщики
+    cards.add(_buildCompactInfoCard(
+      icon: Icons.account_balance,
+      title: 'Плательщики',
+      count: widget.structure.rgTab?.length ?? 0,
+      color: Colors.blue,
+      onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
+          ? () {
+              setState(() {
+                _selectedItemType = 'payer';
+                _selectedItem = widget.structure.rgTab!.first;
+              });
+            }
+          : null,
+    ));
+    
+    // Контакты
+    cards.add(_buildCompactInfoCard(
+      icon: Icons.contacts,
+      title: 'Контакты',
+      count: widget.structure.contactTab?.length ?? 0,
+      color: Colors.green,
+      onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
+          ? () {
+              setState(() {
+                _selectedItemType = 'root_contacts';
+                _selectedItem = widget.structure.contactTab;
+              });
+            }
+          : null,
+    ));
+    
+    // Договоры
+    cards.add(_buildCompactInfoCard(
+      icon: Icons.description,
+      title: 'Договоры',
+      count: widget.structure.dogovorTab?.length ?? 0,
+      color: Colors.orange,
+      onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
+          ? () {
+              setState(() {
+                _selectedItemType = 'root_contracts';
+                _selectedItem = widget.structure.dogovorTab;
+              });
+            }
+          : null,
+    ));
+    
+    // Склады (если есть данные)
+    if (widget.storeList != null && widget.storeList!.isNotEmpty) {
+      cards.add(_buildCompactInfoCard(
+        icon: Icons.warehouse,
+        title: 'Склады',
+        count: widget.storeList!.length,
+        color: Colors.indigo,
+        onTap: () {
+          setState(() {
+            _selectedItemType = 'stores';
+            _selectedItem = widget.storeList;
+          });
+        },
+      ));
+    }
+    
+    // Бренды (если есть данные)
+    if (widget.brandList != null && widget.brandList!.isNotEmpty) {
+      cards.add(_buildCompactInfoCard(
+        icon: Icons.branding_watermark,
+        title: 'Бренды',
+        count: widget.brandList!.length,
+        color: Colors.deepPurple,
+        onTap: () {
+          setState(() {
+            _selectedItemType = 'brands';
+            _selectedItem = widget.brandList;
+          });
+        },
+      ));
+    }
+    
+    return cards;
+  }
+  
   Widget _buildCompactInfoCard({
     required IconData icon,
     required String title,
@@ -1039,6 +1092,10 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         return Icons.location_on;
       case 'exw_tab':
         return Icons.local_offer;
+      case 'stores':
+        return Icons.warehouse;
+      case 'brands':
+        return Icons.branding_watermark;
       default:
         return Icons.info;
     }
@@ -1062,8 +1119,86 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         return 'Адреса доставки';
       case 'exw_tab':
         return 'Условия поставки';
+      case 'stores':
+        return 'Склады';
+      case 'brands':
+        return 'Бренды';
       default:
         return 'Детальная информация';
     }
+  }
+  
+  Widget _buildStoresTable(List<StoreItem> stores, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.warehouse, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Склады',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Ключ')),
+                DataColumn(label: Text('Код склада')),
+                DataColumn(label: Text('Наименование склада')),
+              ],
+              rows: stores.map((store) {
+                return DataRow(cells: [
+                  DataCell(Text(store.keyzak)),
+                  DataCell(Text(store.sklCode)),
+                  DataCell(Text(store.sklName)),
+                ]);
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildBrandsTable(List<BrandItem> brands, Translations t) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.branding_watermark, size: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Бренды',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              columns: const [
+                DataColumn(label: Text('Код бренда')),
+                DataColumn(label: Text('Наименование')),
+              ],
+              rows: brands.map((brand) {
+                return DataRow(cells: [
+                  DataCell(Text(brand.brand)),
+                  DataCell(Text(brand.brandName)),
+                ]);
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
