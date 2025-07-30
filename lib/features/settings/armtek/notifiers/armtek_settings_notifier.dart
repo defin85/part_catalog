@@ -454,6 +454,7 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
       );
       
       _logger.i('Additional data loaded successfully');
+      _logger.i('Final state - storeList: ${state.storeList?.length ?? "null"}, brandList: ${state.brandList?.length ?? "null"}');
     } catch (e, s) {
       _logger.w('Error loading additional data for VKORG $vkorg', error: e, stackTrace: s);
       // Не показываем ошибку пользователю, так как основные данные уже загружены

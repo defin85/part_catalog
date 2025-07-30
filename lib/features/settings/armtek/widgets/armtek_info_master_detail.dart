@@ -892,6 +892,17 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   List<Widget> _getSummaryCards() {
     final cards = <Widget>[];
     
+    // Debug logging
+    print('=== _getSummaryCards Debug ===');
+    print('storeList: ${widget.storeList?.length ?? "null"}');
+    print('brandList: ${widget.brandList?.length ?? "null"}');
+    if (widget.storeList != null && widget.storeList!.isNotEmpty) {
+      print('First store: ${widget.storeList!.first.sklName}');
+    }
+    if (widget.brandList != null && widget.brandList!.isNotEmpty) {
+      print('First brand: ${widget.brandList!.first.brandName}');
+    }
+    
     // Плательщики
     cards.add(_buildCompactInfoCard(
       icon: Icons.account_balance,
