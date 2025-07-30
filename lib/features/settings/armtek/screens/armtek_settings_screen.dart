@@ -375,7 +375,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
             ),
           const SizedBox(height: 16),
           if (state.selectedVkorg != null && state.userInfo != null)
-            _buildUserInfo(context, state.userInfo!, t),
+            _buildUserInfo(context, state.userInfo!, state, t),
         ],
       ),
     );
@@ -383,7 +383,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
 
 
   Widget _buildUserInfo(
-      BuildContext context, UserInfoResponse userInfo, Translations t) {
+      BuildContext context, UserInfoResponse userInfo, ArmtekSettingsState state, Translations t) {
     final structure = userInfo.structure;
 
     if (structure == null) {
