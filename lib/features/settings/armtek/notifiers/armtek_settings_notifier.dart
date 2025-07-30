@@ -51,6 +51,7 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
               jsonDecode(setting.encryptedCredentials!) as Map<String, dynamic>;
           initialLogin = credentialsMap['username'] as String? ?? '';
           initialPassword = credentialsMap['password'] as String? ?? '';
+          _logger.i('Loaded credentials: login=${initialLogin.isNotEmpty ? "***" : "empty"}, password=${initialPassword.isNotEmpty ? "***" : "empty"}');
         } catch (e) {
           _logger.w(
               'Could not parse credentials from DB for $armtekSupplierCode',
@@ -74,7 +75,7 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
         isLoading: false,
         currentSetting: setting,
         loginInput: initialLogin,
-        // passwordInput: initialPassword, // Не заполняем пароль из безопасности
+        passwordInput: initialPassword, // Загружаем пароль для корректного отображения
         isConnected: setting?.lastCheckStatus == 'success',
         connectionStatusMessage: setting?.lastCheckMessage,
         selectedVkorg: initialSelectedVkorg,

@@ -29,7 +29,8 @@
       "Bash(npm install)",
       "Bash(npx husky add:*)",
       "Bash(ls:*)",
-      "Bash(npm run test:layout:*)"
+      "Bash(npm run test:layout:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }

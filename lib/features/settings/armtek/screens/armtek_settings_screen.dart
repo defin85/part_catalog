@@ -215,6 +215,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
                     controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: t.settings.armtekSettings.passwordLabel,
+                      hintText: _passwordController.text.isEmpty ? '' : '••••••••',
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
@@ -229,7 +230,17 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
                       ),
                     ),
                     obscureText: !_passwordVisible,
+                    obscuringCharacter: '•',
                     onChanged: notifier.updatePassword,
+                    validator: (value) {
+                      // Проверяем актуальное значение из состояния
+                      final actualValue = value ?? '';
+                      final stateValue = state.passwordInput;
+                      if (actualValue.isEmpty && stateValue.isEmpty && !state.isConnected) {
+                        return t.settings.armtekSettings.passwordRequiredError;
+                      }
+                      return null;
+                    },
                   ),
                   if (state.connectionStatusMessage != null) ...[
                     const SizedBox(height: 16),
