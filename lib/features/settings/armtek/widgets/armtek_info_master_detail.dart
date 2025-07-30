@@ -477,6 +477,15 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 title: 'Плательщики',
                 count: widget.structure.rgTab?.length ?? 0,
                 color: Colors.blue,
+                onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
+                    ? () {
+                        // Показываем первого плательщика при клике на карточку
+                        setState(() {
+                          _selectedItemType = 'payer';
+                          _selectedItem = widget.structure.rgTab!.first;
+                        });
+                      }
+                    : null,
               ),
             ),
             const SizedBox(width: 16),
@@ -486,6 +495,14 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 title: 'Контакты',
                 count: widget.structure.contactTab?.length ?? 0,
                 color: Colors.green,
+                onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'root_contacts';
+                          _selectedItem = widget.structure.contactTab;
+                        });
+                      }
+                    : null,
               ),
             ),
             const SizedBox(width: 16),
@@ -495,6 +512,14 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 title: 'Договоры',
                 count: widget.structure.dogovorTab?.length ?? 0,
                 color: Colors.orange,
+                onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'root_contracts';
+                          _selectedItem = widget.structure.dogovorTab;
+                        });
+                      }
+                    : null,
               ),
             ),
           ],
@@ -558,30 +583,70 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 title: 'Грузополучатели',
                 count: payer.weTab?.length ?? 0,
                 color: Colors.purple,
+                onTap: payer.weTab != null && payer.weTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'we_tab';
+                          _selectedItem = payer.weTab;
+                        });
+                      }
+                    : null,
               ),
               _buildCompactInfoCard(
                 icon: Icons.location_on,
                 title: 'Адреса доставки',
                 count: payer.zaTab?.length ?? 0,
                 color: Colors.red,
+                onTap: payer.zaTab != null && payer.zaTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'za_tab';
+                          _selectedItem = payer.zaTab;
+                        });
+                      }
+                    : null,
               ),
               _buildCompactInfoCard(
                 icon: Icons.local_offer,
                 title: 'Условия поставки',
                 count: payer.exwTab?.length ?? 0,
                 color: Colors.teal,
+                onTap: payer.exwTab != null && payer.exwTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'exw_tab';
+                          _selectedItem = payer.exwTab;
+                        });
+                      }
+                    : null,
               ),
               _buildCompactInfoCard(
                 icon: Icons.article,
                 title: 'Договоры',
                 count: payer.dogovorTab?.length ?? 0,
                 color: Colors.orange,
+                onTap: payer.dogovorTab != null && payer.dogovorTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'payer_contracts';
+                          _selectedItem = payer.dogovorTab;
+                        });
+                      }
+                    : null,
               ),
               _buildCompactInfoCard(
                 icon: Icons.person,
                 title: 'Контакты',
                 count: payer.contactTab?.length ?? 0,
                 color: Colors.green,
+                onTap: payer.contactTab != null && payer.contactTab!.isNotEmpty
+                    ? () {
+                        setState(() {
+                          _selectedItemType = 'payer_contacts';
+                          _selectedItem = payer.contactTab;
+                        });
+                      }
+                    : null,
               ),
             ];
             
@@ -862,11 +927,12 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     required String title,
     required int count,
     required Color color,
+    VoidCallback? onTap,
   }) {
     return Card(
       elevation: 1,
       child: InkWell(
-        onTap: () {}, // Можно добавить функциональность клика в будущем
+        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: LayoutBuilder(
           builder: (context, constraints) {
