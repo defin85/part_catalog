@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
@@ -37,63 +36,68 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
     final isLargeScreen = screenWidth >= 850;
     
     if (isLargeScreen) {
-      return Padding(
-        padding: const EdgeInsets.all(16.0), // Минимальные отступы
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           // Master panel - навигационное дерево с адаптивной шириной
           Flexible(
-            flex: 1, // 20% от общей ширины - еще больше уменьшаем левую панель
+            flex: 2,
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: 200.0, // Еще больше уменьшаем минимальную ширину
-                maxWidth: screenWidth * 0.25, // Максимум 25%
+                minWidth: 250.0,
+                maxWidth: screenWidth * 0.3,
               ),
               child: Card(
-              margin: EdgeInsets.zero,
-              elevation: 2,
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(4),
-                        topRight: Radius.circular(4),
+                margin: EdgeInsets.zero,
+                elevation: 2,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.menu_book, 
+                            color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Навигация',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.menu_book, 
-                          color: Theme.of(context).colorScheme.primary),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Навигация',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                    const Divider(height: 1),
+                    Flexible(
+                      child: _buildNavigationTree(t),
                     ),
-                  ),
-                  const Divider(height: 1),
-                  Expanded(child: _buildNavigationTree(t)),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-          ),
           const SizedBox(width: 16),
           // Detail panel - детальная информация
-          Flexible(
-            flex: 4, // 80% от общей ширины - максимально увеличиваем правую панель
+          Expanded(
+            flex: 5,
             child: Card(
               margin: EdgeInsets.zero,
               elevation: 2,
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     width: double.infinity,
@@ -102,7 +106,6 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                       color: Theme.of(context).colorScheme.surfaceContainer,
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(_getDetailIcon(), 
                           color: Theme.of(context).colorScheme.onSurfaceVariant),
@@ -118,13 +121,14 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                     ),
                   ),
                   const Divider(height: 1),
-                  Expanded(child: _buildDetailView(t)),
+                  Flexible(
+                    child: _buildDetailView(t),
+                  ),
                 ],
               ),
             ),
           ),
-            ],
-        ),
+        ],
       );
     } else {
       // Для мобильных устройств - полноэкранное отображение
@@ -320,16 +324,9 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
         leading: Icon(icon),
-        title: Row(
-          children: [
-            Expanded(child: Text(title, overflow: TextOverflow.ellipsis)),
-            if (isDefault) 
-              const Chip(
-                label: Text('По умолч.', style: TextStyle(fontSize: 10)),
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-              ),
-          ],
+        title: Text(
+          isDefault ? '$title (по умолч.)' : title,
+          overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(subtitle, overflow: TextOverflow.ellipsis),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -357,7 +354,12 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       padding: const EdgeInsets.only(left: 16),
       child: ListTile(
         leading: Icon(icon, size: 20),
-        title: Text(title),
+        title: Text(
+          title,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          softWrap: false,
+        ),
         trailing: Chip(
           label: Text('$count'),
           padding: EdgeInsets.zero,
@@ -563,8 +565,6 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         // Сводная информация о плательщике в виде сетки
         LayoutBuilder(
           builder: (context, constraints) {
-            // Адаптивная сетка - 3 или 2 колонки в зависимости от ширины
-            final crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
             final cards = [
               _buildCompactInfoCard(
                 icon: Icons.local_shipping,
@@ -601,11 +601,11 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 200, // Максимальная ширина карточки
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 1.5,
+                childAspectRatio: 2.5, // Оптимальное соотношение для текста
               ),
               itemCount: cards.length,
               itemBuilder: (context, index) => cards[index],
@@ -936,13 +936,18 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            title,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                title,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                                maxLines: 1,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
                           ),
                           Text(
                             '$count',

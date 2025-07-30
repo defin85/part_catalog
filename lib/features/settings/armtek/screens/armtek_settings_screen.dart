@@ -17,14 +17,17 @@ class ArmtekSettingsScreen extends ConsumerStatefulWidget {
       _ArmtekSettingsScreenState();
 }
 
-class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
+class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
+    with SingleTickerProviderStateMixin {
   final _loginController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     final initialState = ref.read(armtekSettingsNotifierProvider);
     _loginController.text = initialState.loginInput;
   }
@@ -33,6 +36,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
   void dispose() {
     _loginController.dispose();
     _passwordController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -55,146 +59,283 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
         actions: [
           if (state.isLoading) const AppBarLoadingIndicator(),
         ],
+        bottom: state.isConnected
+            ? TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(
+                    icon: const Icon(Icons.login),
+                    text: t.settings.armtekSettings.credentialsSectionTitle,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.business),
+                    text: t.settings.armtekSettings.supplierInfoSectionTitle,
+                  ),
+                ],
+              )
+            : null,
       ),
-      body: ResponsiveLayoutBuilder(
-        small: (_, __) => _buildMobileLayout(context, state, notifier, t),
-        medium: (_, __) => _buildTabletLayout(context, state, notifier, t),
-        large: (_, __) => _buildDesktopLayout(context, state, notifier, t),
-      ),
+      body: state.isConnected
+          ? TabBarView(
+              controller: _tabController,
+              children: [
+                ResponsiveLayoutBuilder(
+                  small: (_, __) => _buildMobileAuthForm(context, state, notifier, t),
+                  medium: (_, __) => _buildTabletAuthForm(context, state, notifier, t),
+                  large: (_, __) => _buildDesktopAuthForm(context, state, notifier, t),
+                ),
+                ResponsiveLayoutBuilder(
+                  small: (_, __) => _buildMobileSupplierInfo(context, state, notifier, t),
+                  medium: (_, __) => _buildTabletSupplierInfo(context, state, notifier, t),
+                  large: (_, __) => _buildDesktopSupplierInfo(context, state, notifier, t),
+                ),
+              ],
+            )
+          : ResponsiveLayoutBuilder(
+              small: (_, __) => _buildMobileAuthForm(context, state, notifier, t),
+              medium: (_, __) => _buildTabletAuthForm(context, state, notifier, t),
+              large: (_, __) => _buildDesktopAuthForm(context, state, notifier, t),
+            ),
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, ArmtekSettingsState state,
+  Widget _buildMobileAuthForm(BuildContext context, ArmtekSettingsState state,
       ArmtekSettingsNotifier notifier, Translations t) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
-      child: _buildFormContent(context, state, notifier, t),
+      child: _buildAuthFormContent(context, state, notifier, t),
     );
   }
 
-  Widget _buildTabletLayout(BuildContext context, ArmtekSettingsState state,
+  Widget _buildTabletAuthForm(BuildContext context, ArmtekSettingsState state,
       ArmtekSettingsNotifier notifier, Translations t) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: _buildFormContent(context, state, notifier, t),
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: _buildAuthFormContent(context, state, notifier, t),
+        ),
+      ),
     );
   }
 
-  Widget _buildDesktopLayout(BuildContext context, ArmtekSettingsState state,
+  Widget _buildDesktopAuthForm(BuildContext context, ArmtekSettingsState state,
       ArmtekSettingsNotifier notifier, Translations t) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
-      child: _buildFormContent(context, state, notifier, t),
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32.0),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: _buildAuthFormContent(context, state, notifier, t),
+        ),
+      ),
     );
   }
 
-  Widget _buildFormContent(BuildContext context, ArmtekSettingsState state,
+  Widget _buildMobileSupplierInfo(BuildContext context, ArmtekSettingsState state,
+      ArmtekSettingsNotifier notifier, Translations t) {
+    return _buildSupplierInfoContent(context, state, notifier, t);
+  }
+
+  Widget _buildTabletSupplierInfo(BuildContext context, ArmtekSettingsState state,
+      ArmtekSettingsNotifier notifier, Translations t) {
+    return _buildSupplierInfoContent(context, state, notifier, t);
+  }
+
+  Widget _buildDesktopSupplierInfo(BuildContext context, ArmtekSettingsState state,
+      ArmtekSettingsNotifier notifier, Translations t) {
+    return _buildSupplierInfoContent(context, state, notifier, t);
+  }
+
+  Widget _buildAuthFormContent(BuildContext context, ArmtekSettingsState state,
       ArmtekSettingsNotifier notifier, Translations t) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(t.settings.armtekSettings.credentialsSectionTitle,
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _loginController,
-            decoration: InputDecoration(
-              labelText: t.settings.armtekSettings.loginLabel,
-              border: const OutlineInputBorder(),
-            ),
-            onChanged: notifier.updateLogin,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return t.settings.armtekSettings.loginRequiredError;
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _passwordController,
-            decoration: InputDecoration(
-              labelText: t.settings.armtekSettings.passwordLabel,
-              border: const OutlineInputBorder(),
-            ),
-            obscureText: true,
-            onChanged: notifier.updatePassword,
-          ),
-          const SizedBox(height: 24),
-          if (state.connectionStatusMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Text(
-                state.connectionStatusMessage!,
-                style: TextStyle(
-                    color: state.isConnected ? Colors.green : Colors.red),
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.vpn_key,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        t.settings.armtekSettings.credentialsSectionTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _loginController,
+                    decoration: InputDecoration(
+                      labelText: t.settings.armtekSettings.loginLabel,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person),
+                    ),
+                    onChanged: notifier.updateLogin,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return t.settings.armtekSettings.loginRequiredError;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: t.settings.armtekSettings.passwordLabel,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock),
+                    ),
+                    obscureText: true,
+                    onChanged: notifier.updatePassword,
+                  ),
+                  if (state.connectionStatusMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: state.isConnected
+                            ? Colors.green.withValues(alpha: 0.1)
+                            : Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: state.isConnected ? Colors.green : Colors.red,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            state.isConnected ? Icons.check_circle : Icons.error,
+                            color: state.isConnected ? Colors.green : Colors.red,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              state.connectionStatusMessage!,
+                              style: TextStyle(
+                                color: state.isConnected ? Colors.green : Colors.red,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SecondaryButton(
+                        onPressed: state.isLoading ? null : notifier.clearSettings,
+                        child: Text(t.core.resetButtonLabel),
+                      ),
+                      const SizedBox(width: 16),
+                      PrimaryButton(
+                        onPressed: state.isLoading
+                            ? null
+                            : () {
+                                if (_formKey.currentState!.validate()) {
+                                  if (state.passwordInput.isEmpty &&
+                                      !state.isConnected) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(t.settings.armtekSettings
+                                              .passwordRequiredError)),
+                                    );
+                                    return;
+                                  }
+                                  notifier.checkAndSaveConnection();
+                                }
+                              },
+                        child: Text(t.settings.armtekSettings.checkAndSaveButton),
+                      ),
+                    ],
+                  ),
+                  if (state.errorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      state.errorMessage!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              SecondaryButton(
-                onPressed: state.isLoading ? null : notifier.clearSettings,
-                child: Text(t.core.resetButtonLabel),
-              ),
-              const SizedBox(width: 16),
-              PrimaryButton(
-                onPressed: state.isLoading
-                    ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          if (state.passwordInput.isEmpty &&
-                              !state.isConnected) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(t.settings.armtekSettings
-                                      .passwordRequiredError)),
-                            );
-                            return;
-                          }
-                          notifier.checkAndSaveConnection();
-                        }
-                      },
-                child: Text(t.settings.armtekSettings.checkAndSaveButton),
-              ),
-            ],
           ),
-          const SizedBox(height: 16),
-          if (state.errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Text(state.errorMessage!,
-                  style: const TextStyle(color: Colors.red)),
-            ),
-          if (state.isConnected) ...[
-            const Divider(height: 40),
-            Text(t.settings.armtekSettings.supplierInfoSectionTitle,
-                style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 16),
-            if (state.isLoadingArmtekData) const LoadingIndicator(),
-            if (state.userVkorgList != null && state.userVkorgList!.isNotEmpty)
-              DropdownButtonFormField<String>(
-                value: state.selectedVkorg,
-                decoration: InputDecoration(
-                  labelText: t.settings.armtekSettings.vkorgLabel,
-                  border: const OutlineInputBorder(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSupplierInfoContent(BuildContext context, ArmtekSettingsState state,
+      ArmtekSettingsNotifier notifier, Translations t) {
+    if (state.isLoadingArmtekData) {
+      return const Center(child: LoadingIndicator());
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (state.userVkorgList != null && state.userVkorgList!.isNotEmpty)
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.store,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          t.settings.armtekSettings.vkorgLabel,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: state.selectedVkorg,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                      items: state.userVkorgList!
+                          .map((vkorg) => DropdownMenuItem<String>(
+                                value: vkorg.vkorg,
+                                child: Text('${vkorg.programName} (${vkorg.vkorg})'),
+                              ))
+                          .toList(),
+                      onChanged: (value) => notifier.selectVkorg(value),
+                    ),
+                  ],
                 ),
-                items: state.userVkorgList!
-                    .map((vkorg) => DropdownMenuItem<String>(
-                          value: vkorg.vkorg,
-                          child: Text('${vkorg.programName} (${vkorg.vkorg})'),
-                        ))
-                    .toList(),
-                onChanged: state.isLoadingArmtekData
-                    ? null
-                    : (value) => notifier.selectVkorg(value),
               ),
-            const SizedBox(height: 16),
-            if (state.selectedVkorg != null && state.userInfo != null)
-              _buildUserInfo(context, state.userInfo!, t),
-          ],
+            ),
+          const SizedBox(height: 16),
+          if (state.selectedVkorg != null && state.userInfo != null)
+            _buildUserInfo(context, state.userInfo!, t),
         ],
       ),
     );
@@ -206,25 +347,16 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen> {
     final structure = userInfo.structure;
 
     if (structure == null) {
-      return Text(t.settings.armtekSettings.userInfoUnavailable);
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(t.settings.armtekSettings.userInfoUnavailable),
+        ),
+      );
     }
 
-    // Используем новый master-detail виджет с адаптивной высотой
-    // Высота зависит от размера экрана
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-    
-    // Для больших экранов используем больше пространства
-    double heightFactor = screenWidth > 1200 ? 0.7 : 0.6;
-    
-    // Минимальная и максимальная высота для лучшего UX
-    double calculatedHeight = screenHeight * heightFactor;
-    double widgetHeight = calculatedHeight.clamp(400.0, 800.0);
-    
-    return SizedBox(
-      height: widgetHeight,
-      child: ArmtekInfoMasterDetail(structure: structure),
-    );
+    // Без фиксированной высоты, виджет занимает всё доступное пространство
+    return ArmtekInfoMasterDetail(structure: structure);
   }
 
 
