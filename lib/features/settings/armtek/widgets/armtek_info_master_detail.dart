@@ -965,6 +965,16 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           });
         },
       ));
+    } else {
+      // Временная карточка для отладки
+      cards.add(_buildCompactInfoCard(
+        icon: Icons.warehouse,
+        title: 'Склады',
+        count: 0,
+        color: Colors.grey,
+        onTap: null,
+      ));
+      print('Store card added with 0 count (no data)');
     }
     
     // Бренды (если есть данные)
@@ -981,6 +991,16 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           });
         },
       ));
+    } else {
+      // Временная карточка для отладки
+      cards.add(_buildCompactInfoCard(
+        icon: Icons.branding_watermark,
+        title: 'Бренды',
+        count: 0,
+        color: Colors.grey,
+        onTap: null,
+      ));
+      print('Brand card added with 0 count (no data)');
     }
     
     return cards;
