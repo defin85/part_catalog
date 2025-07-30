@@ -13,4 +13,11 @@ abstract class StoreItem with _$StoreItem {
 
   factory StoreItem.fromJson(Map<String, dynamic> json) =>
       _$StoreItemFromJson(json);
+
+  // Фабричный метод для создания из строки (когда API возвращает список строк)
+  factory StoreItem.fromString(String storeString) => StoreItem(
+    keyzak: storeString,
+    sklCode: storeString,
+    sklName: storeString, // Используем ту же строку для всех полей
+  );
 }

@@ -12,4 +12,13 @@ abstract class BrandItem with _$BrandItem {
 
   factory BrandItem.fromJson(Map<String, dynamic> json) =>
       _$BrandItemFromJson(json);
+
+  // Фабричный метод для создания из строки (когда API возвращает список строк)
+  factory BrandItem.fromString(String? brandString) {
+    final safeString = brandString ?? 'UNKNOWN';
+    return BrandItem(
+      brand: safeString,
+      brandName: safeString, // Используем ту же строку для имени бренда
+    );
+  }
 }

@@ -443,6 +443,11 @@ class ArmtekSettingsNotifier extends StateNotifier<ArmtekSettingsState> {
       List<BrandItem>? brandListResult;
       if (brandListResponse.status == 200 && brandListResponse.responseData != null) {
         brandListResult = brandListResponse.responseData;
+        _logger.i('BrandList loaded successfully, items count: ${brandListResult!.length}');
+        if (brandListResult.isNotEmpty) {
+          final firstBrand = brandListResult.first;
+          _logger.d('First brand: brand=${firstBrand.brand}, brandName=${firstBrand.brandName}');
+        }
       } else {
         _logger.w('Ошибка при получении BrandList: ${brandListResponse.status} - ${brandListResponse.messages?.map((m) => m.text).join(', ')}');
       }

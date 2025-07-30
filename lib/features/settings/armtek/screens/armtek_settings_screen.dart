@@ -386,10 +386,6 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
       BuildContext context, UserInfoResponse userInfo, ArmtekSettingsState state, Translations t) {
     final structure = userInfo.structure;
 
-    // Debug logging
-    print('=== _buildUserInfo Debug ===');
-    print('state.storeList: ${state.storeList?.length ?? "null"}');
-    print('state.brandList: ${state.brandList?.length ?? "null"}');
 
     if (structure == null) {
       return Card(

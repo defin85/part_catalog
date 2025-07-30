@@ -892,16 +892,6 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   List<Widget> _getSummaryCards() {
     final cards = <Widget>[];
     
-    // Debug logging
-    print('=== _getSummaryCards Debug ===');
-    print('storeList: ${widget.storeList?.length ?? "null"}');
-    print('brandList: ${widget.brandList?.length ?? "null"}');
-    if (widget.storeList != null && widget.storeList!.isNotEmpty) {
-      print('First store: ${widget.storeList!.first.sklName}');
-    }
-    if (widget.brandList != null && widget.brandList!.isNotEmpty) {
-      print('First brand: ${widget.brandList!.first.brandName}');
-    }
     
     // Плательщики
     cards.add(_buildCompactInfoCard(
@@ -974,7 +964,6 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         color: Colors.grey,
         onTap: null,
       ));
-      print('Store card added with 0 count (no data)');
     }
     
     // Бренды (если есть данные)
@@ -1000,7 +989,6 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         color: Colors.grey,
         onTap: null,
       ));
-      print('Brand card added with 0 count (no data)');
     }
     
     return cards;
@@ -1161,6 +1149,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   
   Widget _buildStoresTable(List<StoreItem> stores, Translations t) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -1168,37 +1157,91 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             const Icon(Icons.warehouse, size: 32),
             const SizedBox(width: 12),
             Text(
-              'Склады',
+              'Склады (${stores.length})',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],
         ),
         const SizedBox(height: 16),
-        Card(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Ключ')),
-                DataColumn(label: Text('Код склада')),
-                DataColumn(label: Text('Наименование склада')),
-              ],
-              rows: stores.map((store) {
-                return DataRow(cells: [
-                  DataCell(Text(store.keyzak)),
-                  DataCell(Text(store.sklCode)),
-                  DataCell(Text(store.sklName)),
-                ]);
-              }).toList(),
-            ),
+        SizedBox(
+          height: 400, // Фиксированная высота для избежания unbounded constraints
+          child: Card(
+            child: stores.length > 50 
+              ? _buildLazyStoresTable(stores)
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Ключ')),
+                      DataColumn(label: Text('Код склада')),
+                      DataColumn(label: Text('Наименование склада')),
+                    ],
+                    rows: stores.map((store) {
+                      return DataRow(cells: [
+                        DataCell(Text(store.keyzak)),
+                        DataCell(Text(store.sklCode)),
+                        DataCell(Text(store.sklName)),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
           ),
         ),
       ],
     );
   }
+
+  Widget _buildLazyStoresTable(List<StoreItem> stores) {
+    return ListView.builder(
+      itemCount: stores.length + 1, // +1 для заголовка
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          // Заголовок таблицы
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: const Row(
+              children: [
+                Expanded(flex: 2, child: Text('Ключ', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(flex: 2, child: Text('Код склада', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(flex: 4, child: Text('Наименование склада', style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
+          );
+        }
+        
+        final store = stores[index - 1];
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(flex: 2, child: Text(store.keyzak)),
+              Expanded(flex: 2, child: Text(store.sklCode)),
+              Expanded(flex: 4, child: Text(store.sklName)),
+            ],
+          ),
+        );
+      },
+    );
+  }
   
   Widget _buildBrandsTable(List<BrandItem> brands, Translations t) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -1206,30 +1249,81 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             const Icon(Icons.branding_watermark, size: 32),
             const SizedBox(width: 12),
             Text(
-              'Бренды',
+              'Бренды (${brands.length})',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ],
         ),
         const SizedBox(height: 16),
-        Card(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('Код бренда')),
-                DataColumn(label: Text('Наименование')),
-              ],
-              rows: brands.map((brand) {
-                return DataRow(cells: [
-                  DataCell(Text(brand.brand)),
-                  DataCell(Text(brand.brandName)),
-                ]);
-              }).toList(),
-            ),
+        SizedBox(
+          height: 400, // Фиксированная высота для избежания unbounded constraints
+          child: Card(
+            child: brands.length > 50 
+              ? _buildLazyBrandsTable(brands)
+              : SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Код бренда')),
+                      DataColumn(label: Text('Наименование')),
+                    ],
+                    rows: brands.map((brand) {
+                      return DataRow(cells: [
+                        DataCell(Text(brand.brand)),
+                        DataCell(Text(brand.brandName)),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLazyBrandsTable(List<BrandItem> brands) {
+    return ListView.builder(
+      itemCount: brands.length + 1, // +1 для заголовка
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          // Заголовок таблицы
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
+              ),
+            ),
+            child: const Row(
+              children: [
+                Expanded(flex: 2, child: Text('Код бренда', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(flex: 3, child: Text('Наименование', style: TextStyle(fontWeight: FontWeight.bold))),
+              ],
+            ),
+          );
+        }
+        
+        final brand = brands[index - 1];
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 0.5,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(flex: 2, child: Text(brand.brand)),
+              Expanded(flex: 3, child: Text(brand.brandName)),
+            ],
+          ),
+        );
+      },
     );
   }
 }

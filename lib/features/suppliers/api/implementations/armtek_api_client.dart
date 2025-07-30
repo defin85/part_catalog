@@ -9,6 +9,7 @@ import 'package:retrofit/retrofit.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/armtek_response_wrapper.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/armtek_message.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
@@ -20,6 +21,7 @@ part 'armtek_api_client.g.dart';
 
 const String armtekBaseUrl =
     "http://ws.armtek.ru/api"; // Можно вынести в конфигурацию
+
 
 
 @RestApi(baseUrl: armtekBaseUrl)
@@ -175,17 +177,6 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         return handler.next(options);
       },
       onResponse: (response, handler) {
-        // Логируем ответ для getStoreList
-        if (response.requestOptions.uri.path.contains('getStoreList')) {
-          _logger.d('getStoreList raw response: ${response.data}');
-          if (response.data is Map && response.data['RESP'] != null) {
-            _logger.d('RESP type: ${response.data['RESP'].runtimeType}');
-            if (response.data['RESP'] is List && response.data['RESP'].isNotEmpty) {
-              _logger.d('First RESP item: ${response.data['RESP'][0]}');
-              _logger.d('First RESP item type: ${response.data['RESP'][0].runtimeType}');
-            }
-          }
-        }
         return handler.next(response);
       },
     ));
@@ -349,7 +340,87 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList(
       String vkorg) async {
     _logger.i('Getting brand list for VKORG: $vkorg');
-    return _client.getBrandList(vkorg: vkorg);
+    _logger.d('Making request to: $_effectiveBaseUrl/ws_user/getBrandList');
+    try {
+      // Попробуем получить сырой ответ через Dio с полным URL
+      final response = await _dio.get(
+        '$_effectiveBaseUrl/ws_user/getBrandList',
+        queryParameters: {
+          'VKORG': vkorg,
+          'format': 'json',
+        },
+      );
+      
+      
+      // Парсим ответ вручную
+      if (response.data is Map<String, dynamic>) {
+        final Map<String, dynamic> responseMap = response.data;
+        final int status = responseMap['STATUS'] ?? 500;
+        final List<dynamic> respData = responseMap['RESP'] ?? [];
+        
+        _logger.d('getBrandList response status: $status');
+        _logger.d('getBrandList RESP length: ${respData.length}');
+        if (respData.isNotEmpty) {
+          _logger.d('First RESP item: ${respData.first}');
+        }
+        
+        final List<ArmtekMessage> messages = (responseMap['MESSAGES'] as List<dynamic>?)
+            ?.map((e) => e is Map<String, dynamic> 
+                ? ArmtekMessage.fromJson(e)
+                : ArmtekMessage(type: 'INFO', text: e.toString(), date: DateTime.now().toIso8601String()))
+            .toList() ?? [];
+        
+        
+        // Обрабатываем данные в основном потоке (без изолята для упрощения)
+        List<BrandItem> brandItems = [];
+        for (var item in respData) {
+          try {
+            if (item is String) {
+              brandItems.add(BrandItem.fromString(item));
+            } else if (item is Map<String, dynamic>) {
+              brandItems.add(BrandItem.fromJson(item));
+            } else if (item == null) {
+              _logger.w('Null item in brandList, skipping');
+              continue;
+            } else {
+              brandItems.add(BrandItem.fromString(item.toString()));
+            }
+          } catch (e) {
+            _logger.w('Error parsing brand item: $item, error: $e');
+            continue;
+          }
+        }
+        
+        _logger.i('Successfully parsed ${brandItems.length} brands');
+        
+        return ArmtekResponseWrapper<List<BrandItem>>(
+          status: status,
+          responseData: brandItems,
+          messages: messages,
+        );
+      } else {
+        _logger.e('Unexpected response format in getBrandList');
+        return ArmtekResponseWrapper<List<BrandItem>>(
+          status: 500,
+          responseData: <BrandItem>[],
+          messages: [ArmtekMessage(type: 'ERROR', text: 'Unexpected response format', date: DateTime.now().toIso8601String())],
+        );
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Error in getBrandList', error: e, stackTrace: stackTrace);
+      
+      // Добавляем более детальную информацию об ошибке
+      String errorDetails = 'Error: ${e.toString()}';
+      if (e.toString().contains('type cast')) {
+        errorDetails += ' - Possible null value in API response';
+      }
+      
+      return ArmtekResponseWrapper<List<BrandItem>>(
+        status: 500,
+        responseData: <BrandItem>[],
+        messages: [ArmtekMessage(type: 'ERROR', text: errorDetails, date: DateTime.now().toIso8601String())],
+      );
+    }
   }
 
   // Добавляем метод getStoreList
@@ -361,28 +432,69 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     _logger.d('Sending getStoreList request with VKORG: $vkorgNum (type: ${vkorgNum.runtimeType})');
     
     try {
-      // Отправляем VKORG как число
-      final response = await _client.getStoreList(body: {'VKORG': vkorgNum});
-      _logger.i('getStoreList response status: ${response.status}');
-      _logger.d('getStoreList response data count: ${response.responseData?.length ?? 0}');
+      // Попробуем получить сырой ответ через Dio с полным URL
+      final response = await _dio.post(
+        '$_effectiveBaseUrl/ws_user/getStoreList',
+        data: {'VKORG': vkorgNum},
+      );
       
-      // Добавим логирование типа данных
-      if (response.responseData != null && response.responseData!.isNotEmpty) {
-        _logger.d('Response data type: ${response.responseData.runtimeType}');
-        _logger.d('First item type: ${response.responseData!.first.runtimeType}');
+      
+      // Парсим ответ вручную
+      if (response.data is Map<String, dynamic>) {
+        final Map<String, dynamic> responseMap = response.data;
+        final int status = responseMap['STATUS'] ?? 500;
+        final List<dynamic> respData = responseMap['RESP'] ?? [];
+        final List<ArmtekMessage> messages = (responseMap['MESSAGES'] as List<dynamic>?)
+            ?.map((e) => e is Map<String, dynamic> 
+                ? ArmtekMessage.fromJson(e)
+                : ArmtekMessage(type: 'INFO', text: e.toString(), date: DateTime.now().toIso8601String()))
+            .toList() ?? [];
+        
+        
+        // Обрабатываем данные в основном потоке (без изолята для упрощения)
+        List<StoreItem> storeItems = [];
+        for (var item in respData) {
+          try {
+            if (item is String) {
+              storeItems.add(StoreItem.fromString(item));
+            } else if (item is Map<String, dynamic>) {
+              storeItems.add(StoreItem.fromJson(item));
+            } else if (item == null) {
+              _logger.w('Null item in storeList, skipping');
+              continue;
+            } else {
+              storeItems.add(StoreItem.fromString(item.toString()));
+            }
+          } catch (e) {
+            _logger.w('Error parsing store item: $item, error: $e');
+            continue;
+          }
+        }
+        
+        _logger.i('Successfully parsed ${storeItems.length} stores');
+        
+        return ArmtekResponseWrapper<List<StoreItem>>(
+          status: status,
+          responseData: storeItems,
+          messages: messages,
+        );
+      } else {
+        _logger.e('Unexpected response format in getStoreList');
+        return ArmtekResponseWrapper<List<StoreItem>>(
+          status: 500,
+          responseData: <StoreItem>[],
+          messages: [ArmtekMessage(type: 'ERROR', text: 'Unexpected response format', date: DateTime.now().toIso8601String())],
+        );
       }
-      
-      return response;
     } catch (e, stackTrace) {
       _logger.e('Error in getStoreList', error: e, stackTrace: stackTrace);
       
-      // Если это DioException, выведем больше информации
-      if (e is DioException) {
-        _logger.e('DioException response data: ${e.response?.data}');
-        _logger.e('DioException response data type: ${e.response?.data.runtimeType}');
-      }
       
-      rethrow;
+      return ArmtekResponseWrapper<List<StoreItem>>(
+        status: 500,
+        responseData: <StoreItem>[],
+        messages: [ArmtekMessage(type: 'ERROR', text: 'Error: ${e.toString()}', date: DateTime.now().toIso8601String())],
+      );
     }
   }
 
