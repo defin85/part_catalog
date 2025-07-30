@@ -25,7 +25,11 @@
       "Bash(find:*)",
       "Bash(cp:*)",
       "Bash(git rm:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm install)",
+      "Bash(npx husky add:*)",
+      "Bash(ls:*)",
+      "Bash(npm run test:layout:*)"
     ],
     "deny": []
   }

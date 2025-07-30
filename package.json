@@ -1,0 +1,45 @@
+{
+  "name": "part_catalog",
+  "version": "1.0.0",
+  "description": "Flutter automotive service management application",
+  "scripts": {
+    "test": "flutter test --reporter=compact",
+    "test:coverage": "flutter test --coverage",
+    "analyze": "flutter analyze --no-fatal-infos",
+    "format": "dart format .",
+    "build-runner": "dart run build_runner build --delete-conflicting-outputs",
+    "pre-commit": "npm run test:layout",
+    "test:layout": "flutter test test/widgets/features/settings/armtek/armtek_info_master_detail_test.dart --reporter=compact",
+    "test:critical": "flutter test test/widgets/ --reporter=compact",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/defin85/part_catalog.git"
+  },
+  "keywords": [
+    "flutter",
+    "automotive",
+    "service",
+    "management"
+  ],
+  "author": "Part Catalog Team",
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "lint-staged": {
+    "lib/**/*.dart": [
+      "dart format",
+      "flutter analyze"
+    ],
+    "test/**/*.dart": [
+      "dart format"
+    ]
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
