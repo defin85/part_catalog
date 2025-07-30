@@ -15,7 +15,6 @@ import 'package:part_catalog/features/suppliers/models/armtek/user_info_response
 import 'package:part_catalog/features/suppliers/models/armtek/price_status_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/search_result.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/order_response.dart';
-// TODO: Импортировать модели для getBrandList и getStoreList, когда они будут созданы
 
 part 'armtek_api_client.g.dart';
 
