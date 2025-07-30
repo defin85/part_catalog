@@ -28,8 +28,15 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    final initialState = ref.read(armtekSettingsNotifierProvider);
-    _loginController.text = initialState.loginInput;
+    
+    // Устанавливаем начальные значения после первого фрейма
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final initialState = ref.read(armtekSettingsNotifierProvider);
+        _loginController.text = initialState.loginInput;
+        _passwordController.text = initialState.passwordInput;
+      }
+    });
   }
 
   @override
@@ -46,12 +53,17 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
     final notifier = ref.read(armtekSettingsNotifierProvider.notifier);
     final t = Translations.of(context);
 
-    if (_loginController.text != state.loginInput &&
-        !(_formKey.currentState?.validate() ?? false)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _loginController.text = state.loginInput;
-      });
-    }
+    // Синхронизируем контроллеры с состоянием
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        if (_loginController.text != state.loginInput) {
+          _loginController.text = state.loginInput;
+        }
+        if (_passwordController.text != state.passwordInput) {
+          _passwordController.text = state.passwordInput;
+        }
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -152,6 +164,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
       ArmtekSettingsNotifier notifier, Translations t) {
     return Form(
       key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -177,6 +190,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
                   ),
                   const SizedBox(height: 24),
                   TextFormField(
+                    key: const Key('login_field'),
                     controller: _loginController,
                     decoration: InputDecoration(
                       labelText: t.settings.armtekSettings.loginLabel,
@@ -185,7 +199,10 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
                     ),
                     onChanged: notifier.updateLogin,
                     validator: (value) {
-                      if (value == null || value.isEmpty) {
+                      // Проверяем актуальное значение из состояния, а не только из поля
+                      final actualValue = value ?? '';
+                      final stateValue = state.loginInput;
+                      if (actualValue.isEmpty && stateValue.isEmpty) {
                         return t.settings.armtekSettings.loginRequiredError;
                       }
                       return null;
@@ -193,6 +210,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    key: const Key('password_field'),
                     controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: t.settings.armtekSettings.passwordLabel,
