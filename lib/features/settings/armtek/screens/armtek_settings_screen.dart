@@ -23,6 +23,7 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late TabController _tabController;
+  bool _passwordVisible = false;
 
   @override
   void initState() {
@@ -216,8 +217,18 @@ class _ArmtekSettingsScreenState extends ConsumerState<ArmtekSettingsScreen>
                       labelText: t.settings.armtekSettings.passwordLabel,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _passwordVisible ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _passwordVisible = !_passwordVisible;
+                          });
+                        },
+                      ),
                     ),
-                    obscureText: true,
+                    obscureText: !_passwordVisible,
                     onChanged: notifier.updatePassword,
                   ),
                   if (state.connectionStatusMessage != null) ...[
