@@ -28,6 +28,9 @@
     "addToOrder": "Add to Order",
     "noActiveOrders": "No active orders",
     "selectOrder": "Select Order",
-    "partAddedToOrder": "Part added to order {orderName}"
+    "partAddedToOrder": "Part added to order {orderName}",
+    "apiNotConfigured": "API not configured",
+    "configureApiMessage": "Configure supplier API settings to enable parts search",
+    "goToSettings": "Go to Settings"
   }
 }

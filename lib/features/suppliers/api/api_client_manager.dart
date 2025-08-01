@@ -131,6 +131,14 @@ class ApiClientManager {
   /// Возвращает список всех доступных клиентов API в зависимости от текущего режима.
   List<BaseSupplierApiClient> getAllAvailableClients() {
     _logger.d('Getting all available clients for mode: $_currentMode');
+    
+    // Если кэш пуст, создаем клиентов по умолчанию
+    if (_currentMode == ApiConnectionMode.direct && _cachedDirectClients.isEmpty) {
+      _initializeDefaultDirectClients();
+    } else if (_currentMode == ApiConnectionMode.proxy && _cachedProxyClients.isEmpty) {
+      _initializeDefaultProxyClients();
+    }
+    
     if (_currentMode == ApiConnectionMode.direct) {
       return _cachedDirectClients.values.toList();
     } else if (_currentMode == ApiConnectionMode.proxy) {
@@ -259,6 +267,46 @@ class ApiClientManager {
     _cachedProxyClients.clear();
     _optimizedClients.clear();
     // Не вызываем OptimizedApiClientFactory.dispose() так как он может использоваться другими компонентами
+  }
+
+  /// Инициализирует клиентов для прямого режима подключения по умолчанию
+  void _initializeDefaultDirectClients() {
+    _logger.i('Initializing default direct clients');
+    
+    // Создаем Armtek клиент с настройками по умолчанию
+    try {
+      // TODO: В будущем получать настройки из SupplierConfigService
+      // Пока что создаем клиент без авторизации для ping-запросов
+      // Для реальных запросов потребуется настройка через UI
+      final armtekClient = ArmtekApiClient(_dio);
+      _cachedDirectClients[SupplierCode.armtek.code] = armtekClient;
+      _logger.i('Created default Armtek direct client (no auth - limited functionality)');
+      _logger.w('Armtek client requires username/password/VKORG for full functionality. Configure in Settings.');
+    } catch (e, stackTrace) {
+      _logger.e('Failed to create default Armtek direct client', error: e, stackTrace: stackTrace);
+    }
+    
+    // TODO: Добавить других поставщиков по мере реализации
+  }
+
+  /// Инициализирует клиентов для прокси режима подключения по умолчанию
+  void _initializeDefaultProxyClients() {
+    _logger.i('Initializing default proxy clients');
+    
+    if (_proxyUrl == null || _proxyUrl!.isEmpty) {
+      _logger.w('Cannot initialize proxy clients: proxy URL is not set');
+      return;
+    }
+    
+    try {
+      final armtekClient = ArmtekApiClient(_dio, baseUrl: _proxyUrl);
+      _cachedProxyClients[SupplierCode.armtek.code] = armtekClient;
+      _logger.i('Created default Armtek proxy client with URL: $_proxyUrl');
+    } catch (e, stackTrace) {
+      _logger.e('Failed to create default Armtek proxy client', error: e, stackTrace: stackTrace);
+    }
+    
+    // TODO: Добавить других поставщиков по мере реализации
   }
 
   // TODO: Добавить методы для создания конкретных клиентов ( _createDirectClientFor, _createProxyClientFor)

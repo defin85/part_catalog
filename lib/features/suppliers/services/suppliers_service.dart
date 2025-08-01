@@ -36,11 +36,21 @@ class SuppliersService {
         _logger.i(
             'Received ${prices.length} price offers for "$articleNumber" from ${client.supplierName}');
       } catch (e, stackTrace) {
-        _logger.e(
-          'Error fetching prices from ${client.supplierName} for article $articleNumber',
-          error: e,
-          stackTrace: stackTrace,
-        );
+        // Логируем детали ошибки для отладки
+        if (e.toString().contains('VKORG not configured') || 
+            e.toString().contains('401') || 
+            e.toString().contains('Unauthorized')) {
+          _logger.w(
+            'Authentication/configuration error for ${client.supplierName}: ${e.toString()}. '
+            'Check API credentials and VKORG settings.',
+          );
+        } else {
+          _logger.e(
+            'Error fetching prices from ${client.supplierName} for article $articleNumber',
+            error: e,
+            stackTrace: stackTrace,
+          );
+        }
         results[client.supplierName] =
             []; // Возвращаем пустой список в случае ошибки
       }

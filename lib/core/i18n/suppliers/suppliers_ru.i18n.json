@@ -28,6 +28,9 @@
     "addToOrder": "Добавить в заказ",
     "noActiveOrders": "Нет активных заказов",
     "selectOrder": "Выберите заказ",
-    "partAddedToOrder": "Запчасть добавлена в заказ {orderName}"
+    "partAddedToOrder": "Запчасть добавлена в заказ {orderName}",
+    "apiNotConfigured": "API не настроен",
+    "configureApiMessage": "Настройте API поставщиков для включения поиска запчастей",
+    "goToSettings": "Перейти к настройкам"
   }
 }
