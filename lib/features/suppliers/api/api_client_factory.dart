@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
-import 'package:part_catalog/core/utils/logger_config.dart';
 
 /// Фабрика для создания API клиентов на основе конфигураций
 class ApiClientFactory {

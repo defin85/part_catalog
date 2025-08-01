@@ -67,5 +67,8 @@
     "scheduledShort": "Sched",
     "durationHours": "Duration (hours)",
     "changeStatus": "Change Status",
-    "waitForPartsAction": "Wait for Parts"
+    "waitForPartsAction": "Wait for Parts",
+    "orders": "orders",
+    "client": "Client",
+    "orderItem": "order item"
 }

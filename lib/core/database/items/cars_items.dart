@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
-import 'clients_items.dart';
 import 'package:uuid/uuid.dart';
+
+import 'clients_items.dart';
 
 /// {@template cars_items}
 /// Таблица автомобилей для хранения в базе данных.

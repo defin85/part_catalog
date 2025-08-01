@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
+
 import 'package:part_catalog/core/utils/logger_config.dart';
+import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Сервис для управления конфигурациями поставщиков
 class SupplierConfigService {

@@ -1,10 +1,11 @@
-import 'package:part_catalog/features/core/entity_core_data.dart';
+import 'package:part_catalog/core/utils/composite_utils.dart';
+import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/document_specific_data.dart';
-import 'package:part_catalog/features/documents/orders/models/order_specific_data.dart';
+import 'package:part_catalog/features/core/document_status.dart';
+import 'package:part_catalog/features/core/entity_core_data.dart';
 import 'package:part_catalog/features/core/i_document_entity.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
-import 'package:part_catalog/features/core/document_status.dart';
-import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/documents/orders/models/order_specific_data.dart';
 import 'package:uuid/uuid.dart';
 
 class OrderModelComposite implements IDocumentEntity {
@@ -39,7 +40,7 @@ class OrderModelComposite implements IDocumentEntity {
     required String code,
     required String displayName,
     required DateTime documentDate,
-    DocumentStatus status = DocumentStatus.newDoc,
+    DocumentStatus status = DocumentStatus.draft,
     String? clientId,
     String? carId,
     String? description,
@@ -90,14 +91,26 @@ class OrderModelComposite implements IDocumentEntity {
 
   @override
   bool containsSearchText(String query) {
-    if (query.isEmpty) return true;
-    final lowerQuery = query.toLowerCase();
-    if (displayName.toLowerCase().contains(lowerQuery)) return true;
-    if (code.toLowerCase().contains(lowerQuery)) return true;
-    if (description?.toLowerCase().contains(lowerQuery) ?? false) return true;
-    for (final item in items) {
-      if (item.containsSearchText(lowerQuery)) return true;
+    // Используем утилиту для проверки базовых полей
+    bool baseContains = CompositeUtils.containsSearchText(
+      code: coreData.code,
+      displayName: coreData.displayName,
+      searchQuery: query,
+      additionalFields: [
+        orderData.description,
+      ],
+    );
+    
+    if (baseContains) return true;
+    
+    // Дополнительно проверяем элементы документа
+    if (query.isNotEmpty) {
+      final lowerQuery = query.toLowerCase();
+      for (final item in items) {
+        if (item.containsSearchText(lowerQuery)) return true;
+      }
     }
+    
     return false;
   }
 
@@ -128,6 +141,38 @@ class OrderModelComposite implements IDocumentEntity {
   String? get clientId => orderData.clientId;
   String? get carId => orderData.carId;
   String? get description => orderData.description;
+  DateTime? get scheduledDate => docData.scheduledDate;
+
+  // Методы для проверки возможности выполнения операций
+  bool get canEdit => DocumentCompositeUtils.canEdit(
+    isPosted: isPosted,
+    status: status,
+  );
+
+  bool get canPost => DocumentCompositeUtils.canPost(
+    isPosted: isPosted,
+    status: status,
+  );
+
+  bool get canUnpost => DocumentCompositeUtils.canUnpost(
+    isPosted: isPosted,
+    status: status,
+  );
+
+  bool get canCancel => DocumentCompositeUtils.canCancel(
+    status: status,
+  );
+
+  bool get isOverdue => DocumentCompositeUtils.isOverdue(
+    scheduledDate: scheduledDate,
+    status: status,
+  );
+
+  bool get isActive => DocumentCompositeUtils.isActive(status);
+
+  bool get isFinished => DocumentCompositeUtils.isFinished(status);
+
+  int? get daysUntilScheduled => DocumentCompositeUtils.getDaysUntilScheduled(scheduledDate);
 
   @override
   OrderModelComposite withStatus(DocumentStatus newStatus) {
@@ -237,14 +282,45 @@ class OrderModelComposite implements IDocumentEntity {
     );
   }
 
+  /// Возвращает новый экземпляр, помеченный как удаленный.
+  OrderModelComposite markAsDeleted() {
+    return CompositeUtils.markAsDeleted(
+      coreData: coreData,
+      rebuild: (newCoreData) => OrderModelComposite(
+        coreData: newCoreData,
+        docData: docData,
+        orderData: orderData,
+        itemsMap: itemsMap,
+      ),
+    );
+  }
+
+  /// Возвращает новый экземпляр, восстановленный из удаленных.
+  OrderModelComposite restore() {
+    return CompositeUtils.restore(
+      coreData: coreData,
+      rebuild: (newCoreData) => OrderModelComposite(
+        coreData: newCoreData,
+        docData: docData,
+        orderData: orderData,
+        itemsMap: itemsMap,
+      ),
+    );
+  }
+
   OrderModelComposite copyWith({
     EntityCoreData? coreData,
     DocumentSpecificData? docData,
     OrderSpecificData? orderData,
     Map<BaseItemType, List<IDocumentItemEntity>>? itemsMap,
   }) {
+    // Если есть изменения в данных (кроме coreData), обновляем дату модификации
+    final bool hasChanges = docData != null || orderData != null || itemsMap != null;
+    final EntityCoreData finalCoreData = coreData ?? 
+        (hasChanges ? CompositeUtils.ensureModifiedDate(this.coreData) : this.coreData);
+    
     return OrderModelComposite(
-      coreData: coreData ?? this.coreData,
+      coreData: finalCoreData,
       docData: docData ?? this.docData,
       orderData: orderData ?? this.orderData,
       itemsMap: itemsMap ?? this.itemsMap,

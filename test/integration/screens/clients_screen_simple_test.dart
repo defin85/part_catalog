@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/features/references/clients/screens/clients_screen.dart';
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
+import 'package:part_catalog/features/references/clients/screens/clients_screen.dart';
 
 import '../../helpers/test_helpers.dart';
 import '../../mocks/mock_services.mocks.dart';

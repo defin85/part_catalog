@@ -1,7 +1,7 @@
 #!/usr/bin/env dart
 
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 /// Скрипт для запуска всех тестов с детальной отчетностью
 class TestRunner {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/core/widgets/language_switcher.dart';
-import 'package:part_catalog/core/i18n/strings.g.dart';
 
 class HomeScreen extends StatelessWidget {
   final Widget child;

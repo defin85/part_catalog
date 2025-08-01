@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:part_catalog/core/utils/logger_config.dart';
+import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
+import 'package:part_catalog/core/api/resilient_api_client.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
 import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart';
@@ -23,6 +25,9 @@ class ApiClientManager {
   // Карты для кэширования созданных клиентов (опционально, для производительности)
   final Map<String, BaseSupplierApiClient> _cachedDirectClients = {};
   final Map<String, BaseSupplierApiClient> _cachedProxyClients = {};
+  
+  // Карта для кэширования оптимизированных клиентов
+  final Map<String, ResilientApiClient> _optimizedClients = {};
 
   ApiConnectionMode get currentMode => _currentMode;
   String? get proxyUrl => _proxyUrl;
@@ -141,10 +146,119 @@ class ApiClientManager {
     // При смене режима или URL прокси, кэшированные клиенты могут стать невалидными
     _cachedDirectClients.clear();
     _cachedProxyClients.clear();
+    _optimizedClients.clear();
 
     // Здесь может быть логика предварительного создания "стандартных" клиентов
     // для всех известных поставщиков, если это необходимо.
     // Например, на основе списка `supportedSuppliers` из `supported_suppliers.dart`.
+  }
+
+  /// Получает оптимизированный API клиент с отказоустойчивостью
+  Future<ResilientApiClient?> getOptimizedClient({
+    required String supplierCode,
+    String? username,
+    String? password,
+    String? vkorg,
+    String? proxyAuthToken,
+  }) async {
+    _logger.d('Getting optimized client for supplier: $supplierCode, mode: $_currentMode');
+
+    final clientKey = '${supplierCode.toLowerCase()}_${_currentMode.name}';
+    
+    // Проверяем кэш
+    if (_optimizedClients.containsKey(clientKey)) {
+      return _optimizedClients[clientKey];
+    }
+
+    // Определяем базовый URL для поставщика
+    String? baseUrl;
+    Map<String, String> additionalHeaders = {};
+    
+    switch (supplierCode.toLowerCase()) {
+      case 'armtek':
+        baseUrl = armtekBaseUrl;
+        if (vkorg != null) {
+          additionalHeaders['X-Default-VKORG'] = vkorg;
+        }
+        break;
+      // Добавить другие поставщики по мере необходимости
+      default:
+        _logger.w('Unknown supplier code: $supplierCode');
+        return null;
+    }
+
+    // baseUrl никогда не будет null для Armtek, так как мы его устанавливаем выше
+
+    try {
+      final optimizedClient = OptimizedApiClientFactory.createSupplierClient(
+        supplierCode: supplierCode,
+        baseUrl: baseUrl,
+        connectionMode: _currentMode,
+        username: username,
+        password: password,
+        proxyUrl: _proxyUrl,
+        proxyAuthToken: proxyAuthToken,
+        additionalHeaders: additionalHeaders,
+      );
+
+      // Кэшируем клиент
+      _optimizedClients[clientKey] = optimizedClient;
+
+      _logger.i('Created optimized client for supplier: $supplierCode');
+      return optimizedClient;
+    } catch (e, stackTrace) {
+      _logger.e('Failed to create optimized client for supplier: $supplierCode',
+          error: e, stackTrace: stackTrace);
+      return null;
+    }
+  }
+
+  /// Получает статистику производительности всех клиентов
+  Map<String, dynamic> getPerformanceStats() {
+    return OptimizedApiClientFactory.getPerformanceStats();
+  }
+
+  /// Выполняет health check для всех оптимизированных клиентов
+  Future<Map<String, bool>> performHealthCheckAll() async {
+    _logger.i('Performing health check for all optimized clients');
+    return await OptimizedApiClientFactory.performHealthCheckAll();
+  }
+
+  /// Получает отчет о состоянии API
+  Map<String, dynamic> generateHealthReport() {
+    return OptimizedApiClientFactory.generateHealthReport();
+  }
+
+  /// Сбрасывает все circuit breakers
+  void resetAllCircuitBreakers() {
+    _logger.i('Resetting all circuit breakers');
+    OptimizedApiClientFactory.resetAllCircuitBreakers();
+  }
+
+  /// Принудительно закрывает все circuit breakers
+  Future<void> forceCloseAllCircuitBreakers() async {
+    _logger.i('Force closing all circuit breakers');
+    await OptimizedApiClientFactory.forceCloseAllCircuitBreakers();
+  }
+
+  /// Очищает кеш всех клиентов
+  Future<void> clearAllCaches() async {
+    _logger.i('Clearing all caches');
+    await OptimizedApiClientFactory.clearAllCaches();
+  }
+
+  /// Получает диагностику всех клиентов
+  Map<String, Map<String, dynamic>> getAllDiagnostics() {
+    return OptimizedApiClientFactory.getAllDiagnostics();
+  }
+
+  /// Освобождает ресурсы при уничтожении менеджера
+  void dispose() {
+    _logger.i('Disposing ApiClientManager');
+    _cachedDirectClients.clear();
+    _cachedProxyClients.clear();
+    _optimizedClients.clear();
+    // Не вызываем OptimizedApiClientFactory.dispose() так как он может использоваться другими компонентами
   }
 
   // TODO: Добавить методы для создания конкретных клиентов ( _createDirectClientFor, _createProxyClientFor)

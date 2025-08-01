@@ -34,5 +34,7 @@
     "quantity": "Quantity",
     "print": "Print",
     "description": "Description",
-    "close": "Close"
+    "close": "Close",
+    "createNew": "Create New",
+    "notSpecified": "Not specified"
 }

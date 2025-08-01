@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
+import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
 
 import '../mocks/mock_services.mocks.dart';

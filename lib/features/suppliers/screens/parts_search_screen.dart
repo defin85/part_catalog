@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/features/core/document_status.dart';
+import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
+import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
 import 'package:part_catalog/features/suppliers/widgets/part_price_list_item.dart';
@@ -303,6 +306,11 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(t.common.close),
           ),
+          ElevatedButton.icon(
+            onPressed: () => _addPartToOrder(part),
+            icon: const Icon(Icons.add_shopping_cart),
+            label: Text(t.suppliers.partsSearch.addToOrder),
+          ),
         ],
       ),
     );
@@ -327,5 +335,125 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
         ],
       ),
     );
+  }
+
+  void _addPartToOrder(PartPriceModel part) async {
+    // Закрываем диалог с деталями
+    Navigator.of(context).pop();
+    
+    // Получаем список активных заказов
+    final ordersAsync = ref.read(ordersListProvider);
+    
+    ordersAsync.when(
+      data: (orders) {
+        // Фильтруем только незавершенные заказы
+        final activeOrders = orders.where((order) => 
+          !order.isDeleted && 
+          order.status != DocumentStatus.completed &&
+          order.status != DocumentStatus.cancelled
+        ).toList();
+        
+        if (activeOrders.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(t.suppliers.partsSearch.noActiveOrders),
+              action: SnackBarAction(
+                label: t.common.createNew,
+                onPressed: () {
+                  // TODO: Переход к созданию нового заказа
+                },
+              ),
+            ),
+          );
+          return;
+        }
+        
+        // Показываем диалог выбора заказа
+        _showOrderSelectionDialog(activeOrders, part);
+      },
+      loading: () {},
+      error: (error, stack) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(t.errors.loadingError(entity: t.orders.orders)),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      },
+    );
+  }
+
+  void _showOrderSelectionDialog(List<OrderModelComposite> orders, PartPriceModel part) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.suppliers.partsSearch.selectOrder),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              return ListTile(
+                title: Text(order.displayName),
+                subtitle: Text(
+                  '${t.orders.client}: ${order.clientId ?? t.common.notSpecified}',
+                ),
+                trailing: Chip(
+                  label: Text(order.status.displayName),
+                  backgroundColor: order.status.color.withValues(alpha: 0.2),
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await _addPartToSelectedOrder(order, part);
+                },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(t.common.cancel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addPartToSelectedOrder(OrderModelComposite order, PartPriceModel part) async {
+    if (!mounted) return;
+    
+    try {
+      // Используем OrderService для добавления запчасти в заказ
+      final orderService = ref.read(orderServiceProvider);
+      await orderService.createAndAddPart(
+        orderUuid: order.uuid,
+        partNumber: part.article,
+        name: part.name.isEmpty ? part.article : part.name,
+        price: part.price,
+        brand: part.brand,
+        quantity: 1.0,
+        supplierName: part.supplierName,
+        deliveryDays: part.deliveryDays,
+      );
+      
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t.suppliers.partsSearch.partAddedToOrder(orderName: order.displayName)),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(t.errors.savingError(entity: t.orders.orderItem)),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }

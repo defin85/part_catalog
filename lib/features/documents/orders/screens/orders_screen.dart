@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/documents/orders/providers/orders_pagination_provider.dart';
-import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_details_screen.dart';
+import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
 import 'package:part_catalog/features/documents/orders/widgets/order_list_item.dart';
-import 'package:part_catalog/core/database/daos/orders_dao.dart';
 
 // Преобразуем в ConsumerStatefulWidget
 class OrdersScreen extends ConsumerStatefulWidget {

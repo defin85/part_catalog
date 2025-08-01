@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
-import 'package:part_catalog/features/suppliers/screens/supplier_config_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/parts_search_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/supplier_config_screen.dart';
 
 void main() {
   runApp(

@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:uuid/uuid.dart';
-import 'package:part_catalog/core/database/items/clients_items.dart';
 import 'package:part_catalog/core/database/items/cars_items.dart';
+import 'package:part_catalog/core/database/items/clients_items.dart';
+import 'package:uuid/uuid.dart';
 
 class OrdersItems extends Table {
   // Автоинкрементный числовой ID для эффективного индексирования в БД

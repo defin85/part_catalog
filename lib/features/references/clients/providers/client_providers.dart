@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/providers/core_providers.dart';
@@ -7,7 +8,6 @@ import 'package:part_catalog/core/service_locator.dart'; // Используем
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'client_providers.g.dart'; // Сгенерированный файл
 

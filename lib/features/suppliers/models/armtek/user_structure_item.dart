@@ -1,10 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
-import 'exw_item.dart'; // Новая модель
-import 'za_item.dart'; // Новая модель
-import 'we_item.dart'; // Новая модель
-import 'dogovor_item.dart'; // Новая модель
+
 import 'contact_tab_item.dart'; // Новая модель
+import 'dogovor_item.dart'; // Новая модель
+import 'exw_item.dart'; // Новая модель
+import 'we_item.dart'; // Новая модель
+import 'za_item.dart'; // Новая модель
 
 part 'user_structure_item.freezed.dart';
 part 'user_structure_item.g.dart';

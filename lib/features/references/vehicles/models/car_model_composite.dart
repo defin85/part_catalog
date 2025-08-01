@@ -1,10 +1,11 @@
+import 'package:collection/collection.dart'; // Для ListEquality, MapEquality
+import 'package:part_catalog/core/utils/composite_utils.dart';
+import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/entity_core_data.dart';
-import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
 import 'package:part_catalog/features/core/i_reference_entity.dart';
 import 'package:part_catalog/features/core/i_reference_item_entity.dart';
-import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
 import 'package:uuid/uuid.dart';
-import 'package:collection/collection.dart'; // Для ListEquality, MapEquality
 
 /// {@template car_model_composite}
 /// Бизнес-модель (композитор) для представления автомобиля.
@@ -141,31 +142,30 @@ class CarModelComposite implements IReferenceEntity {
 
   @override
   bool containsSearchText(String query) {
-    if (query.isEmpty) return true;
-    final lowerQuery = query.toLowerCase();
-
-    // Проверяем основные поля
-    if (coreData.displayName.toLowerCase().contains(lowerQuery)) return true;
-    if (coreData.code.toLowerCase().contains(lowerQuery)) {
-      return true; // Поиск по коду (может быть VIN)
+    // Используем утилиту для проверки базовых полей
+    bool baseContains = CompositeUtils.containsSearchText(
+      code: coreData.code,
+      displayName: coreData.displayName,
+      searchQuery: query,
+      additionalFields: [
+        carData.vin,
+        carData.make,
+        carData.model,
+        carData.licensePlate,
+        carData.additionalInfo,
+      ],
+    );
+    
+    if (baseContains) return true;
+    
+    // Дополнительно проверяем элементы (если они есть)
+    if (query.isNotEmpty) {
+      final lowerQuery = query.toLowerCase();
+      for (final item in items) {
+        if (item.containsSearchText(lowerQuery)) return true;
+      }
     }
-    if (carData.vin.toLowerCase().contains(lowerQuery)) {
-      return true; // Явный поиск по VIN
-    }
-    if (carData.make.toLowerCase().contains(lowerQuery)) return true;
-    if (carData.model.toLowerCase().contains(lowerQuery)) return true;
-    if (carData.licensePlate?.toLowerCase().contains(lowerQuery) ?? false) {
-      return true;
-    }
-    if (carData.additionalInfo?.toLowerCase().contains(lowerQuery) ?? false) {
-      return true;
-    }
-
-    // Поиск по элементам (если они есть)
-    for (final item in items) {
-      if (item.containsSearchText(lowerQuery)) return true;
-    }
-
+    
     return false;
   }
 
@@ -205,7 +205,7 @@ class CarModelComposite implements IReferenceEntity {
   /// Возвращает новый экземпляр с обновленным кодом.
   CarModelComposite withCode(String newCode) {
     return CarModelComposite._(
-      coreData.copyWith(code: newCode, modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData.copyWith(code: newCode)),
       carData,
       parentId: parentId,
       isFolder: isFolder,
@@ -218,8 +218,8 @@ class CarModelComposite implements IReferenceEntity {
   /// Также обновляет code, если он совпадает с VIN.
   CarModelComposite withVin(String newVin) {
     final newCoreData = coreData.code == carData.vin
-        ? coreData.copyWith(code: newVin, modifiedAt: DateTime.now())
-        : coreData.copyWith(modifiedAt: DateTime.now());
+        ? CompositeUtils.ensureModifiedDate(coreData.copyWith(code: newVin))
+        : CompositeUtils.ensureModifiedDate(coreData);
     return CarModelComposite._(
       newCoreData,
       carData.copyWith(vin: newVin),
@@ -235,8 +235,8 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withMake(String newMake) {
     final newDisplayName = '$newMake ${carData.model} (${carData.year})';
     return CarModelComposite._(
-      coreData.copyWith(
-          displayName: newDisplayName, modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData.copyWith(
+          displayName: newDisplayName)),
       carData.copyWith(make: newMake),
       parentId: parentId,
       isFolder: isFolder,
@@ -250,8 +250,8 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withModel(String newModel) {
     final newDisplayName = '${carData.make} $newModel (${carData.year})';
     return CarModelComposite._(
-      coreData.copyWith(
-          displayName: newDisplayName, modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData.copyWith(
+          displayName: newDisplayName)),
       carData.copyWith(model: newModel),
       parentId: parentId,
       isFolder: isFolder,
@@ -265,8 +265,8 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withYear(int newYear) {
     final newDisplayName = '${carData.make} ${carData.model} ($newYear)';
     return CarModelComposite._(
-      coreData.copyWith(
-          displayName: newDisplayName, modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData.copyWith(
+          displayName: newDisplayName)),
       carData.copyWith(year: newYear),
       parentId: parentId,
       isFolder: isFolder,
@@ -278,7 +278,7 @@ class CarModelComposite implements IReferenceEntity {
   /// Возвращает новый экземпляр с обновленным номерным знаком.
   CarModelComposite withLicensePlate(String? newLicensePlate) {
     return CarModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       carData.copyWith(licensePlate: newLicensePlate),
       parentId: parentId,
       isFolder: isFolder,
@@ -290,7 +290,7 @@ class CarModelComposite implements IReferenceEntity {
   /// Возвращает новый экземпляр с обновленной доп. информацией.
   CarModelComposite withAdditionalInfo(String? newAdditionalInfo) {
     return CarModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       carData.copyWith(additionalInfo: newAdditionalInfo),
       parentId: parentId,
       isFolder: isFolder,
@@ -302,7 +302,7 @@ class CarModelComposite implements IReferenceEntity {
   /// Возвращает новый экземпляр с обновленным владельцем.
   CarModelComposite withOwner(String newClientId) {
     return CarModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       carData.copyWith(clientId: newClientId),
       parentId: parentId,
       isFolder: isFolder,
@@ -313,41 +313,47 @@ class CarModelComposite implements IReferenceEntity {
 
   /// Возвращает новый экземпляр, помеченный как удаленный.
   CarModelComposite markAsDeleted() {
-    if (isDeleted) return this;
-    final now = DateTime.now();
-    return CarModelComposite._(
-      coreData.copyWith(isDeleted: true, modifiedAt: now, deletedAt: now),
-      carData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
+    return CompositeUtils.markAsDeleted(
+      coreData: coreData,
+      rebuild: (newCoreData) => CarModelComposite._(
+        newCoreData,
+        carData,
+        parentId: parentId,
+        isFolder: isFolder,
+        ancestorIds: ancestorIds,
+        itemsMap: itemsMap,
+      ),
     );
   }
 
   /// Возвращает новый экземпляр, восстановленный из удаленных.
   CarModelComposite restore() {
-    if (!isDeleted) return this;
-    return CarModelComposite._(
-      coreData.copyWith(
-          isDeleted: false, modifiedAt: DateTime.now(), deletedAt: null),
-      carData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
+    return CompositeUtils.restore(
+      coreData: coreData,
+      rebuild: (newCoreData) => CarModelComposite._(
+        newCoreData,
+        carData,
+        parentId: parentId,
+        isFolder: isFolder,
+        ancestorIds: ancestorIds,
+        itemsMap: itemsMap,
+      ),
     );
   }
 
   /// Возвращает новый экземпляр с обновленной датой модификации.
   CarModelComposite withModifiedDate(DateTime modifiedDate) {
-    return CarModelComposite._(
-      coreData.copyWith(modifiedAt: modifiedDate),
-      carData,
-      parentId: parentId,
-      isFolder: isFolder,
-      ancestorIds: ancestorIds,
-      itemsMap: itemsMap,
+    return CompositeUtils.updateModifiedDate(
+      coreData: coreData,
+      modifiedDate: modifiedDate,
+      rebuild: (newCoreData) => CarModelComposite._(
+        newCoreData,
+        carData,
+        parentId: parentId,
+        isFolder: isFolder,
+        ancestorIds: ancestorIds,
+        itemsMap: itemsMap,
+      ),
     );
   }
 
@@ -357,7 +363,7 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withParentId(String? newParentId) {
     // Логика обновления ancestorIds, если необходимо
     return CarModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       carData,
       parentId: newParentId,
       isFolder: isFolder,

@@ -1,20 +1,21 @@
 import 'package:part_catalog/core/database/daos/cars_dao.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
+import 'package:part_catalog/core/database/daos/orders_dao.dart'; // Содержит OrderHeaderData, FullOrderItemData, Tuple3
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/database_error_recovery.dart';
-import 'package:part_catalog/core/database/daos/orders_dao.dart'; // Содержит OrderHeaderData, FullOrderItemData, Tuple3
+import 'package:part_catalog/core/utils/error_handler.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
+import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/core/document_item_specific_data.dart';
+import 'package:part_catalog/features/core/document_status.dart';
 // --- Новые импорты ---
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
-import 'package:part_catalog/features/core/base_item_type.dart';
-import 'package:part_catalog/features/core/document_status.dart';
+// --- Импорты @freezed моделей данных (предполагается, что они существуют) ---
+import 'package:part_catalog/features/core/item_core_data.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
-// --- Импорты @freezed моделей данных (предполагается, что они существуют) ---
-import 'package:part_catalog/features/core/item_core_data.dart';
-import 'package:part_catalog/features/core/document_item_specific_data.dart';
 // --- Остальные импорты ---
 import 'package:rxdart/rxdart.dart';
 
@@ -159,19 +160,20 @@ class OrderService {
 
   /// Получает список всех активных заказ-нарядов
   Future<List<OrderModelComposite>> getOrders() async {
-    try {
-      final orderUuids = await _ordersDao.getActiveOrderUuids();
-      // Фильтруем null UUIDs, если DAO может их вернуть
-      final nonNullUuids = orderUuids.whereType<String>().toList();
-      if (nonNullUuids.isEmpty) return [];
+    return ErrorHandler.executeWithLogging(
+      operation: () async {
+        final orderUuids = await _ordersDao.getActiveOrderUuids();
+        // Фильтруем null UUIDs, если DAO может их вернуть
+        final nonNullUuids = orderUuids.whereType<String>().toList();
+        if (nonNullUuids.isEmpty) return [];
 
-      final List<Future<OrderModelComposite>> futures =
-          nonNullUuids.map((uuid) => _mapDataToComposite(uuid)).toList();
-      return await Future.wait(futures);
-    } catch (e, stackTrace) {
-      _logger.e(LogMessages.orderGetError, error: e, stackTrace: stackTrace);
-      rethrow;
-    }
+        final List<Future<OrderModelComposite>> futures =
+            nonNullUuids.map((uuid) => _mapDataToComposite(uuid)).toList();
+        return await Future.wait(futures);
+      },
+      logger: _logger,
+      operationName: 'getOrders',
+    );
   }
 
   /// Реактивно наблюдает за списком всех активных заказ-нарядов
@@ -390,26 +392,24 @@ class OrderService {
   /// @param newStatus Новый статус
   Future<void> changeOrderStatus(
       String orderUuid, DocumentStatus newStatus) async {
-    try {
-      final order = await getOrderByUuid(orderUuid);
-      // Используем метод `with...` композитора для иммутабельного обновления
-      // Предполагаем, что метод withStatus существует
-      final updatedOrder = order.copyWith(
-        docData: order.docData.copyWith(status: newStatus),
-        coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
-      );
-      await updateOrder(updatedOrder);
-      // Используем константу
-      _logger.i(LogMessages.orderStatusUpdated
-          .replaceAll('{uuid}', orderUuid)
-          .replaceAll('{status}', newStatus.name));
-    } catch (e, stackTrace) {
-      _logger.e(
-          LogMessages.orderStatusChangeError.replaceAll('{uuid}', orderUuid),
-          error: e,
-          stackTrace: stackTrace);
-      rethrow;
-    }
+    await ErrorHandler.executeWithLogging(
+      operation: () async {
+        final order = await getOrderByUuid(orderUuid);
+        // Используем метод `with...` композитора для иммутабельного обновления
+        // Предполагаем, что метод withStatus существует
+        final updatedOrder = order.copyWith(
+          docData: order.docData.copyWith(status: newStatus),
+          coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
+        );
+        await updateOrder(updatedOrder);
+        // Используем константу
+        _logger.i(LogMessages.orderStatusUpdated
+            .replaceAll('{uuid}', orderUuid)
+            .replaceAll('{status}', newStatus.name));
+      },
+      logger: _logger,
+      operationName: 'changeOrderStatus($orderUuid, ${newStatus.name})',
+    );
   }
 
   /// Добавляет элемент (услугу или запчасть) к заказ-наряду
@@ -714,7 +714,7 @@ class OrderService {
       //   throw Exception(
       //       'Невозможно провести заказ-наряд. Требуется статус "Completed". Текущий статус: ${order.status.name}');
       // }
-      if (order.isPosted) {
+      if (!order.canPost) {
         // Используем константу
         _logger.w(LogMessages.orderPostAttemptOnPosted
             .replaceAll('{uuid}', orderUuid));
@@ -744,7 +744,7 @@ class OrderService {
     try {
       final order = await getOrderByUuid(orderUuid);
 
-      if (!order.isPosted) {
+      if (!order.canUnpost) {
         // Используем константу
         _logger.w(LogMessages.orderUnpostAttemptOnUnposted
             .replaceAll('{uuid}', orderUuid));

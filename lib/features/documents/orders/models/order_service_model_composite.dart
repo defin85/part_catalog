@@ -1,8 +1,8 @@
-import 'package:part_catalog/features/core/item_core_data.dart';
-import 'package:part_catalog/features/core/document_item_specific_data.dart';
-import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart';
-import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/core/document_item_specific_data.dart';
+import 'package:part_catalog/features/core/i_document_item_entity.dart';
+import 'package:part_catalog/features/core/item_core_data.dart';
+import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart';
 import 'package:uuid/uuid.dart';
 
 class OrderServiceModelComposite implements IDocumentItemEntity {

@@ -1,19 +1,19 @@
 import 'dart:convert';
+
 import 'package:drift/drift.dart' hide JsonKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/daos/supplier_settings_dao.dart';
+import 'package:part_catalog/core/database/database.dart';
+import 'package:part_catalog/core/service_locator.dart'; // Для ApiClientManager
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/settings/armtek/state/armtek_settings_state.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart'; // Предполагается наличие
-import 'package:part_catalog/core/service_locator.dart'; // Для ApiClientManager
 import 'package:part_catalog/features/suppliers/models/armtek/armtek_response_wrapper.dart';
-
+import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 
 const String armtekSupplierCode = 'armtek';
 

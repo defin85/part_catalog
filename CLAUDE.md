@@ -97,10 +97,45 @@ The project heavily uses code generation for:
   - Composite classes implement interfaces and encapsulate data/behavior
   - `@freezed` models for immutable data structures
 
+### Refactoring Utilities
+The project includes utilities to reduce code duplication in composite models:
+
+#### CompositeUtils (`lib/core/utils/composite_utils.dart`)
+- Static utility methods for common composite model operations
+- `markAsDeleted<T>()` - Mark entity as deleted with proper timestamps
+- `restore<T>()` - Restore deleted entity
+- `containsSearchText()` - Unified text search across fields
+- `updateModifiedDate<T>()` - Update modification timestamp
+
+#### DocumentCompositeUtils
+- Utilities specific to document entities
+- `canEdit()`, `canPost()`, `canUnpost()`, `canCancel()` - Permission checks
+- `isOverdue()`, `isActive()`, `isFinished()` - Status helpers
+
+#### ErrorHandler (`lib/core/utils/error_handler.dart`)
+- Standardized error handling and logging
+- `executeWithLogging<T>()` - Execute operations with automatic logging
+- `executeWithRetry<T>()` - Retry logic for unreliable operations
+- `executeBatch()` - Parallel/sequential batch operations
+
+#### Extension Methods (`lib/core/extensions/composite_extensions.dart`)
+- Extensions on `IEntity`, `IDocumentEntity`, `IReferenceEntity`
+- Collection extensions for filtering, sorting, grouping
+- Examples: `list.activeOnly`, `list.sortByCreatedDate()`, `documents.groupByStatus()`
+
 ### Testing Strategy
 - Unit tests for business logic and data models
 - Widget tests for UI components
 - Integration tests for API clients and database operations
+
+### Logging System
+The project uses an optimized logging system with:
+- **Logger Extensions** (`lib/core/extensions/logger_extensions.dart`) - convenience methods like `logInfo`, `logWarning`, `logError`
+- **Context Logger** (`lib/core/utils/context_logger.dart`) - structured logging with metadata and hierarchical contexts
+- **Logger Providers** (`lib/core/providers/logger_providers.dart`) - Riverpod integration for centralized logging
+- **Predefined categories**: core, network, database, ui, clients, vehicles, suppliers, orders
+- Use `ContextLoggerMixin` in classes for automatic logger creation
+- See `docs/logging_guide.md` for detailed usage examples
 
 ## Important Notes
 - Always run code generation (`dart run build_runner build`) after modifying models, APIs, or providers
@@ -115,3 +150,10 @@ The project heavily uses code generation for:
   4. Create DAO in `core/database/daos/`
   5. Add service layer in feature module
   6. Create providers for state management
+
+### Refactoring Guidelines
+- **Use utilities instead of inheritance**: Prefer `CompositeUtils` over base classes to avoid type conflicts
+- **Apply utilities gradually**: Start with new code, then migrate existing models incrementally
+- **Maintain backward compatibility**: Don't change public APIs of existing models
+- **Use extensions for collections**: Leverage extension methods for common operations on entity lists
+- **Standardize error handling**: Use `ErrorHandler` in all service methods for consistent logging

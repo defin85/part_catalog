@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockito/mockito.dart';
+import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/vehicles/providers/car_providers.dart';
-import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
-import '../mocks/mock_services.mocks.dart';
+
 import '../fixtures/test_data.dart';
+import '../mocks/mock_services.mocks.dart';
 
 /// Helpers для настройки Provider тестов
 class ProviderTestHelpers {

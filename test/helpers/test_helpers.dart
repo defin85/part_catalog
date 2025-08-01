@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
+
 import 'provider_test_helpers.dart';
 
 /// Базовые helper функции для тестирования

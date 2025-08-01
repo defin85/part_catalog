@@ -1,13 +1,15 @@
 import 'package:logger/logger.dart';
-import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/daos/cars_dao.dart'; // Содержит CarFullData, CarWithOwnerData
-// Импорт бизнес-модели (композитора)
-import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
+import 'package:part_catalog/core/database/database.dart';
+import 'package:part_catalog/core/database/database_error_recovery.dart';
+import 'package:part_catalog/core/utils/error_handler.dart';
+import 'package:part_catalog/core/utils/log_messages.dart';
 // Логгер и сообщения
 import 'package:part_catalog/core/utils/logger_config.dart';
-import 'package:part_catalog/core/utils/log_messages.dart';
 // Импорт композитора клиента для CarWithOwnerModel
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
+// Импорт бизнес-модели (композитора)
+import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 
 /// Модель для представления автомобиля с информацией о владельце (использует композиторы).
 class CarWithOwnerModel {
@@ -28,10 +30,12 @@ class CarWithOwnerModel {
 class CarService {
   /// {@macro car_service}
   CarService(this._db)
-      : _logger = AppLoggers.vehicles; // Используем настроенный логгер
+      : _logger = AppLoggers.vehicles, // Используем настроенный логгер
+        _errorRecovery = DatabaseErrorRecovery(_db);
 
   final AppDatabase _db;
   final Logger _logger;
+  final DatabaseErrorRecovery _errorRecovery;
 
   /// Получение DAO для работы с автомобилями
   CarsDao get _carsDao => _db.carsDao;
@@ -86,13 +90,17 @@ class CarService {
 
   /// Возвращает автомобиль [CarModelComposite] по его UUID.
   Future<CarModelComposite?> getCarByUuid(String carUuid) async {
-    _logger.i(LogMessages.carGetByUuid.replaceAll('{uuid}', carUuid));
-    final carData = await _carsDao.getCarByUuid(carUuid);
-    if (carData == null) {
-      _logger.w(LogMessages.carNotFoundByUuid.replaceAll('{uuid}', carUuid));
-      return null;
-    }
-    return _mapDataToComposite(carData);
+    return _errorRecovery.executeWithRetry(
+      () async {
+        final carData = await _carsDao.getCarByUuid(carUuid);
+        if (carData == null) {
+          _logger.w(LogMessages.carNotFoundByUuid.replaceAll('{uuid}', carUuid));
+          return null;
+        }
+        return _mapDataToComposite(carData);
+      },
+      operationName: 'getCarByUuid($carUuid)',
+    );
   }
 
   /// Добавляет новый автомобиль.
@@ -105,111 +113,101 @@ class CarService {
       throw Exception(LogMessages.carAddErrorMissingUuid);
     }
 
-    // Извлекаем @freezed модели из композитора
-    final coreData = car.coreData;
-    final carData = car.carData;
+    return _errorRecovery.executeWithRetry(
+      () async {
+        // Извлекаем @freezed модели из композитора
+        final coreData = car.coreData;
+        final carData = car.carData;
 
-    try {
-      // DAO вернет int ID, но нам нужен UUID
-      await _carsDao.insertCar(coreData, carData);
-      _logger.i(LogMessages.carCreated.replaceAll('{uuid}', car.uuid));
-      return car.uuid;
-    } catch (e, s) {
-      _logger.e(LogMessages.carAddError, error: e, stackTrace: s);
-      rethrow;
-    }
+        // DAO вернет int ID, но нам нужен UUID
+        await _carsDao.insertCar(coreData, carData);
+        _logger.i(LogMessages.carCreated.replaceAll('{uuid}', car.uuid));
+        return car.uuid;
+      },
+      operationName: 'addCar(${car.uuid})',
+    );
   }
 
   /// Обновляет существующий автомобиль.
   /// Принимает [CarModelComposite] с обновленными данными.
   Future<void> updateCar(CarModelComposite car) async {
-    // Обновляем дату модификации перед сохранением
-    final updatedCar = car.withModifiedDate(DateTime.now());
+    await ErrorHandler.executeWithLogging(
+      operation: () async {
+        // Обновляем дату модификации перед сохранением
+        final updatedCar = car.withModifiedDate(DateTime.now());
 
-    // Извлекаем @freezed модели из обновленного композитора
-    final coreData = updatedCar.coreData;
-    final carData = updatedCar.carData;
+        // Извлекаем @freezed модели из обновленного композитора
+        final coreData = updatedCar.coreData;
+        final carData = updatedCar.carData;
 
-    _logger.i(LogMessages.carUpdating.replaceAll('{uuid}', car.uuid));
-    try {
-      final updatedRows = await _carsDao.updateCarByUuid(coreData, carData);
-      if (updatedRows == 0) {
-        _logger
-            .w(LogMessages.carNotFoundForUpdate.replaceAll('{uuid}', car.uuid));
-        // Можно бросить исключение или просто завершить
-      } else {
-        _logger.d(LogMessages.carUpdated.replaceAll('{uuid}', car.uuid));
-      }
-    } catch (e, s) {
-      _logger.e(LogMessages.carUpdateError.replaceAll('{uuid}', car.uuid),
-          error: e, stackTrace: s);
-      rethrow;
-    }
+        final updatedRows = await _carsDao.updateCarByUuid(coreData, carData);
+        if (updatedRows == 0) {
+          _logger.w(LogMessages.carNotFoundForUpdate.replaceAll('{uuid}', car.uuid));
+          // Можно бросить исключение или просто завершить
+        } else {
+          _logger.d(LogMessages.carUpdated.replaceAll('{uuid}', car.uuid));
+        }
+      },
+      logger: _logger,
+      operationName: 'updateCar(${car.uuid})',
+    );
   }
 
   /// Удаляет автомобиль (мягкое удаление).
   Future<void> deleteCar(String carUuid) async {
-    _logger.i(LogMessages.carDeleting.replaceAll('{uuid}', carUuid));
-    try {
-      // Можно сначала получить автомобиль, чтобы убедиться, что он существует
-      final car = await getCarByUuid(carUuid);
-      if (car == null) {
-        _logger
-            .w(LogMessages.carNotFoundForDelete.replaceAll('{uuid}', carUuid));
-        return; // Автомобиль не найден или уже удален
-      }
-      if (car.isDeleted) {
-        _logger.w(LogMessages.carAlreadyDeleted.replaceAll('{uuid}', carUuid));
-        return; // Уже удален
-      }
-      // Помечаем как удаленный и обновляем
-      final deletedCar = car.markAsDeleted();
-      await updateCar(deletedCar); // Используем общий метод обновления
-      _logger.i(LogMessages.carDeleted.replaceAll('{uuid}', carUuid));
-    } catch (e, s) {
-      _logger.e(LogMessages.carDeleteError.replaceAll('{uuid}', carUuid),
-          error: e, stackTrace: s);
-      rethrow;
-    }
+    await ErrorHandler.executeWithLogging(
+      operation: () async {
+        // Можно сначала получить автомобиль, чтобы убедиться, что он существует
+        final car = await getCarByUuid(carUuid);
+        if (car == null) {
+          _logger.w(LogMessages.carNotFoundForDelete.replaceAll('{uuid}', carUuid));
+          return; // Автомобиль не найден или уже удален
+        }
+        if (car.isDeleted) {
+          _logger.w(LogMessages.carAlreadyDeleted.replaceAll('{uuid}', carUuid));
+          return; // Уже удален
+        }
+        // Помечаем как удаленный и обновляем
+        final deletedCar = car.markAsDeleted();
+        await updateCar(deletedCar); // Используем общий метод обновления
+        _logger.i(LogMessages.carDeleted.replaceAll('{uuid}', carUuid));
+      },
+      logger: _logger,
+      operationName: 'deleteCar($carUuid)',
+    );
   }
 
   /// Восстанавливает удалённый автомобиль.
   Future<void> restoreCar(String carUuid) async {
-    _logger.i(LogMessages.carRestoring.replaceAll('{uuid}', carUuid));
-    try {
-      // Получаем автомобиль, включая удаленные
-      final carData =
-          await _carsDao.getCarByUuid(carUuid, includeDeleted: true);
-      if (carData == null) {
-        _logger
-            .w(LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
-        return;
-      }
-      final car = _mapDataToComposite(carData);
+    await ErrorHandler.executeWithLogging(
+      operation: () async {
+        // Получаем автомобиль, включая удаленные
+        final carData = await _carsDao.getCarByUuid(carUuid, includeDeleted: true);
+        if (carData == null) {
+          _logger.w(LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
+          return;
+        }
+        final car = _mapDataToComposite(carData);
 
-      if (!car.isDeleted) {
-        _logger.w(LogMessages.carRestoreAttemptOnNonDeleted
-            .replaceAll('{uuid}', carUuid));
-        return; // Не удален
-      }
+        if (!car.isDeleted) {
+          _logger.w(LogMessages.carRestoreAttemptOnNonDeleted
+              .replaceAll('{uuid}', carUuid));
+          return; // Не удален
+        }
 
-      // Восстанавливаем и обновляем
-      // Используем DAO напрямую для восстановления, чтобы не вызывать updateCar,
-      // который снова обновит modifiedAt и может вызвать лишние срабатывания потоков.
-      // final restoredCar = car.restore(); // Композитор больше не нужен для DAO
-      // await updateCar(restoredCar); // Используем общий метод обновления - НЕ НАДО
-      final restoredRows = await _carsDao.restoreCarByUuid(carUuid);
-      if (restoredRows > 0) {
-        _logger.i(LogMessages.carRestored.replaceAll('{uuid}', carUuid));
-      } else {
-        _logger
-            .w(LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
-      }
-    } catch (e, s) {
-      _logger.e(LogMessages.carRestoreError.replaceAll('{uuid}', carUuid),
-          error: e, stackTrace: s);
-      rethrow;
-    }
+        // Восстанавливаем и обновляем
+        // Используем DAO напрямую для восстановления, чтобы не вызывать updateCar,
+        // который снова обновит modifiedAt и может вызвать лишние срабатывания потоков.
+        final restoredRows = await _carsDao.restoreCarByUuid(carUuid);
+        if (restoredRows > 0) {
+          _logger.i(LogMessages.carRestored.replaceAll('{uuid}', carUuid));
+        } else {
+          _logger.w(LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
+        }
+      },
+      logger: _logger,
+      operationName: 'restoreCar($carUuid)',
+    );
   }
 
   /// Проверяет уникальность VIN-кода.
@@ -217,40 +215,40 @@ class CarService {
   /// [vin] - VIN-код для проверки.
   /// [excludeUuid] - UUID автомобиля, который нужно исключить из проверки (при редактировании).
   Future<bool> isVinUnique(String vin, {String? excludeUuid}) async {
-    _logger.d('Checking VIN uniqueness for "$vin", excluding $excludeUuid');
-    try {
-      final existingCar = await _carsDao.getCarByVin(vin);
-      if (existingCar == null) {
-        _logger.d('VIN "$vin" is unique (no car found).');
-        return true; // VIN не найден, значит уникален
-      }
-      // Если VIN найден, проверяем, не принадлежит ли он автомобилю, который мы редактируем
-      if (excludeUuid != null && existingCar.coreData.uuid == excludeUuid) {
-        _logger.d(
-            'VIN "$vin" belongs to the car being edited ($excludeUuid), considering unique.');
-        return true; // Найденный VIN принадлежит редактируемому авто, считаем уникальным для других
-      }
-      _logger.w(
-          'VIN "$vin" is not unique (found car ${existingCar.coreData.uuid}).');
-      return false; // VIN найден и не принадлежит редактируемому авто
-    } catch (e, s) {
-      _logger.e('Error checking VIN uniqueness for "$vin"',
-          error: e, stackTrace: s);
-      // В случае ошибки лучше считать VIN не уникальным, чтобы предотвратить дублирование
-      return false;
-    }
+    return ErrorHandler.executeWithLogging(
+      operation: () async {
+        final existingCar = await _carsDao.getCarByVin(vin);
+        if (existingCar == null) {
+          _logger.d('VIN "$vin" is unique (no car found).');
+          return true; // VIN не найден, значит уникален
+        }
+        // Если VIN найден, проверяем, не принадлежит ли он автомобилю, который мы редактируем
+        if (excludeUuid != null && existingCar.coreData.uuid == excludeUuid) {
+          _logger.d(
+              'VIN "$vin" belongs to the car being edited ($excludeUuid), considering unique.');
+          return true; // Найденный VIN принадлежит редактируемому авто, считаем уникальным для других
+        }
+        _logger.w(
+            'VIN "$vin" is not unique (found car ${existingCar.coreData.uuid}).');
+        return false; // VIN найден и не принадлежит редактируемому авто
+      },
+      logger: _logger,
+      operationName: 'isVinUnique($vin)',
+      defaultValue: false, // В случае ошибки лучше считать VIN не уникальным
+      rethrowError: false,
+    );
   }
 
   /// Получает список автомобилей [CarWithOwnerModel] с информацией о владельцах.
   Future<List<CarWithOwnerModel>> getCarsWithOwners() async {
-    _logger.i(LogMessages.carGetWithOwners);
-    try {
-      final results = await _carsDao.getCarsWithOwners();
-      return results.map(_mapWithOwnerDataToViewModel).toList();
-    } catch (e, s) {
-      _logger.e(LogMessages.carGetWithOwnersError, error: e, stackTrace: s);
-      rethrow;
-    }
+    return ErrorHandler.executeWithLogging(
+      operation: () async {
+        final results = await _carsDao.getCarsWithOwners();
+        return results.map(_mapWithOwnerDataToViewModel).toList();
+      },
+      logger: _logger,
+      operationName: 'getCarsWithOwners',
+    );
   }
 
   /// Возвращает поток списка автомобилей [CarWithOwnerModel] с информацией о владельцах.

@@ -34,5 +34,7 @@
     "quantity": "Количество",
     "print": "Печать",
     "description": "Описание",
-    "close": "Закрыть"
+    "close": "Закрыть",
+    "createNew": "Создать новый",
+    "notSpecified": "Не указано"
 }

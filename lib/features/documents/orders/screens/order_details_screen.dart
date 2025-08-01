@@ -4,20 +4,20 @@ import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 // --- Обновленные импорты ---
 import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
+import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
-import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
-import 'package:part_catalog/features/documents/orders/services/pdf_service.dart';
-import 'package:part_catalog/core/service_locator.dart';
-import 'package:printing/printing.dart';
 // Импортируем провайдеры
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
-import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
+import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
+import 'package:part_catalog/features/documents/orders/services/pdf_service.dart';
+import 'package:printing/printing.dart';
 
 // Преобразуем в ConsumerWidget
 class OrderDetailsScreen extends ConsumerWidget {
@@ -48,6 +48,7 @@ class OrderDetailsScreen extends ConsumerWidget {
           // Кнопки действий будут доступны только после загрузки данных
           orderAsyncValue.when(
             data: (order) {
+              // Используем прямую проверку, так как activeOnly для коллекций
               if (order.isDeleted) {
                 return const SizedBox
                     .shrink(); // Не показывать кнопки, если удалено

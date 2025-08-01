@@ -1,7 +1,13 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 
 part 'supplier_config.freezed.dart';
 part 'supplier_config.g.dart';
+
+// Helper functions for JSON serialization
+String? _connectionModeToJson(ApiConnectionMode? mode) => mode?.name;
+ApiConnectionMode? _connectionModeFromJson(String? name) => 
+    name != null ? ApiConnectionModeExtension.fromName(name) : null;
 
 /// Типы аутентификации для API поставщиков
 enum AuthenticationType {
@@ -40,6 +46,13 @@ abstract class SupplierApiConfig with _$SupplierApiConfig {
   const factory SupplierApiConfig({
     required String baseUrl, // Базовый URL API
     String? proxyUrl, // URL прокси-сервера (если используется)
+    String? proxyAuthToken, // Токен авторизации для прокси
+    @JsonKey(
+      name: 'connectionMode', 
+      fromJson: _connectionModeFromJson,
+      toJson: _connectionModeToJson,
+    )
+    ApiConnectionMode? connectionMode, // Режим подключения
     required AuthenticationType authType, // Тип аутентификации
     SupplierCredentials? credentials, // Учетные данные
     Map<String, String>? defaultHeaders, // Дополнительные заголовки

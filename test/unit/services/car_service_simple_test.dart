@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
-import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/core/entity_core_data.dart';
+import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
+import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
 
 import '../../mocks/mock_services.mocks.dart';
 import '../../test_config.dart';

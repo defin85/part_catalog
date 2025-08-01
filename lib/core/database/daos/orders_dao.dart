@@ -1,25 +1,26 @@
 import 'dart:async';
-import 'package:rxdart/rxdart.dart';
+
 import 'package:drift/drift.dart';
 import 'package:part_catalog/core/database/database.dart';
-import 'package:part_catalog/core/database/items/orders_items.dart';
+import 'package:part_catalog/core/database/items/cars_items.dart'; // Нужен для JOIN
+import 'package:part_catalog/core/database/items/clients_items.dart'; // Нужен для JOIN
 import 'package:part_catalog/core/database/items/order_parts_items.dart';
 import 'package:part_catalog/core/database/items/order_services_items.dart';
-import 'package:part_catalog/core/database/items/clients_items.dart'; // Нужен для JOIN
-import 'package:part_catalog/core/database/items/cars_items.dart'; // Нужен для JOIN
-// Импортируем @freezed модели данных
-import 'package:part_catalog/features/core/entity_core_data.dart';
-import 'package:part_catalog/features/core/document_specific_data.dart';
-import 'package:part_catalog/features/documents/orders/models/order_specific_data.dart';
-import 'package:part_catalog/features/core/item_core_data.dart';
-import 'package:part_catalog/features/core/document_item_specific_data.dart';
-import 'package:part_catalog/features/documents/orders/models/part_specific_data.dart';
-import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart';
-import 'package:part_catalog/features/core/document_status.dart'; // Используем DocumentStatus
-import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/core/database/items/orders_items.dart';
+import 'package:part_catalog/core/utils/log_messages.dart';
 // Логгер и сообщения
 import 'package:part_catalog/core/utils/logger_config.dart';
-import 'package:part_catalog/core/utils/log_messages.dart';
+import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/core/document_item_specific_data.dart';
+import 'package:part_catalog/features/core/document_specific_data.dart';
+import 'package:part_catalog/features/core/document_status.dart'; // Используем DocumentStatus
+// Импортируем @freezed модели данных
+import 'package:part_catalog/features/core/entity_core_data.dart';
+import 'package:part_catalog/features/core/item_core_data.dart';
+import 'package:part_catalog/features/documents/orders/models/order_specific_data.dart';
+import 'package:part_catalog/features/documents/orders/models/part_specific_data.dart';
+import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart';
+import 'package:rxdart/rxdart.dart';
 
 part 'orders_dao.g.dart';
 

@@ -24,6 +24,10 @@
     "originalArticle": "Original Article",
     "comment": "Comment",
     "priceUpdated": "Price Updated",
-    "daysCount": "{days} days"
+    "daysCount": "{days} days",
+    "addToOrder": "Add to Order",
+    "noActiveOrders": "No active orders",
+    "selectOrder": "Select Order",
+    "partAddedToOrder": "Part added to order {orderName}"
   }
 }

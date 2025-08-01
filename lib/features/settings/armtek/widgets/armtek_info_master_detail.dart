@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
+import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
-import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 
 class ArmtekInfoMasterDetail extends StatefulWidget {
   final UserStructureRoot structure;
@@ -1200,7 +1200,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(8),
                 topRight: Radius.circular(8),
@@ -1290,7 +1290,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(8),
                 topRight: Radius.circular(8),

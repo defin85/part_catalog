@@ -1,7 +1,7 @@
+import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/core/i_entity.dart';
-import 'package:part_catalog/features/core/document_status.dart';
-import 'package:part_catalog/features/core/base_item_type.dart';
 
 /// Интерфейс для сущностей типа "Документ"
 abstract class IDocumentEntity implements IEntity {

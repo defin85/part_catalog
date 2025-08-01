@@ -1,6 +1,6 @@
+import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/i_entity.dart';
 import 'package:part_catalog/features/core/i_reference_item_entity.dart'; // Используем специфичный интерфейс
-import 'package:part_catalog/features/core/base_item_type.dart';
 
 /// Интерфейс для сущностей типа "Справочник"
 abstract class IReferenceEntity implements IEntity {

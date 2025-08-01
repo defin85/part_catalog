@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:uuid/uuid.dart';
 import 'package:part_catalog/core/database/items/orders_items.dart';
+import 'package:uuid/uuid.dart';
 
 /// Таблица для хранения услуг, связанных с заказ-нарядами.
 class OrderServicesItems extends Table {

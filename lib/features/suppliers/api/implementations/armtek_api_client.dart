@@ -1,21 +1,22 @@
 import 'dart:convert'; // For base64Encode
+
 import 'package:dio/dio.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
-import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/ping_response.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
-import 'package:retrofit/retrofit.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
-import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/armtek_response_wrapper.dart';
+import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/armtek_message.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/armtek_response_wrapper.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/order_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/ping_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/price_status_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/search_result.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/order_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
+import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
+import 'package:retrofit/retrofit.dart';
 
 part 'armtek_api_client.g.dart';
 

@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_routes.dart';
-import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 // import 'package:part_catalog/core/config/global_api_settings_service.dart'; // Больше не нужен напрямую
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/settings/api_control_center/notifiers/api_control_center_notifier.dart';
 import 'package:part_catalog/features/settings/api_control_center/state/api_control_center_state.dart';
+import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart'; // Для тестовой кнопки
 
 class ApiControlCenterScreen extends ConsumerWidget {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Статус документа (enum)
 enum DocumentStatus {
+  draft('черновик', Colors.blueGrey),
   newDoc('новый', Colors.blue),
   posted('проведен', Colors.green),
   cancelled('отменен', Colors.red),
@@ -45,6 +46,8 @@ enum DocumentStatus {
         return DocumentStatus.waitingForParts;
       case 'ready_for_pickup':
         return DocumentStatus.readyForPickup;
+      case 'черновик':
+        return DocumentStatus.draft;
     }
     return DocumentStatus.unknown;
   }

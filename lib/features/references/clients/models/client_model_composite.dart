@@ -1,12 +1,13 @@
+import 'package:collection/collection.dart'; // Для unmodifiable map/list
+import 'package:part_catalog/core/utils/composite_utils.dart';
+import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/entity_core_data.dart';
-import 'package:part_catalog/features/references/clients/models/client_specific_data.dart';
-import 'package:part_catalog/features/references/clients/models/client_type.dart';
 import 'package:part_catalog/features/core/i_reference_entity.dart'; // Используем IReferenceEntity
 // import 'package:part_catalog/features/core/i_item_entity.dart'; // Больше не нужен базовый
 import 'package:part_catalog/features/core/i_reference_item_entity.dart'; // Используем специфичный
-import 'package:part_catalog/features/core/base_item_type.dart';
+import 'package:part_catalog/features/references/clients/models/client_specific_data.dart';
+import 'package:part_catalog/features/references/clients/models/client_type.dart';
 import 'package:uuid/uuid.dart';
-import 'package:collection/collection.dart'; // Для unmodifiable map/list
 
 /// {@template client_model_composite}
 /// Бизнес-модель (композитор) для представления клиента.
@@ -136,25 +137,27 @@ class ClientModelComposite implements IReferenceEntity {
 
   @override
   bool containsSearchText(String query) {
-    if (query.isEmpty) return true;
-    final lowerQuery = query.toLowerCase();
-
-    // Проверяем основные поля
-    if (coreData.displayName.toLowerCase().contains(lowerQuery)) return true;
-    if (coreData.code.toLowerCase().contains(lowerQuery)) return true;
-    if (clientData.contactInfo.toLowerCase().contains(lowerQuery)) return true;
-    if (clientData.additionalInfo?.toLowerCase().contains(lowerQuery) ??
-        false) {
-      return true;
+    // Используем утилиту для проверки базовых полей
+    bool baseContains = CompositeUtils.containsSearchText(
+      code: coreData.code,
+      displayName: coreData.displayName,
+      searchQuery: query,
+      additionalFields: [
+        clientData.contactInfo,
+        clientData.additionalInfo,
+      ],
+    );
+    
+    if (baseContains) return true;
+    
+    // Дополнительно проверяем элементы (если они есть)
+    if (query.isNotEmpty) {
+      final lowerQuery = query.toLowerCase();
+      for (final item in items) {
+        if (item.containsSearchText(lowerQuery)) return true;
+      }
     }
-
-    // Поиск по элементам (если они есть)
-    for (final item in items) {
-      // Предполагаем, что у IReferenceItemEntity есть метод containsSearchText
-      // или доступ к coreData
-      if (item.containsSearchText(lowerQuery)) return true;
-    }
-
+    
     return false;
   }
 
@@ -197,9 +200,9 @@ class ClientModelComposite implements IReferenceEntity {
   ClientModelComposite copyWithCoreData(
       EntityCoreData Function(EntityCoreData core) update) {
     final newCoreData = update(coreData);
-    // Убедимся, что дата модификации обновлена, если не обновлена вручную
+    // Используем утилиту для обеспечения обновления даты модификации
     final finalCoreData = newCoreData.modifiedAt == coreData.modifiedAt
-        ? newCoreData.copyWith(modifiedAt: DateTime.now())
+        ? CompositeUtils.ensureModifiedDate(newCoreData)
         : newCoreData;
     return ClientModelComposite._(
       finalCoreData,
@@ -216,8 +219,7 @@ class ClientModelComposite implements IReferenceEntity {
   ClientModelComposite copyWithClientData(
       ClientSpecificData Function(ClientSpecificData client) update) {
     return ClientModelComposite._(
-      coreData.copyWith(
-          modifiedAt: DateTime.now()), // Обновляем дату модификации
+      CompositeUtils.ensureModifiedDate(coreData), // Используем утилиту
       update(clientData),
       parentId: parentId,
       isFolder: isFolder,
@@ -250,29 +252,49 @@ class ClientModelComposite implements IReferenceEntity {
 
   /// Возвращает новый экземпляр, помеченный как удаленный.
   ClientModelComposite markAsDeleted() {
-    if (isDeleted) return this;
-    final now = DateTime.now();
-    return copyWithCoreData((core) => core.copyWith(
-          isDeleted: true,
-          modifiedAt: now,
-          deletedAt: now, // Устанавливаем deletedAt
-        ));
+    return CompositeUtils.markAsDeleted(
+      coreData: coreData,
+      rebuild: (newCoreData) => ClientModelComposite._(
+        newCoreData,
+        clientData,
+        parentId: parentId,
+        isFolder: isFolder,
+        ancestorIds: ancestorIds,
+        itemsMap: itemsMap,
+      ),
+    );
   }
 
   /// Возвращает новый экземпляр, восстановленный из удаленных.
   ClientModelComposite restore() {
-    if (!isDeleted) return this;
-    return copyWithCoreData((core) => core.copyWith(
-          isDeleted: false,
-          modifiedAt: DateTime.now(),
-          deletedAt: null, // Сбрасываем deletedAt
-        ));
+    return CompositeUtils.restore(
+      coreData: coreData,
+      rebuild: (newCoreData) => ClientModelComposite._(
+        newCoreData,
+        clientData,
+        parentId: parentId,
+        isFolder: isFolder,
+        ancestorIds: ancestorIds,
+        itemsMap: itemsMap,
+      ),
+    );
   }
 
   /// Возвращает новый экземпляр с обновленной датой модификации.
   /// Используется перед сохранением.
   ClientModelComposite withModifiedDate(DateTime modifiedDate) {
-    return copyWithCoreData((core) => core.copyWith(modifiedAt: modifiedDate));
+    return CompositeUtils.updateModifiedDate(
+      coreData: coreData,
+      modifiedDate: modifiedDate,
+      rebuild: (newCoreData) => ClientModelComposite._(
+        newCoreData,
+        clientData,
+        parentId: parentId,
+        isFolder: isFolder,
+        ancestorIds: ancestorIds,
+        itemsMap: itemsMap,
+      ),
+    );
   }
 
   // --- Методы для иммутабельного обновления из IReferenceEntity ---
@@ -281,7 +303,7 @@ class ClientModelComposite implements IReferenceEntity {
   ClientModelComposite withParentId(String? newParentId) {
     // Здесь можно добавить логику обновления ancestorIds, если необходимо
     return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       clientData,
       parentId: newParentId,
       isFolder: isFolder,
@@ -307,7 +329,7 @@ class ClientModelComposite implements IReferenceEntity {
     updatedItems[type] = List.unmodifiable([...list, item]);
 
     return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       clientData,
       parentId: parentId,
       isFolder: isFolder,
@@ -336,7 +358,7 @@ class ClientModelComposite implements IReferenceEntity {
     updatedItems[type] = List.unmodifiable(newList);
 
     return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       clientData,
       parentId: parentId,
       isFolder: isFolder,
@@ -379,7 +401,7 @@ class ClientModelComposite implements IReferenceEntity {
     }
 
     return ClientModelComposite._(
-      coreData.copyWith(modifiedAt: DateTime.now()),
+      CompositeUtils.ensureModifiedDate(coreData),
       clientData,
       parentId: parentId,
       isFolder: isFolder,

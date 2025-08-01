@@ -1,7 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'user_structure_item.dart';
+
 import 'contact_tab_item.dart';
 import 'dogovor_item.dart';
+import 'user_structure_item.dart';
 
 part 'user_structure_root.freezed.dart';
 part 'user_structure_root.g.dart';

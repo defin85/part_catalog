@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:part_catalog/features/settings/armtek/widgets/armtek_info_master_detail.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
+
 import '../../../../helpers/test_helpers.dart';
 
 void main() {

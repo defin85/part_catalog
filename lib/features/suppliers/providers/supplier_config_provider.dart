@@ -1,15 +1,16 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config_form_state.dart';
 import 'package:part_catalog/features/suppliers/services/supplier_config_service.dart';
-import 'package:part_catalog/core/service_locator.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'supplier_config_provider.g.dart';
 
 /// Провайдер для сервиса конфигурации поставщиков
 @riverpod
-SupplierConfigService supplierConfigService(SupplierConfigServiceRef ref) {
+SupplierConfigService supplierConfigService(Ref ref) {
   final prefs = locator<SharedPreferences>();
   return SupplierConfigService(prefs);
 }
@@ -70,7 +71,7 @@ class SupplierConfigs extends _$SupplierConfigs {
 /// Провайдер для получения конфигурации конкретного поставщика
 @riverpod
 SupplierConfig? supplierConfig(
-  SupplierConfigRef ref,
+  Ref ref,
   String supplierCode,
 ) {
   final service = ref.watch(supplierConfigServiceProvider);
@@ -79,7 +80,7 @@ SupplierConfig? supplierConfig(
 
 /// Провайдер для списка активных конфигураций
 @riverpod
-List<SupplierConfig> enabledSupplierConfigs(EnabledSupplierConfigsRef ref) {
+List<SupplierConfig> enabledSupplierConfigs(Ref ref) {
   final configs = ref.watch(supplierConfigsProvider);
   
   return configs.when(
@@ -92,7 +93,7 @@ List<SupplierConfig> enabledSupplierConfigs(EnabledSupplierConfigsRef ref) {
 /// Провайдер для статистики использования API
 @riverpod
 Map<String, dynamic> supplierUsageStats(
-  SupplierUsageStatsRef ref,
+  Ref ref,
   String supplierCode,
 ) {
   final service = ref.watch(supplierConfigServiceProvider);

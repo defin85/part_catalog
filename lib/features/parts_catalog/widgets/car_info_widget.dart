@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:get_it/get_it.dart'; // Import get_it
+import 'package:logger/logger.dart';
 import 'package:part_catalog/features/parts_catalog/api/api_client_parts_catalogs.dart'; // Import ApiClientPartsCatalogs
 import 'package:part_catalog/features/parts_catalog/models/car_info.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:logger/logger.dart';
-import 'package:get_it/get_it.dart'; // Import get_it
 
 /// {@template car_info_widget}
 /// Виджет для отображения информации об автомобиле по VIN или FRAME.

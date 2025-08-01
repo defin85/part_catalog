@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart'; // Для OrderService
+import 'package:part_catalog/core/extensions/composite_extensions.dart';
 import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
 import 'package:part_catalog/core/service_locator.dart'; // Для OrderService
 import 'package:part_catalog/core/utils/log_messages.dart';
@@ -94,23 +96,22 @@ class OrdersNotifier extends _$OrdersNotifier {
   void _applyFiltersAndSearch() {
     var filtered = List<OrderModelComposite>.from(_allOrders);
 
-    // Фильтр по статусу
+    // Применяем extension методы для фильтрации
+    // Сначала фильтруем только активные (не удаленные)
+    filtered = filtered.activeOnly;
+
+    // Фильтр по статусу с использованием extension метода
     if (state.filterStatus != null) {
-      filtered = filtered
-          .where((order) => order.docData.status == state.filterStatus)
-          .toList();
+      filtered = filtered.withStatus(state.filterStatus!.name);
     }
 
-    // Поиск
+    // Поиск с использованием extension метода
     if (state.searchQuery != null && state.searchQuery!.isNotEmpty) {
-      final query = state.searchQuery!.toLowerCase();
-      filtered =
-          filtered.where((order) => order.containsSearchText(query)).toList();
+      filtered = filtered.search(state.searchQuery!);
     }
 
-    // Сортировка
-    filtered.sort(
-        (a, b) => b.docData.documentDate.compareTo(a.docData.documentDate));
+    // Сортировка по дате документа с использованием extension метода
+    filtered = filtered.sortByDocumentDate(descending: true);
 
     _logger
         .d('OrdersNotifier: Applied filters. Result count: ${filtered.length}');

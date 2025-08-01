@@ -1,22 +1,23 @@
+import 'dart:async'; // Для Timer и Future
+
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:part_catalog/core/database/database.dart'; // Для сброса БД (оставим пока)
+import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/providers/core_providers.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/core/utils/log_messages.dart';
 import 'package:part_catalog/features/core/entity_core_data.dart';
+import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
+import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 // --- Обновленные импорты ---
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
-import 'package:part_catalog/features/references/vehicles/services/car_service.dart'; // Содержит CarWithOwnerModel
-import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
-import 'package:part_catalog/core/i18n/strings.g.dart';
-import 'package:part_catalog/core/utils/log_messages.dart';
-import 'dart:async'; // Для Timer и Future
-import 'package:collection/collection.dart';
 // --- Импорт провайдеров ---
 import 'package:part_catalog/features/references/vehicles/providers/car_providers.dart';
-import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
+import 'package:part_catalog/features/references/vehicles/services/car_service.dart'; // Содержит CarWithOwnerModel
 import 'package:uuid/uuid.dart'; // Для clientServiceProvider и appLoggerProvider
 
 // Преобразуем в ConsumerStatefulWidget

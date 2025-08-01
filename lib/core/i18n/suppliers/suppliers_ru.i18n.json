@@ -24,6 +24,10 @@
     "originalArticle": "Оригинальный артикул",
     "comment": "Комментарий",
     "priceUpdated": "Цена обновлена",
-    "daysCount": "{days} дн."
+    "daysCount": "{days} дн.",
+    "addToOrder": "Добавить в заказ",
+    "noActiveOrders": "Нет активных заказов",
+    "selectOrder": "Выберите заказ",
+    "partAddedToOrder": "Запчасть добавлена в заказ {orderName}"
   }
 }

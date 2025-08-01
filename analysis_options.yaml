@@ -8,3 +8,18 @@ analyzer:
   errors:
     invalid_annotation_target: ignore
     invalid_use_of_internal_member: ignore
+
+linter:
+  rules:
+    # Организация импортов
+    directives_ordering: true
+    # Сортировка pub dependencies - отключаем из-за конфликтов с SDK зависимостями
+    sort_pub_dependencies: false
+    # Избегание ненужных контейнеров
+    avoid_unnecessary_containers: true
+    # Предпочтение const конструкторов
+    prefer_const_constructors: false
+    # Предпочтение const литералов для неизменяемых коллекций
+    prefer_const_literals_to_create_immutables: false
+    # Отключаем prefer_relative_imports так как проект использует абсолютные импорты
+    prefer_relative_imports: false

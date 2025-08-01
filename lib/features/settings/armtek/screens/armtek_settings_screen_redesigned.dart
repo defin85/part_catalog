@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/widgets/buttons.dart';
 import 'package:part_catalog/core/widgets/loading_indicator.dart';
 import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
 import 'package:part_catalog/features/settings/armtek/notifiers/armtek_settings_notifier.dart';
 import 'package:part_catalog/features/settings/armtek/state/armtek_settings_state.dart';
-import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
 

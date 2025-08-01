@@ -1,11 +1,11 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:part_catalog/core/database/database.dart'; // Для SupplierSettingsItemData
+import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
 // Предполагается, что у вас есть модели для ответа API Armtek,
 // если нет, можно использовать Map<String, dynamic> или создать их.
 import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 
 part 'armtek_settings_state.freezed.dart';
 

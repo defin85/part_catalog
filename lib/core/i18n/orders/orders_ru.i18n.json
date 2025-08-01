@@ -67,5 +67,8 @@
     "scheduledShort": "План",
     "durationHours": "Продолжительность (часы)",
     "changeStatus": "Изменить статус",
-    "waitForPartsAction": "Ожидание запчастей"
+    "waitForPartsAction": "Ожидание запчастей",
+    "orders": "заказ-наряды",
+    "client": "Клиент",
+    "orderItem": "позиция заказа"
 }

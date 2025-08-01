@@ -2,5 +2,7 @@
     "dataLoadingError": "Data loading error",
     "saveError": "Error saving data",
     "fieldRequired": "This field is required",
-    "invalidNumber": "Invalid number"
+    "invalidNumber": "Invalid number",
+    "loadingError(entity)": "Error loading {entity}",
+    "savingError(entity)": "Error saving {entity}"
 }

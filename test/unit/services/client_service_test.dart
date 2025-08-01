@@ -3,8 +3,8 @@ import 'package:mockito/mockito.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 
-import '../../mocks/mock_services.mocks.dart';
 import '../../fixtures/test_data.dart';
+import '../../mocks/mock_services.mocks.dart';
 
 void main() {
   group('ClientService Tests', () {

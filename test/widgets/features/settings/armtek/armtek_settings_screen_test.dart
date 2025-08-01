@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:part_catalog/features/settings/armtek/screens/armtek_settings_screen.dart';
-import 'package:part_catalog/features/settings/armtek/notifiers/armtek_settings_notifier.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/features/settings/armtek/notifiers/armtek_settings_notifier.dart';
+import 'package:part_catalog/features/settings/armtek/screens/armtek_settings_screen.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
+
 import '../../../../helpers/test_helpers.dart';
 import '../../../../mocks/mock_services.mocks.dart';
 

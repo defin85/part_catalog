@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'package:path/path.dart' as path;
-import 'package:logger/logger.dart';
 import 'dart:math' as math;
+
+import 'package:logger/logger.dart';
+import 'package:path/path.dart' as path;
 
 /// Основные пути документации
 const String docsDir = 'docs';

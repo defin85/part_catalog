@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
-import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 import 'package:part_catalog/core/widgets/custom_text_form_field.dart';
 import 'package:part_catalog/core/widgets/section_title.dart';
+import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
+import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 
 /// Экран настройки поставщика
 class SupplierConfigScreen extends ConsumerStatefulWidget {
