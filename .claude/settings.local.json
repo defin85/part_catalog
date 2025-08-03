@@ -35,7 +35,13 @@
       "Bash(git restore:*)",
       "Bash(dart fix:*)",
       "Bash(dart analyze:*)",
-      "WebFetch(domain:ws.armtek.ru)"
+      "WebFetch(domain:ws.armtek.ru)",
+      "Bash(sqlite3:*)",
+      "Bash(powershell:*)",
+      "Bash(del check_db.dart)",
+      "Bash(del check_supplier_settings.dart)",
+      "Bash(winget install:*)",
+      "Bash(del \"C:\\FlutterProject\\part_catalog\\test_db_conversion.dart\")"
     ],
     "deny": []
   }

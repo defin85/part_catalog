@@ -139,13 +139,13 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         _client = ArmtekRestInterface(_dio, baseUrl: baseUrl ?? armtekBaseUrl) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        _logger.d('Interceptor onRequest: ${options.method} ${options.uri}');
-        _logger.d('Base URL: ${options.baseUrl}, Effective URL: $_effectiveBaseUrl');
+        // _logger.d('Interceptor onRequest: ${options.method} ${options.uri}');
+        // _logger.d('Base URL: ${options.baseUrl}, Effective URL: $_effectiveBaseUrl');
         
         // Логируем тело запроса для POST
-        if (options.method == 'POST') {
-          _logger.d('Request body: ${options.data}');
-        }
+        // if (options.method == 'POST') {
+        //   _logger.d('Request body: ${options.data}');
+        // }
         
         // Используем _effectiveBaseUrl для проверки, так как options.baseUrl может быть изменен Dio
         if (_effectiveBaseUrl == armtekBaseUrl ||
@@ -155,12 +155,11 @@ class ArmtekApiClient implements BaseSupplierApiClient {
             final basicAuth =
                 'Basic ${base64Encode(utf8.encode('$username:$password'))}';
             options.headers['Authorization'] = basicAuth;
-            _logger.d('Added Authorization header for direct Armtek request');
+            // _logger.d('Added Authorization header for direct Armtek request');
           } else if (proxyAuthToken == null) {
             // Логика для случая, когда это прямой запрос, но нет username/password
             // Возможно, здесь стоит выбросить ошибку конфигурации, если они ожидаются
-            _logger.w(
-                'ArmtekApiClient: Direct request but no credentials provided.');
+            // _logger.w('ArmtekApiClient: Direct request but no credentials provided.');
           }
         }
         // Если это запрос к прокси и есть токен для прокси
@@ -171,10 +170,10 @@ class ArmtekApiClient implements BaseSupplierApiClient {
                 armtekBaseUrl /* Убедимся, что это действительно прокси URL */) {
           options.headers['X-Proxy-Auth-Token'] =
               proxyAuthToken; // Пример заголовка для прокси
-          _logger.d('Added X-Proxy-Auth-Token header for proxy request');
+          // _logger.d('Added X-Proxy-Auth-Token header for proxy request');
         }
         
-        _logger.d('Final headers: ${options.headers}');
+        // _logger.d('Final headers: ${options.headers}');
         return handler.next(options);
       },
       onResponse: (response, handler) {
@@ -340,8 +339,8 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   // Добавляем метод getBrandList
   Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList(
       String vkorg) async {
-    _logger.i('Getting brand list for VKORG: $vkorg');
-    _logger.d('Making request to: $_effectiveBaseUrl/ws_user/getBrandList');
+    // _logger.i('Getting brand list for VKORG: $vkorg');
+    // _logger.d('Making request to: $_effectiveBaseUrl/ws_user/getBrandList');
     try {
       // Попробуем получить сырой ответ через Dio с полным URL
       final response = await _dio.get(
@@ -359,11 +358,11 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         final int status = responseMap['STATUS'] ?? 500;
         final List<dynamic> respData = responseMap['RESP'] ?? [];
         
-        _logger.d('getBrandList response status: $status');
-        _logger.d('getBrandList RESP length: ${respData.length}');
-        if (respData.isNotEmpty) {
-          _logger.d('First RESP item: ${respData.first}');
-        }
+        // _logger.d('getBrandList response status: $status');
+        // _logger.d('getBrandList RESP length: ${respData.length}');
+        // if (respData.isNotEmpty) {
+        //   _logger.d('First RESP item: ${respData.first}');
+        // }
         
         final List<ArmtekMessage> messages = (responseMap['MESSAGES'] as List<dynamic>?)
             ?.map((e) => e is Map<String, dynamic> 
@@ -392,7 +391,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
           }
         }
         
-        _logger.i('Successfully parsed ${brandItems.length} brands');
+        // _logger.i('Successfully parsed ${brandItems.length} brands');
         
         return ArmtekResponseWrapper<List<BrandItem>>(
           status: status,
@@ -427,10 +426,10 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   // Добавляем метод getStoreList
   Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(
       String vkorg) async {
-    _logger.i('Getting store list for VKORG: $vkorg');
+    // _logger.i('Getting store list for VKORG: $vkorg');
     // Преобразуем VKORG в число
     final vkorgNum = int.parse(vkorg);
-    _logger.d('Sending getStoreList request with VKORG: $vkorgNum (type: ${vkorgNum.runtimeType})');
+    // _logger.d('Sending getStoreList request with VKORG: $vkorgNum (type: ${vkorgNum.runtimeType})');
     
     try {
       // Попробуем получить сырой ответ через Dio с полным URL
@@ -472,7 +471,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
           }
         }
         
-        _logger.i('Successfully parsed ${storeItems.length} stores');
+        // _logger.i('Successfully parsed ${storeItems.length} stores');
         
         return ArmtekResponseWrapper<List<StoreItem>>(
           status: status,

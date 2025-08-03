@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 
 part 'supplier_config.freezed.dart';
 part 'supplier_config.g.dart';
@@ -11,6 +13,7 @@ ApiConnectionMode? _connectionModeFromJson(String? name) =>
 
 /// Типы аутентификации для API поставщиков
 enum AuthenticationType {
+  none, // Без аутентификации
   basic, // Basic Auth (username/password)
   bearer, // Bearer token
   apiKey, // API Key
@@ -26,10 +29,16 @@ abstract class SupplierConfig with _$SupplierConfig {
   const factory SupplierConfig({
     required String supplierCode, // Уникальный код поставщика (armtek, autotrade, etc.)
     required String displayName, // Отображаемое название
+    String? description, // Описание поставщика
     required bool isEnabled, // Включен ли поставщик
     required SupplierApiConfig apiConfig, // Конфигурация API
     SupplierBusinessConfig? businessConfig, // Бизнес-параметры
     Map<String, dynamic>? additionalSettings, // Дополнительные настройки
+    // Поля для отслеживания состояния
+    String? lastCheckStatus, // Статус последней проверки
+    String? lastCheckMessage, // Сообщение последней проверки
+    DateTime? lastSuccessfulCheckAt, // Время последней успешной проверки
+    String? clientIdentifierAtSupplier, // ID клиента у поставщика
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _SupplierConfig;
@@ -56,8 +65,8 @@ abstract class SupplierApiConfig with _$SupplierApiConfig {
     required AuthenticationType authType, // Тип аутентификации
     SupplierCredentials? credentials, // Учетные данные
     Map<String, String>? defaultHeaders, // Дополнительные заголовки
-    @Default(30000) int timeout, // Таймаут запросов в миллисекундах
-    @Default(3) int maxRetries, // Максимальное количество повторов
+    Duration? timeout, // Таймаут запросов
+    int? retryAttempts, // Количество повторов при ошибке
     RateLimitConfig? rateLimit, // Конфигурация лимитов
   }) = _SupplierApiConfig;
 
@@ -120,6 +129,10 @@ abstract class SupplierBusinessConfig with _$SupplierBusinessConfig {
     // Настройки заказов
     @Default(true) bool allowTestOrders, // Разрешить тестовые заказы
     String? defaultWarehouse, // Склад по умолчанию
+    
+    // Списки данных специфичные для Armtek
+    List<BrandItem>? brandList, // Список брендов
+    List<StoreItem>? storeList, // Список складов
     
     Map<String, dynamic>? additionalParams, // Дополнительные бизнес-параметры
   }) = _SupplierBusinessConfig;

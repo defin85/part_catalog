@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Импортируем сгенерированный файл slang
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
-class LanguageSwitcher extends StatelessWidget {
+// Провайдер для текущей локали
+final localeProvider = StateNotifierProvider<LocaleNotifier, AppLocale>((ref) {
+  return LocaleNotifier();
+});
+
+// Нотификатор для управления локалью
+class LocaleNotifier extends StateNotifier<AppLocale> {
+  LocaleNotifier() : super(LocaleSettings.currentLocale);
+  
+  void setLocale(AppLocale locale) {
+    state = locale;
+    LocaleSettings.setLocale(locale);
+    // Принудительно обновляем переводы
+    LocaleSettings.setLocaleRaw(locale.languageCode);
+  }
+}
+
+class LanguageSwitcher extends ConsumerWidget {
   const LanguageSwitcher({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Получаем текущую локаль из Slang (тип AppLocale)
-    final currentLocale = LocaleSettings.currentLocale;
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Получаем текущую локаль из провайдера
+    final currentLocale = ref.watch(localeProvider);
 
     return PopupMenuButton<AppLocale>(
       tooltip: t.core.changeLanguageTooltip, // Используем ключ из Slang
@@ -41,8 +59,8 @@ class LanguageSwitcher extends StatelessWidget {
         // ----- Конец переписывания -----
       },
       onSelected: (AppLocale selectedLocale) {
-        // Устанавливаем новую локаль через Slang
-        LocaleSettings.setLocale(selectedLocale);
+        // Устанавливаем новую локаль через провайдер
+        ref.read(localeProvider.notifier).setLocale(selectedLocale);
       },
     );
   }

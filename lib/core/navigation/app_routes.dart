@@ -4,6 +4,6 @@ class AppRoutes {
   static const String orders = '/orders';
   static const String partsSearch = '/parts-search';
   static const String apiControlCenter = '/api-control-center';
-  static const String armtekSettings = 'armtek';
+  static const String supplierConfig = '/supplier-config';
   // Добавьте другие маршруты
 }

@@ -51,9 +51,9 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
     _customerCodeController = TextEditingController();
     
     // Загрузить существующую конфигурацию если есть
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (widget.supplierCode != null) {
-        _loadExistingConfig();
+        await _loadExistingConfig();
         
         // Установить дефолтный URL для Armtek если пустой
         if (widget.supplierCode == 'armtek' && _baseUrlController.text.isEmpty) {
@@ -63,31 +63,38 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
     });
   }
 
-  void _loadExistingConfig() {
-    final config = ref.read(supplierConfigProvider(widget.supplierCode!));
-    if (config != null) {
-      _displayNameController.text = config.displayName;
-      _baseUrlController.text = config.apiConfig.baseUrl;
-      _selectedAuthType = config.apiConfig.authType;
-      _useProxy = config.apiConfig.proxyUrl != null;
-      _isEnabled = config.isEnabled;
-      
-      final creds = config.apiConfig.credentials;
-      if (creds != null) {
-        _usernameController.text = creds.username ?? '';
-        _passwordController.text = creds.password ?? '';
-        _apiKeyController.text = creds.apiKey ?? '';
-        _vkorgController.text = creds.additionalParams?['VKORG'] ?? '';
+  Future<void> _loadExistingConfig() async {
+    try {
+      final config = await ref.read(supplierConfigProvider(widget.supplierCode!).future);
+      if (config != null && mounted) {
+        setState(() {
+          _displayNameController.text = config.displayName;
+          _baseUrlController.text = config.apiConfig.baseUrl;
+          _selectedAuthType = config.apiConfig.authType;
+          _useProxy = config.apiConfig.proxyUrl != null;
+          _isEnabled = config.isEnabled;
+        });
+        
+        final creds = config.apiConfig.credentials;
+        if (creds != null) {
+          _usernameController.text = creds.username ?? '';
+          _passwordController.text = creds.password ?? '';
+          _apiKeyController.text = creds.apiKey ?? '';
+          _vkorgController.text = creds.additionalParams?['VKORG'] ?? '';
+        }
+        
+        final businessConfig = config.businessConfig;
+        if (businessConfig != null) {
+          _customerCodeController.text = businessConfig.customerCode ?? '';
+        }
+        
+        // Обновить форму провайдера
+        ref.read(supplierConfigFormProvider(widget.supplierCode).notifier)
+            .updateConfig(config);
       }
-      
-      final businessConfig = config.businessConfig;
-      if (businessConfig != null) {
-        _customerCodeController.text = businessConfig.customerCode ?? '';
-      }
-      
-      // Обновить форму провайдера
-      ref.read(supplierConfigFormProvider(widget.supplierCode).notifier)
-          .updateConfig(config);
+    } catch (e) {
+      // Логируем ошибку, но не показываем пользователю если просто нет конфигурации
+      debugPrint('Error loading config: $e');
     }
   }
 
@@ -759,6 +766,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
   
   String _getAuthTypeName(AuthenticationType type) {
     switch (type) {
+      case AuthenticationType.none:
+        return 'Без аутентификации';
       case AuthenticationType.basic:
         return 'Логин/Пароль';
       case AuthenticationType.apiKey:

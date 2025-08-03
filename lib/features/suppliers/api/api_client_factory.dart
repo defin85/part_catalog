@@ -83,8 +83,10 @@ class ApiClientFactory {
     final apiConfig = config.apiConfig;
     
     // Установить таймаут
-    dio.options.connectTimeout = Duration(milliseconds: apiConfig.timeout);
-    dio.options.receiveTimeout = Duration(milliseconds: apiConfig.timeout);
+    if (apiConfig.timeout != null) {
+      dio.options.connectTimeout = apiConfig.timeout!;
+      dio.options.receiveTimeout = apiConfig.timeout!;
+    }
     
     // Добавить дополнительные заголовки
     if (apiConfig.defaultHeaders != null) {
@@ -92,11 +94,11 @@ class ApiClientFactory {
     }
     
     // Добавить интерсептор для повторных попыток
-    if (apiConfig.maxRetries > 0) {
+    if (apiConfig.retryAttempts != null && apiConfig.retryAttempts! > 0) {
       dio.interceptors.add(
         RetryInterceptor(
           dio: dio,
-          retries: apiConfig.maxRetries,
+          retries: apiConfig.retryAttempts!,
           retryDelays: [
             const Duration(seconds: 1),
             const Duration(seconds: 2),

@@ -31,7 +31,7 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   @override
   Future<OptimizedArmtekApiClient?> build(String supplierCode) async {
     // Получаем конфигурацию поставщика
-    final config = ref.watch(supplierConfigProvider(supplierCode));
+    final config = await ref.watch(supplierConfigProvider(supplierCode).future);
     
     if (config == null || !config.isEnabled || supplierCode != 'armtek') {
       return null;

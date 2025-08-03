@@ -11,6 +11,8 @@ import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_router.dart';
 import 'package:part_catalog/core/observers/provider_observer.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/core/widgets/language_switcher.dart';
+import 'package:part_catalog/debug/db_check.dart';
 
 void main() {
   // Выполнение в защищенной зоне для перехвата всех ошибок
@@ -38,6 +40,9 @@ void main() {
 
     // Передаем существующий экземпляр в setupLocator
     setupLocator(database);
+    
+    // Проверяем содержимое таблицы supplier_settings в debug режиме
+    await checkSupplierSettingsTable();
 
     // Оборачиваем приложение в ProviderScope и TranslationProvider
     runApp(
@@ -63,19 +68,21 @@ void main() {
   });
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Получаем текущую локаль из провайдера
+    final currentLocale = ref.watch(localeProvider);
+    
     // Используем MaterialApp.router для интеграции с GoRouter
     return MaterialApp.router(
       // Передаем конфигурацию роутера
       routerConfig: router,
 
       // Настройки локализации из Slang
-      locale: TranslationProvider.of(context)
-          .flutterLocale, // Получаем текущую локаль
+      locale: currentLocale.flutterLocale, // Используем локаль из провайдера
       supportedLocales: AppLocaleUtils
           .supportedLocales, // Получаем список поддерживаемых локалей
       localizationsDelegates:

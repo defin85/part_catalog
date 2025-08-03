@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/widgets/section_title.dart';
+import 'package:part_catalog/features/debug/debug_database_screen.dart';
 import 'package:part_catalog/features/suppliers/providers/optimized_system_settings_provider.dart';
 
 /// Экран настроек оптимизированной системы API
@@ -75,6 +77,17 @@ class _OptimizedSystemSettingsScreenState extends ConsumerState<OptimizedSystemS
                   ],
                 ),
               ),
+              if (kDebugMode)
+                const PopupMenuItem(
+                  value: 'debug_db',
+                  child: Row(
+                    children: [
+                      Icon(Icons.bug_report, color: Colors.orange),
+                      SizedBox(width: 8),
+                      Text('Debug БД'),
+                    ],
+                  ),
+                ),
             ],
           ),
         ],
@@ -386,6 +399,15 @@ class _OptimizedSystemSettingsScreenState extends ConsumerState<OptimizedSystemS
         break;
       case 'import':
         _showImportDialog();
+        break;
+      case 'debug_db':
+        if (kDebugMode) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const DebugDatabaseScreen(),
+            ),
+          );
+        }
         break;
     }
   }

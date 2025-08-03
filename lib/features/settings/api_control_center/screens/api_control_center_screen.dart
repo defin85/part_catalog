@@ -139,18 +139,8 @@ class ApiControlCenterScreen extends ConsumerWidget {
                     isConfigured: supplierInfo.isConfigured, onConfigure: () {
                   logger.i(
                       'Configure button pressed for ${supplierInfo.displayName}');
-                  if (supplierInfo.code == SupplierCode.armtek.code) {
-                    // Используем context.goNamed для перехода по имени маршрута
-                    // Убедитесь, что родительский маршрут ApiControlCenterScreen уже активен
-                    // или используйте полный путь context.go('${AppRoutes.apiControlCenter}/${AppRoutes.armtekSettings}');
-                    context.goNamed(AppRoutes.armtekSettings);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content: Text(
-                              'Настройки для ${supplierInfo.displayName} еще не реализованы')),
-                    );
-                  }
+                  // Открываем экран настроек поставщика
+                  context.go('${AppRoutes.supplierConfig}/${supplierInfo.code}');
                 },
                     // Тестовая кнопка для имитации сохранения настроек
                     onTestToggleConfigured: () {

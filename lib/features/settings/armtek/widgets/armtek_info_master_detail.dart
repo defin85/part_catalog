@@ -4,8 +4,10 @@ import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_structure_root.dart';
+import 'package:part_catalog/features/suppliers/widgets/base_supplier_info_widget.dart';
 
-class ArmtekInfoMasterDetail extends StatefulWidget {
+/// Специфический виджет для отображения информации Armtek
+class ArmtekInfoMasterDetail extends BaseSupplierInfoWidget {
   final UserStructureRoot structure;
   final List<BrandItem>? brandList;
   final List<StoreItem>? storeList;
@@ -15,23 +17,110 @@ class ArmtekInfoMasterDetail extends StatefulWidget {
     required this.structure,
     this.brandList,
     this.storeList,
-  });
+  }) : super(
+    supplierCode: 'armtek',
+    supplierData: null, // Можем передать structure если нужно
+  );
 
   @override
-  State<ArmtekInfoMasterDetail> createState() => _ArmtekInfoMasterDetailState();
+  BaseSupplierInfoWidgetState createState() => _ArmtekInfoMasterDetailState();
 }
 
-class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
-  // Выбранный элемент для отображения деталей
-  Object? _selectedItem;
-  String _selectedItemType = '';
+class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInfoMasterDetail> {
   
   @override
   void initState() {
     super.initState();
     // По умолчанию показываем основную организацию
-    _selectedItem = widget.structure;
-    _selectedItemType = 'root';
+    selectItem('root', widget.structure);
+  }
+
+  @override
+  List<InfoCardData> buildInfoCards(Translations t) {
+    final cards = <InfoCardData>[];
+    
+    // Плательщики
+    cards.add(InfoCardData(
+      icon: Icons.account_balance,
+      title: 'Плательщики',
+      count: widget.structure.rgTab?.length ?? 0,
+      color: Colors.blue,
+      onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
+          ? () => selectItem('payer', widget.structure.rgTab!.first)
+          : null,
+    ));
+    
+    // Контакты
+    cards.add(InfoCardData(
+      icon: Icons.contacts,
+      title: 'Контакты',
+      count: widget.structure.contactTab?.length ?? 0,
+      color: Colors.green,
+      onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
+          ? () => selectItem('root_contacts', widget.structure.contactTab)
+          : null,
+    ));
+    
+    // Договоры
+    cards.add(InfoCardData(
+      icon: Icons.description,
+      title: 'Договоры',
+      count: widget.structure.dogovorTab?.length ?? 0,
+      color: Colors.orange,
+      onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
+          ? () => selectItem('root_contracts', widget.structure.dogovorTab)
+          : null,
+    ));
+    
+    // Склады
+    cards.add(InfoCardData(
+      icon: Icons.warehouse,
+      title: 'Склады',
+      count: widget.storeList?.length ?? 0,
+      color: widget.storeList != null && widget.storeList!.isNotEmpty ? Colors.indigo : Colors.grey,
+      onTap: widget.storeList != null && widget.storeList!.isNotEmpty
+          ? () => selectItem('stores', widget.storeList)
+          : null,
+    ));
+    
+    // Бренды
+    cards.add(InfoCardData(
+      icon: Icons.branding_watermark,
+      title: 'Бренды',
+      count: widget.brandList?.length ?? 0,
+      color: widget.brandList != null && widget.brandList!.isNotEmpty ? Colors.deepPurple : Colors.grey,
+      onTap: widget.brandList != null && widget.brandList!.isNotEmpty
+          ? () => selectItem('brands', widget.brandList)
+          : null,
+    ));
+    
+    return cards;
+  }
+
+  @override
+  Widget buildDetailView(String itemType, Object? item, Translations t) {
+    switch (itemType) {
+      case 'root':
+        return _buildRootDetail(t);
+      case 'payer':
+        return _buildPayerDetail(item as UserStructureItem, t);
+      case 'root_contacts':
+        return _buildContactsTable(item as List, t);
+      case 'root_contracts':
+        return _buildContractsTable(item as List, t);
+      case 'we_tab':
+        return _buildWeTable(item as List, t);
+      case 'za_tab':
+        return _buildAddressesTable(item as List, t);
+      case 'exw_tab':
+        return _buildDeliveryTermsTable(item as List, t);
+      case 'stores':
+        return _buildStoresTable(item as List<StoreItem>, t);
+      case 'brands':
+        return _buildBrandsTable(item as List<BrandItem>, t);
+      default:
+        return const Center(child: Text('Выберите элемент для просмотра'));
+    }
   }
 
   @override
@@ -138,13 +227,8 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
           icon: Icons.business,
           title: widget.structure.sname ?? 'Основная организация',
           subtitle: 'KUNAG: ${widget.structure.kunag}',
-          isSelected: _selectedItemType == 'root',
-          onTap: () {
-            setState(() {
-              _selectedItem = widget.structure;
-              _selectedItemType = 'root';
-            });
-          },
+          isSelected: selectedItemType == 'root',
+          onTap: () => selectItem('root', widget.structure),
         ),
         
         // Плательщики
@@ -157,13 +241,8 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
               title: rgItem.sname ?? 'Без названия',
               subtitle: 'KUNNR: ${rgItem.kunnr}',
               isDefault: rgItem.defaultFlag ?? false,
-              isSelected: _selectedItem == rgItem && _selectedItemType == 'payer',
-              onTap: () {
-                setState(() {
-                  _selectedItem = rgItem;
-                  _selectedItemType = 'payer';
-                });
-              },
+              isSelected: selectedItemType == 'payer' && selectedItem == rgItem,
+              onTap: () => selectItem('payer', rgItem),
               children: _buildPayerSubItems(rgItem, t),
             ),
           ),
@@ -175,13 +254,8 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             icon: Icons.contacts,
             title: 'Контакты организации',
             subtitle: '${widget.structure.contactTab!.length} контактов',
-            isSelected: _selectedItemType == 'root_contacts',
-            onTap: () {
-              setState(() {
-                _selectedItem = widget.structure.contactTab;
-                _selectedItemType = 'root_contacts';
-              });
-            },
+            isSelected: selectedItemType == 'root_contacts',
+            onTap: () => selectItem('root_contacts', widget.structure.contactTab),
           ),
           
         // Договоры организации
@@ -190,13 +264,8 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
             icon: Icons.description,
             title: 'Договоры организации',
             subtitle: '${widget.structure.dogovorTab!.length} договоров',
-            isSelected: _selectedItemType == 'root_contracts',
-            onTap: () {
-              setState(() {
-                _selectedItem = widget.structure.dogovorTab;
-                _selectedItemType = 'root_contracts';
-              });
-            },
+            isSelected: selectedItemType == 'root_contracts',
+            onTap: () => selectItem('root_contracts', widget.structure.dogovorTab),
           ),
       ],
     );
@@ -211,12 +280,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         icon: Icons.local_shipping,
         title: 'Грузополучатели',
         count: payer.weTab!.length,
-        onTap: () {
-          setState(() {
-            _selectedItem = payer.weTab;
-            _selectedItemType = 'we_tab';
-          });
-        },
+        onTap: () => selectItem('we_tab', payer.weTab),
       ));
     }
     
@@ -226,12 +290,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         icon: Icons.location_on,
         title: 'Адреса доставки',
         count: payer.zaTab!.length,
-        onTap: () {
-          setState(() {
-            _selectedItem = payer.zaTab;
-            _selectedItemType = 'za_tab';
-          });
-        },
+        onTap: () => selectItem('za_tab', payer.zaTab),
       ));
     }
     
@@ -241,12 +300,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         icon: Icons.local_offer,
         title: 'Условия поставки',
         count: payer.exwTab!.length,
-        onTap: () {
-          setState(() {
-            _selectedItem = payer.exwTab;
-            _selectedItemType = 'exw_tab';
-          });
-        },
+        onTap: () => selectItem('exw_tab', payer.exwTab),
       ));
     }
     
@@ -256,12 +310,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         icon: Icons.article,
         title: 'Договоры',
         count: payer.dogovorTab!.length,
-        onTap: () {
-          setState(() {
-            _selectedItem = payer.dogovorTab;
-            _selectedItemType = 'payer_contracts';
-          });
-        },
+        onTap: () => selectItem('payer_contracts', payer.dogovorTab),
       ));
     }
     
@@ -271,12 +320,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         icon: Icons.person,
         title: 'Контакты',
         count: payer.contactTab!.length,
-        onTap: () {
-          setState(() {
-            _selectedItem = payer.contactTab;
-            _selectedItemType = 'payer_contacts';
-          });
-        },
+        onTap: () => selectItem('payer_contacts', payer.contactTab),
       ));
     }
     
@@ -386,27 +430,27 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   }
   
   Widget _buildDetailContent(Translations t) {
-    switch (_selectedItemType) {
+    switch (selectedItemType) {
       case 'root':
         return _buildRootDetail(t);
       case 'payer':
-        return _buildPayerDetail(_selectedItem as UserStructureItem, t);
+        return _buildPayerDetail(selectedItem as UserStructureItem, t);
       case 'root_contacts':
       case 'payer_contacts':
-        return _buildContactsTable(_selectedItem as List, t);
+        return _buildContactsTable(selectedItem as List, t);
       case 'root_contracts':
       case 'payer_contracts':
-        return _buildContractsTable(_selectedItem as List, t);
+        return _buildContractsTable(selectedItem as List, t);
       case 'we_tab':
-        return _buildWeTable(_selectedItem as List, t);
+        return _buildWeTable(selectedItem as List, t);
       case 'za_tab':
-        return _buildAddressesTable(_selectedItem as List, t);
+        return _buildAddressesTable(selectedItem as List, t);
       case 'exw_tab':
-        return _buildDeliveryTermsTable(_selectedItem as List, t);
+        return _buildDeliveryTermsTable(selectedItem as List, t);
       case 'stores':
-        return _buildStoresTable(_selectedItem as List<StoreItem>, t);
+        return _buildStoresTable(selectedItem as List<StoreItem>, t);
       case 'brands':
-        return _buildBrandsTable(_selectedItem as List<BrandItem>, t);
+        return _buildBrandsTable(selectedItem as List<BrandItem>, t);
       default:
         return const Center(child: Text('Выберите элемент для просмотра'));
     }
@@ -551,12 +595,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 count: payer.weTab?.length ?? 0,
                 color: Colors.purple,
                 onTap: payer.weTab != null && payer.weTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'we_tab';
-                          _selectedItem = payer.weTab;
-                        });
-                      }
+                    ? () => selectItem('we_tab', payer.weTab)
                     : null,
               ),
               _buildCompactInfoCard(
@@ -565,12 +604,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 count: payer.zaTab?.length ?? 0,
                 color: Colors.red,
                 onTap: payer.zaTab != null && payer.zaTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'za_tab';
-                          _selectedItem = payer.zaTab;
-                        });
-                      }
+                    ? () => selectItem('za_tab', payer.zaTab)
                     : null,
               ),
               _buildCompactInfoCard(
@@ -579,12 +613,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 count: payer.exwTab?.length ?? 0,
                 color: Colors.teal,
                 onTap: payer.exwTab != null && payer.exwTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'exw_tab';
-                          _selectedItem = payer.exwTab;
-                        });
-                      }
+                    ? () => selectItem('exw_tab', payer.exwTab)
                     : null,
               ),
               _buildCompactInfoCard(
@@ -593,12 +622,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 count: payer.dogovorTab?.length ?? 0,
                 color: Colors.orange,
                 onTap: payer.dogovorTab != null && payer.dogovorTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'payer_contracts';
-                          _selectedItem = payer.dogovorTab;
-                        });
-                      }
+                    ? () => selectItem('payer_contracts', payer.dogovorTab)
                     : null,
               ),
               _buildCompactInfoCard(
@@ -607,12 +631,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
                 count: payer.contactTab?.length ?? 0,
                 color: Colors.green,
                 onTap: payer.contactTab != null && payer.contactTab!.isNotEmpty
-                    ? () {
-                        setState(() {
-                          _selectedItemType = 'payer_contacts';
-                          _selectedItem = payer.contactTab;
-                        });
-                      }
+                    ? () => selectItem('payer_contacts', payer.contactTab)
                     : null,
               ),
             ];
@@ -900,12 +919,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       count: widget.structure.rgTab?.length ?? 0,
       color: Colors.blue,
       onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
-          ? () {
-              setState(() {
-                _selectedItemType = 'payer';
-                _selectedItem = widget.structure.rgTab!.first;
-              });
-            }
+          ? () => selectItem('payer', widget.structure.rgTab!.first)
           : null,
     ));
     
@@ -916,12 +930,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       count: widget.structure.contactTab?.length ?? 0,
       color: Colors.green,
       onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
-          ? () {
-              setState(() {
-                _selectedItemType = 'root_contacts';
-                _selectedItem = widget.structure.contactTab;
-              });
-            }
+          ? () => selectItem('root_contacts', widget.structure.contactTab)
           : null,
     ));
     
@@ -932,12 +941,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
       count: widget.structure.dogovorTab?.length ?? 0,
       color: Colors.orange,
       onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
-          ? () {
-              setState(() {
-                _selectedItemType = 'root_contracts';
-                _selectedItem = widget.structure.dogovorTab;
-              });
-            }
+          ? () => selectItem('root_contracts', widget.structure.dogovorTab)
           : null,
     ));
     
@@ -948,12 +952,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         title: 'Склады',
         count: widget.storeList!.length,
         color: Colors.indigo,
-        onTap: () {
-          setState(() {
-            _selectedItemType = 'stores';
-            _selectedItem = widget.storeList;
-          });
-        },
+        onTap: () => selectItem('stores', widget.storeList),
       ));
     } else {
       // Временная карточка для отладки
@@ -973,12 +972,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
         title: 'Бренды',
         count: widget.brandList!.length,
         color: Colors.deepPurple,
-        onTap: () {
-          setState(() {
-            _selectedItemType = 'brands';
-            _selectedItem = widget.brandList;
-          });
-        },
+        onTap: () => selectItem('brands', widget.brandList),
       ));
     } else {
       // Временная карточка для отладки
@@ -1094,7 +1088,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   }
   
   IconData _getDetailIcon() {
-    switch (_selectedItemType) {
+    switch (selectedItemType) {
       case 'root':
         return Icons.business;
       case 'payer':
@@ -1121,7 +1115,7 @@ class _ArmtekInfoMasterDetailState extends State<ArmtekInfoMasterDetail> {
   }
   
   String _getDetailTitle() {
-    switch (_selectedItemType) {
+    switch (selectedItemType) {
       case 'root':
         return 'Основная организация';
       case 'payer':
