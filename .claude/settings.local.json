@@ -28,7 +28,6 @@
       "Bash(git rm:*)",
       "Bash(grep:*)",
       "Bash(npm install)",
-      "Bash(npx husky add:*)",
       "Bash(ls:*)",
       "Bash(npm run test:layout:*)",
       "Bash(git reset:*)",
