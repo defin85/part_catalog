@@ -17,12 +17,12 @@ extension EntityExtensions on IEntity {
 
   /// Возвращает человекочитаемое представление статуса удаления.
   String get deletionStatus => isDeleted ? 'Удалено' : 'Активно';
-  
+
   /// Проверяет, содержит ли сущность любой из искомых текстов.
   bool containsAnySearchText(List<String> queries) {
     return queries.any((query) => containsSearchText(query));
   }
-  
+
   /// Проверяет, содержит ли сущность все искомые тексты.
   bool containsAllSearchText(List<String> queries) {
     return queries.every((query) => containsSearchText(query));
@@ -33,27 +33,28 @@ extension EntityExtensions on IEntity {
 /// Добавляет удобные методы для документов.
 extension DocumentEntityExtensions on IDocumentEntity {
   /// Проверяет, находится ли документ в активной работе.
-  bool get isActive => 
-      status.name == 'inProgress' || 
+  bool get isActive =>
+      status.name == 'inProgress' ||
       status.name == 'newDoc' ||
       status.name == 'draft';
 
   /// Проверяет, завершен ли документ (любым способом).
-  bool get isFinished => 
-      status.name == 'completed' || 
-      status.name == 'cancelled';
+  bool get isFinished =>
+      status.name == 'completed' || status.name == 'cancelled';
 
   /// Проверяет, можно ли редактировать документ.
   bool get canEdit => !isPosted && status.name != 'cancelled';
 
   /// Проверяет, можно ли проводить документ.
-  bool get canPost => !isPosted && (status.name == 'newDoc' || status.name == 'draft');
+  bool get canPost =>
+      !isPosted && (status.name == 'newDoc' || status.name == 'draft');
 
   /// Проверяет, можно ли отменить проведение.
   bool get canUnpost => isPosted && status.name == 'posted';
 
   /// Проверяет, можно ли отменить документ.
-  bool get canCancel => status.name != 'cancelled' && status.name != 'completed';
+  bool get canCancel =>
+      status.name != 'cancelled' && status.name != 'completed';
 
   /// Возвращает общее количество элементов во всех типах.
   int get totalItemsCount => items.length;
@@ -70,7 +71,7 @@ extension DocumentEntityExtensions on IDocumentEntity {
   Set<BaseItemType> get uniqueItemTypes => itemsMap.keys.toSet();
 
   /// Проверяет, есть ли элементы определенного типа.
-  bool hasItemsOfType(BaseItemType type) => 
+  bool hasItemsOfType(BaseItemType type) =>
       itemsMap.containsKey(type) && itemsMap[type]!.isNotEmpty;
 }
 
@@ -104,7 +105,7 @@ extension ReferenceEntityExtensions on IReferenceEntity {
   Set<BaseItemType> get uniqueItemTypes => itemsMap.keys.toSet();
 
   /// Проверяет, есть ли элементы определенного типа.
-  bool hasItemsOfType(BaseItemType type) => 
+  bool hasItemsOfType(BaseItemType type) =>
       itemsMap.containsKey(type) && itemsMap[type]!.isNotEmpty;
 }
 
@@ -146,7 +147,7 @@ extension EntityListExtensions<T extends IEntity> on List<T> {
   }
 
   /// Фильтрует список по поисковому запросу.
-  List<T> search(String query) => 
+  List<T> search(String query) =>
       where((entity) => entity.containsSearchText(query)).toList();
 
   /// Находит сущность по UUID.
@@ -191,7 +192,7 @@ extension DocumentListExtensions<T extends IDocumentEntity> on List<T> {
   List<T> get unpostedOnly => where((doc) => !doc.isPosted).toList();
 
   /// Фильтрует список по статусу документа.
-  List<T> withStatus(String statusName) => 
+  List<T> withStatus(String statusName) =>
       where((doc) => doc.status.name == statusName).toList();
 
   /// Сортирует список по дате документа.
@@ -225,11 +226,11 @@ extension ReferenceListExtensions<T extends IReferenceEntity> on List<T> {
   List<T> get itemsOnly => where((ref) => !ref.isFolder).toList();
 
   /// Находит всех прямых потомков указанного родителя.
-  List<T> childrenOf(String parentId) => 
+  List<T> childrenOf(String parentId) =>
       where((ref) => ref.parentId == parentId).toList();
 
   /// Находит всех потомков (включая вложенные) указанного предка.
-  List<T> descendantsOf(String ancestorId) => 
+  List<T> descendantsOf(String ancestorId) =>
       where((ref) => ref.isDescendantOf(ancestorId)).toList();
 
   /// Строит дерево элементов, начиная с корневых.

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+
 import 'package:go_router/go_router.dart';
+
 import 'package:part_catalog/features/documents/orders/screens/orders_screen.dart'; // Пример
 import 'package:part_catalog/features/home/screens/home_screen.dart';
 import 'package:part_catalog/features/references/clients/screens/clients_screen.dart'; // Пример
 import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
 import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/enhanced_supplier_config_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/parts_search_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/supplier_config_screen.dart';
+
+import 'app_routes.dart';
 
 // Импортируйте другие экраны...
-import 'app_routes.dart';
 
 /// Конфигурация GoRouter для приложения
 final GoRouter router = GoRouter(
@@ -64,7 +67,7 @@ final GoRouter router = GoRouter(
           builder: (BuildContext context, GoRouterState state) {
             return const ApiControlCenterScreen();
           },
-          routes: <RouteBase>[
+          routes: const <RouteBase>[
             // Вложенные маршруты для ApiControlCenterScreen
             // TODO: Добавить новые маршруты для настроек поставщиков
           ],
@@ -78,7 +81,8 @@ final GoRouter router = GoRouter(
       path: '${AppRoutes.supplierConfig}/:supplierCode',
       builder: (BuildContext context, GoRouterState state) {
         final supplierCode = state.pathParameters['supplierCode'];
-        return SupplierConfigScreen(supplierCode: supplierCode);
+        // Используем улучшенный экран настроек поставщика с вкладками
+        return EnhancedSupplierConfigScreen(supplierCode: supplierCode);
       },
     ),
   ],

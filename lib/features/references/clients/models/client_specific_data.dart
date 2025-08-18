@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/references/clients/models/client_type.dart';
 
 part 'client_specific_data.freezed.dart';

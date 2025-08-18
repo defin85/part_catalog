@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
 import 'provider_test_helpers.dart';
@@ -24,14 +26,14 @@ class TestHelpers {
         ),
       ),
     );
-    
+
     if (screenSize != null) {
       return MediaQuery(
         data: MediaQueryData(size: screenSize),
         child: app,
       );
     }
-    
+
     return app;
   }
 
@@ -139,11 +141,11 @@ class TestHelpers {
     List<Override>? overrides,
   }) async {
     final screenSizes = [
-      const Size(320, 568),   // iPhone SE
-      const Size(375, 667),   // iPhone 8
-      const Size(414, 896),   // iPhone 11
-      const Size(768, 1024),  // iPad
-      const Size(1366, 768),  // Laptop
+      const Size(320, 568), // iPhone SE
+      const Size(375, 667), // iPhone 8
+      const Size(414, 896), // iPhone 11
+      const Size(768, 1024), // iPad
+      const Size(1366, 768), // Laptop
       const Size(1920, 1080), // Desktop
     ];
 
@@ -165,9 +167,9 @@ class TestHelpers {
     int maxRenderTimeMs = 100,
   }) async {
     final stopwatch = Stopwatch()..start();
-    
+
     await tester.pumpWidget(createTestApp(widget, overrides: overrides));
-    
+
     stopwatch.stop();
     expect(
       stopwatch.elapsedMilliseconds,
@@ -198,7 +200,7 @@ extension WidgetTesterExtensions on WidgetTester {
         overrides: overrides,
       ),
     );
-    
+
     // Даем время для полной инициализации провайдеров и локализации
     await pump();
     await pump(const Duration(milliseconds: 100));
@@ -215,8 +217,7 @@ extension WidgetTesterExtensions on WidgetTester {
     await enterText(
       find.byWidgetPredicate(
         (widget) =>
-            widget is TextField &&
-            widget.decoration?.labelText == labelText,
+            widget is TextField && widget.decoration?.labelText == labelText,
       ),
       text,
     );
@@ -229,13 +230,13 @@ extension WidgetTesterExtensions on WidgetTester {
     Duration timeout = const Duration(seconds: 5),
   }) async {
     await pumpAndSettle();
-    
+
     final endTime = DateTime.now().add(timeout);
     while (DateTime.now().isBefore(endTime)) {
       if (any(finder)) return;
       await pump(const Duration(milliseconds: 100));
     }
-    
+
     fail('Widget not found within timeout');
   }
 

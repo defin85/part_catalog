@@ -1,5 +1,6 @@
-// filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\models\user_ftp_data.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+// filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\models\user_ftp_data.dart
 
 part 'user_ftp_data.freezed.dart';
 part 'user_ftp_data.g.dart';

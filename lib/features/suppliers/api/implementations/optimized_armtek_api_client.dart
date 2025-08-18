@@ -30,8 +30,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   OptimizedArmtekApiClient._({
     required ResilientApiClient resilientClient,
     String? vkorg,
-  }) : _resilientClient = resilientClient,
-       _vkorg = vkorg;
+  })  : _resilientClient = resilientClient,
+        _vkorg = vkorg;
 
   /// Фабричный метод для создания оптимизированного Armtek API клиента
   static Future<OptimizedArmtekApiClient> create({
@@ -77,7 +77,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   Map<String, dynamic>? getCacheStats() => _resilientClient.getCacheStats();
 
   /// Получает статус circuit breaker
-  Map<String, dynamic> getCircuitBreakerStatus() => _resilientClient.getCircuitBreakerStatus();
+  Map<String, dynamic> getCircuitBreakerStatus() =>
+      _resilientClient.getCircuitBreakerStatus();
 
   /// Выполняет health check
   Future<bool> performHealthCheck() => _resilientClient.performHealthCheck();
@@ -92,7 +93,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   Future<bool> checkConnection() async {
     try {
       final response = await pingService();
-      
+
       if (response.status == 200 && response.responseData != null) {
         _logger.i('API Armtek доступно. IP: ${response.responseData?.ip}, '
             'Время выполнения: ${response.responseData?.time}');
@@ -115,8 +116,9 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
       throw Exception('VKORG not configured for Armtek API client');
     }
 
-    _logger.i('Поиск цен на запчасть: $articleNumber (бренд: ${brand ?? "любой"})');
-    
+    _logger.i(
+        'Поиск цен на запчасть: $articleNumber (бренд: ${brand ?? "любой"})');
+
     try {
       final response = await _resilientClient.post(
         '/ws_search/getPrice',
@@ -141,7 +143,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
       }
 
       final respData = data['RESP'] as List<dynamic>? ?? [];
-      _logger.i('Получено ${respData.length} предложений для артикула $articleNumber');
+      _logger.i(
+          'Получено ${respData.length} предложений для артикула $articleNumber');
 
       return respData.map<PartPriceModel>((item) {
         if (item is Map<String, dynamic>) {
@@ -154,9 +157,11 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
             quantity: searchResult.quantity ?? 0,
             deliveryDays: searchResult.deliveryTime ?? 0,
             supplierName: supplierName,
-            originalArticle: searchResult.additionalData?['originalNumber'] as String?,
+            originalArticle:
+                searchResult.additionalData?['originalNumber'] as String?,
             comment: searchResult.additionalData?['comment'] as String?,
-            priceUpdatedAt: _parseDateTime(searchResult.additionalData?['priceDate']),
+            priceUpdatedAt:
+                _parseDateTime(searchResult.additionalData?['priceDate']),
             additionalProperties: {
               'store': searchResult.additionalData?['store'],
               'availability': searchResult.additionalData?['availability'],
@@ -177,8 +182,10 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         );
       }).toList();
     } catch (e, stackTrace) {
-      _logger.e('Ошибка при получении цен от Armtek для артикула $articleNumber',
-          error: e, stackTrace: stackTrace);
+      _logger.e(
+          'Ошибка при получении цен от Armtek для артикула $articleNumber',
+          error: e,
+          stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -186,7 +193,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   /// Проверяет доступность сервиса Armtek
   Future<ArmtekResponseWrapper<PingResponse>> pingService() async {
     _logger.i('Проверка доступности сервиса Armtek...');
-    
+
     try {
       final response = await _resilientClient.get(
         '/ws_ping/index',
@@ -201,12 +208,16 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
       final status = data['STATUS'] as int? ?? 500;
       final respData = data['RESP'] as Map<String, dynamic>? ?? {};
       final messages = (data['MESSAGES'] as List? ?? [])
-          .map((e) => e is Map<String, dynamic> 
+          .map((e) => e is Map<String, dynamic>
               ? ArmtekMessage.fromJson(e)
-              : ArmtekMessage(type: 'INFO', text: e.toString(), date: DateTime.now().toIso8601String()))
+              : ArmtekMessage(
+                  type: 'INFO',
+                  text: e.toString(),
+                  date: DateTime.now().toIso8601String()))
           .toList();
 
-      final pingResponse = respData.isNotEmpty ? PingResponse.fromJson(respData) : null;
+      final pingResponse =
+          respData.isNotEmpty ? PingResponse.fromJson(respData) : null;
 
       if (pingResponse != null) {
         _logger.i('Сервис Armtek доступен. IP: ${pingResponse.ip}, '
@@ -228,7 +239,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   /// Получает список VKORG для пользователя
   Future<ArmtekResponseWrapper<List<UserVkorg>>> getUserVkorgList() async {
     _logger.i('Получение списка VKORG');
-    
+
     try {
       final response = await _resilientClient.get(
         '/ws_user/getUserVkorgList',
@@ -240,7 +251,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         (data) => (data as List).map((e) => UserVkorg.fromJson(e)).toList(),
       );
     } catch (e, stackTrace) {
-      _logger.e('Ошибка при получении списка VKORG', error: e, stackTrace: stackTrace);
+      _logger.e('Ошибка при получении списка VKORG',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -249,7 +261,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   Future<ArmtekResponseWrapper<UserInfoResponse>> getUserInfo(
       UserInfoRequest request) async {
     _logger.i('Getting user info for VKORG: ${request.vkorg}');
-    
+
     try {
       final response = await _resilientClient.post(
         '/ws_user/getUserInfo',
@@ -272,9 +284,10 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   }
 
   /// Получает список брендов
-  Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList(String vkorg) async {
+  Future<ArmtekResponseWrapper<List<BrandItem>>> getBrandList(
+      String vkorg) async {
     _logger.i('Getting brand list for VKORG: $vkorg');
-    
+
     try {
       final response = await _resilientClient.get(
         '/ws_user/getBrandList',
@@ -289,7 +302,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         (data) {
           final List<BrandItem> brandItems = [];
           final respData = data;
-          
+
           for (var item in respData) {
             try {
               if (item is String) {
@@ -304,30 +317,32 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
               continue;
             }
           }
-          
+
           _logger.i('Successfully parsed ${brandItems.length} brands');
           return brandItems;
         },
       );
     } catch (e, stackTrace) {
       _logger.e('Error in getBrandList', error: e, stackTrace: stackTrace);
-      
+
       return ArmtekResponseWrapper<List<BrandItem>>(
         status: 500,
         responseData: <BrandItem>[],
-        messages: [ArmtekMessage(
-          type: 'ERROR', 
-          text: 'Error: ${e.toString()}', 
-          date: DateTime.now().toIso8601String()
-        )],
+        messages: [
+          ArmtekMessage(
+              type: 'ERROR',
+              text: 'Error: ${e.toString()}',
+              date: DateTime.now().toIso8601String())
+        ],
       );
     }
   }
 
   /// Получает список складов
-  Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(String vkorg) async {
+  Future<ArmtekResponseWrapper<List<StoreItem>>> getStoreList(
+      String vkorg) async {
     _logger.i('Getting store list for VKORG: $vkorg');
-    
+
     try {
       final vkorgNum = int.parse(vkorg);
       final response = await _resilientClient.post(
@@ -340,7 +355,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         (data) {
           final List<StoreItem> storeItems = [];
           final respData = data;
-          
+
           for (var item in respData) {
             try {
               if (item is String) {
@@ -355,30 +370,32 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
               continue;
             }
           }
-          
+
           _logger.i('Successfully parsed ${storeItems.length} stores');
           return storeItems;
         },
       );
     } catch (e, stackTrace) {
       _logger.e('Error in getStoreList', error: e, stackTrace: stackTrace);
-      
+
       return ArmtekResponseWrapper<List<StoreItem>>(
         status: 500,
         responseData: <StoreItem>[],
-        messages: [ArmtekMessage(
-          type: 'ERROR', 
-          text: 'Error: ${e.toString()}', 
-          date: DateTime.now().toIso8601String()
-        )],
+        messages: [
+          ArmtekMessage(
+              type: 'ERROR',
+              text: 'Error: ${e.toString()}',
+              date: DateTime.now().toIso8601String())
+        ],
       );
     }
   }
 
   /// Получает статус обработки прайса по ключу
-  Future<ArmtekResponseWrapper<PriceStatusResponse>> getPriceStatusByKey(String key) async {
+  Future<ArmtekResponseWrapper<PriceStatusResponse>> getPriceStatusByKey(
+      String key) async {
     _logger.i('Getting price status for key: $key');
-    
+
     try {
       final response = await _resilientClient.post(
         '/ws_user/getPriceStatusByKey',
@@ -393,7 +410,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         (data) => PriceStatusResponse.fromJson(data),
       );
     } catch (e, stackTrace) {
-      _logger.e('Error in getPriceStatusByKey', error: e, stackTrace: stackTrace);
+      _logger.e('Error in getPriceStatusByKey',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -406,7 +424,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
     }
 
     _logger.i('Поиск запчастей: $articleNumber (бренд: ${brand ?? "любой"})');
-    
+
     try {
       final response = await _resilientClient.post(
         '/ws_search/search',
@@ -431,7 +449,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
       }
 
       final respData = data['RESP'] as List<dynamic>? ?? [];
-      _logger.i('Найдено ${respData.length} вариантов для артикула $articleNumber');
+      _logger.i(
+          'Найдено ${respData.length} вариантов для артикула $articleNumber');
 
       return respData.map<PartPriceModel>((item) {
         if (item is Map<String, dynamic>) {
@@ -444,9 +463,11 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
             quantity: searchResult.quantity ?? 0,
             deliveryDays: searchResult.deliveryTime ?? 0,
             supplierName: supplierName,
-            originalArticle: searchResult.additionalData?['originalNumber'] as String?,
+            originalArticle:
+                searchResult.additionalData?['originalNumber'] as String?,
             comment: searchResult.additionalData?['comment'] as String?,
-            priceUpdatedAt: _parseDateTime(searchResult.additionalData?['priceDate']),
+            priceUpdatedAt:
+                _parseDateTime(searchResult.additionalData?['priceDate']),
             additionalProperties: {
               'store': searchResult.additionalData?['store'],
               'availability': searchResult.additionalData?['availability'],
@@ -467,8 +488,10 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         );
       }).toList();
     } catch (e, stackTrace) {
-      _logger.e('Ошибка при поиске запчастей Armtek для артикула $articleNumber',
-          error: e, stackTrace: stackTrace);
+      _logger.e(
+          'Ошибка при поиске запчастей Armtek для артикула $articleNumber',
+          error: e,
+          stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -488,7 +511,7 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
     required String items,
   }) async {
     _logger.i('Creating test order for VKORG: $vkorg');
-    
+
     try {
       final response = await _resilientClient.post(
         '/ws_order/createTestOrder',
@@ -543,9 +566,12 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
     final status = data['STATUS'] as int? ?? 500;
     final respData = data['RESP'];
     final messages = (data['MESSAGES'] as List? ?? [])
-        .map((e) => e is Map<String, dynamic> 
+        .map((e) => e is Map<String, dynamic>
             ? ArmtekMessage.fromJson(e)
-            : ArmtekMessage(type: 'INFO', text: e.toString(), date: DateTime.now().toIso8601String()))
+            : ArmtekMessage(
+                type: 'INFO',
+                text: e.toString(),
+                date: DateTime.now().toIso8601String()))
         .toList();
 
     T? parsedData;

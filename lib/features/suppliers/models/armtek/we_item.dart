@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
 
 part 'we_item.freezed.dart';

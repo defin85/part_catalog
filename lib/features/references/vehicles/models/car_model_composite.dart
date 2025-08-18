@@ -1,11 +1,12 @@
 import 'package:collection/collection.dart'; // Для ListEquality, MapEquality
+import 'package:uuid/uuid.dart';
+
 import 'package:part_catalog/core/utils/composite_utils.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/entity_core_data.dart';
 import 'package:part_catalog/features/core/i_reference_entity.dart';
 import 'package:part_catalog/features/core/i_reference_item_entity.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
-import 'package:uuid/uuid.dart';
 
 /// {@template car_model_composite}
 /// Бизнес-модель (композитор) для представления автомобиля.
@@ -155,9 +156,9 @@ class CarModelComposite implements IReferenceEntity {
         carData.additionalInfo,
       ],
     );
-    
+
     if (baseContains) return true;
-    
+
     // Дополнительно проверяем элементы (если они есть)
     if (query.isNotEmpty) {
       final lowerQuery = query.toLowerCase();
@@ -165,7 +166,7 @@ class CarModelComposite implements IReferenceEntity {
         if (item.containsSearchText(lowerQuery)) return true;
       }
     }
-    
+
     return false;
   }
 
@@ -235,8 +236,8 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withMake(String newMake) {
     final newDisplayName = '$newMake ${carData.model} (${carData.year})';
     return CarModelComposite._(
-      CompositeUtils.ensureModifiedDate(coreData.copyWith(
-          displayName: newDisplayName)),
+      CompositeUtils.ensureModifiedDate(
+          coreData.copyWith(displayName: newDisplayName)),
       carData.copyWith(make: newMake),
       parentId: parentId,
       isFolder: isFolder,
@@ -250,8 +251,8 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withModel(String newModel) {
     final newDisplayName = '${carData.make} $newModel (${carData.year})';
     return CarModelComposite._(
-      CompositeUtils.ensureModifiedDate(coreData.copyWith(
-          displayName: newDisplayName)),
+      CompositeUtils.ensureModifiedDate(
+          coreData.copyWith(displayName: newDisplayName)),
       carData.copyWith(model: newModel),
       parentId: parentId,
       isFolder: isFolder,
@@ -265,8 +266,8 @@ class CarModelComposite implements IReferenceEntity {
   CarModelComposite withYear(int newYear) {
     final newDisplayName = '${carData.make} ${carData.model} ($newYear)';
     return CarModelComposite._(
-      CompositeUtils.ensureModifiedDate(coreData.copyWith(
-          displayName: newDisplayName)),
+      CompositeUtils.ensureModifiedDate(
+          coreData.copyWith(displayName: newDisplayName)),
       carData.copyWith(year: newYear),
       parentId: parentId,
       isFolder: isFolder,

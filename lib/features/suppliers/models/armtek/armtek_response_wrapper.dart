@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'armtek_message.dart'; // Модель для сообщений
 
 part 'armtek_response_wrapper.freezed.dart';

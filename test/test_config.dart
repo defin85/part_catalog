@@ -1,5 +1,5 @@
 /// Конфигурация для тестов
-/// 
+///
 /// Этот файл содержит общие настройки и константы для тестов.
 library;
 
@@ -7,18 +7,18 @@ library;
 class TestConfig {
   /// Таймаут по умолчанию для тестов
   static const Duration defaultTimeout = Duration(seconds: 10);
-  
+
   /// Таймаут для медленных тестов (например, интеграционных)
   static const Duration slowTestTimeout = Duration(seconds: 30);
-  
+
   /// Включить подробное логирование в тестах
   static const bool verboseLogging = true;
-  
+
   /// Папки с тестами
   static const String unitTestsDir = 'test/unit';
   static const String widgetTestsDir = 'test/widget';
   static const String integrationTestsDir = 'test/integration';
-  
+
   /// Настройки для golden тестов
   static const double goldenFileThreshold = 0.01;
 }
@@ -29,13 +29,13 @@ class TestUtils {
   static void setupTestEnvironment() {
     // Настройка таймаутов выполняется в конфигурации отдельных тестов
     // при необходимости через timeout parameter
-    
+
     // Настройка для golden тестов
     if (TestConfig.goldenFileThreshold > 0) {
       // Здесь можно добавить настройки для golden файлов
     }
   }
-  
+
   /// Очищает тестовое окружение после тестов
   static void teardownTestEnvironment() {
     // Очистка ресурсов если нужно
@@ -48,18 +48,18 @@ class TestConstants {
   static const String testUuid1 = 'test-uuid-1';
   static const String testUuid2 = 'test-uuid-2';
   static const String testUuid3 = 'test-uuid-3';
-  
+
   // Тестовые коды
   static const String testClientCode = 'TEST001';
   static const String testCarLicense = 'А123БВ77';
   static const String testOrderNumber = 'ORD-001';
-  
+
   // Тестовые строки
   static const String testClientName = 'Тестовый Клиент';
   static const String testCarMake = 'Toyota';
   static const String testCarModel = 'Camry';
   static const String testSearchQuery = 'тест';
-  
+
   // Тестовые числа
   static const int testCarYear = 2020;
   static const double testPrice = 1000.0;

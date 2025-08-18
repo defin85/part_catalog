@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
@@ -194,37 +195,39 @@ class FeaturesOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Ключевые возможности',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: _FeatureCard(
                 icon: Icons.check_circle,
                 title: 'Стабильная база',
-                description: '31/31 unit тестов проходят\nВосстановление после ошибок БД',
+                description:
+                    '31/31 unit тестов проходят\nВосстановление после ошибок БД',
                 color: Colors.green,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: _FeatureCard(
                 icon: Icons.api,
                 title: 'API интеграции',
-                description: 'Armtek API полностью реализован\nПоддержка множественных поставщиков',
+                description:
+                    'Armtek API полностью реализован\nПоддержка множественных поставщиков',
                 color: Colors.blue,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: _FeatureCard(
                 icon: Icons.architecture,
@@ -289,18 +292,18 @@ class ArmtekImprovements extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return const Card(
       elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.upgrade, size: 32, color: Colors.orange),
-                const SizedBox(width: 16),
-                const Text(
+                SizedBox(width: 16),
+                Text(
                   'Улучшения Armtek API',
                   style: TextStyle(
                     fontSize: 20,
@@ -309,21 +312,24 @@ class ArmtekImprovements extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const _ImprovementItem(
+            SizedBox(height: 16),
+            _ImprovementItem(
               icon: Icons.check,
               title: 'Исправлены параметры API',
-              description: 'number → PIN, brand → BRAND (корректные названия полей)',
+              description:
+                  'number → PIN, brand → BRAND (корректные названия полей)',
             ),
-            const _ImprovementItem(
+            _ImprovementItem(
               icon: Icons.add,
               title: 'Добавлены бизнес-параметры',
-              description: 'KUNNR_RG, KUNNR_ZA, VBELN, INCOTERMS из PHP примера',
+              description:
+                  'KUNNR_RG, KUNNR_ZA, VBELN, INCOTERMS из PHP примера',
             ),
-            const _ImprovementItem(
+            _ImprovementItem(
               icon: Icons.functions,
               title: 'Новые методы API',
-              description: 'createTestOrder, getPriceStatusByKey для работы с заказами',
+              description:
+                  'createTestOrder, getPriceStatusByKey для работы с заказами',
             ),
           ],
         ),
@@ -337,18 +343,19 @@ class UnifiedConfigSystem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return const Card(
       elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.settings_applications, size: 32, color: Colors.green),
-                const SizedBox(width: 16),
-                const Text(
+                Icon(Icons.settings_applications,
+                    size: 32, color: Colors.green),
+                SizedBox(width: 16),
+                Text(
                   'Унифицированная система конфигурации',
                   style: TextStyle(
                     fontSize: 20,
@@ -357,26 +364,27 @@ class UnifiedConfigSystem extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const _ImprovementItem(
+            SizedBox(height: 16),
+            _ImprovementItem(
               icon: Icons.settings_input_composite,
               title: 'Единый интерфейс настройки',
               description: 'Все поставщики настраиваются через одну систему',
             ),
-            const _ImprovementItem(
+            _ImprovementItem(
               icon: Icons.security,
               title: 'Поддержка различных типов auth',
               description: 'Basic Auth, API Key, Bearer Token, OAuth2',
             ),
-            const _ImprovementItem(
+            _ImprovementItem(
               icon: Icons.factory,
               title: 'Автоматическое создание клиентов',
               description: 'ApiClientFactory создает клиенты из конфигураций',
             ),
-            const _ImprovementItem(
+            _ImprovementItem(
               icon: Icons.speed,
               title: 'Контроль лимитов и retry',
-              description: 'Автоматическое отслеживание лимитов API и повторные попытки',
+              description:
+                  'Автоматическое отслеживание лимитов API и повторные попытки',
             ),
           ],
         ),

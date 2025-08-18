@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/config/global_api_settings_service.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/database_error_recovery.dart';
@@ -60,7 +61,7 @@ void setupLocator(AppDatabase database) {
   // Утилиты
   locator.registerLazySingleton(() => Logger());
   locator.registerLazySingleton(() => ErrorLogger());
-  
+
   // Система восстановления БД
   locator.registerLazySingleton<DatabaseErrorRecovery>(
       () => DatabaseErrorRecovery(locator<AppDatabase>()));

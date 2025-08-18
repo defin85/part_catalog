@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/providers/core_providers.dart';
 import 'package:part_catalog/core/service_locator.dart';
@@ -9,7 +11,6 @@ import 'package:part_catalog/features/references/clients/models/client_model_com
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart'; // Для clientServiceProvider
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/references/vehicles/services/car_service.dart'; // Содержит CarWithOwnerModel
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'car_providers.g.dart'; // Сгенерированный файл
 
@@ -142,12 +143,13 @@ class CarsNotifier extends _$CarsNotifier {
 Future<CarModelComposite?> car(Ref ref, String carUuid) async {
   final logger = ref.read(vehiclesLoggerProvider);
   logger.d('carProvider: Getting car with UUID: $carUuid');
-  
+
   final carService = ref.watch(carServiceProvider);
   try {
     return await carService.getCarByUuid(carUuid);
   } catch (e, s) {
-    logger.e('carProvider: Error getting car: $carUuid', error: e, stackTrace: s);
+    logger.e('carProvider: Error getting car: $carUuid',
+        error: e, stackTrace: s);
     return null;
   }
 }

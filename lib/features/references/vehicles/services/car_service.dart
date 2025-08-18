@@ -1,15 +1,17 @@
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/database/daos/cars_dao.dart'; // Содержит CarFullData, CarWithOwnerData
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/database_error_recovery.dart';
 import 'package:part_catalog/core/utils/error_handler.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-// Логгер и сообщения
 import 'package:part_catalog/core/utils/logger_config.dart';
-// Импорт композитора клиента для CarWithOwnerModel
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
-// Импорт бизнес-модели (композитора)
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
+
+// Логгер и сообщения
+// Импорт композитора клиента для CarWithOwnerModel
+// Импорт бизнес-модели (композитора)
 
 /// Модель для представления автомобиля с информацией о владельце (использует композиторы).
 class CarWithOwnerModel {
@@ -94,7 +96,8 @@ class CarService {
       () async {
         final carData = await _carsDao.getCarByUuid(carUuid);
         if (carData == null) {
-          _logger.w(LogMessages.carNotFoundByUuid.replaceAll('{uuid}', carUuid));
+          _logger
+              .w(LogMessages.carNotFoundByUuid.replaceAll('{uuid}', carUuid));
           return null;
         }
         return _mapDataToComposite(carData);
@@ -142,7 +145,8 @@ class CarService {
 
         final updatedRows = await _carsDao.updateCarByUuid(coreData, carData);
         if (updatedRows == 0) {
-          _logger.w(LogMessages.carNotFoundForUpdate.replaceAll('{uuid}', car.uuid));
+          _logger.w(
+              LogMessages.carNotFoundForUpdate.replaceAll('{uuid}', car.uuid));
           // Можно бросить исключение или просто завершить
         } else {
           _logger.d(LogMessages.carUpdated.replaceAll('{uuid}', car.uuid));
@@ -160,11 +164,13 @@ class CarService {
         // Можно сначала получить автомобиль, чтобы убедиться, что он существует
         final car = await getCarByUuid(carUuid);
         if (car == null) {
-          _logger.w(LogMessages.carNotFoundForDelete.replaceAll('{uuid}', carUuid));
+          _logger.w(
+              LogMessages.carNotFoundForDelete.replaceAll('{uuid}', carUuid));
           return; // Автомобиль не найден или уже удален
         }
         if (car.isDeleted) {
-          _logger.w(LogMessages.carAlreadyDeleted.replaceAll('{uuid}', carUuid));
+          _logger
+              .w(LogMessages.carAlreadyDeleted.replaceAll('{uuid}', carUuid));
           return; // Уже удален
         }
         // Помечаем как удаленный и обновляем
@@ -182,9 +188,11 @@ class CarService {
     await ErrorHandler.executeWithLogging(
       operation: () async {
         // Получаем автомобиль, включая удаленные
-        final carData = await _carsDao.getCarByUuid(carUuid, includeDeleted: true);
+        final carData =
+            await _carsDao.getCarByUuid(carUuid, includeDeleted: true);
         if (carData == null) {
-          _logger.w(LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
+          _logger.w(
+              LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
           return;
         }
         final car = _mapDataToComposite(carData);
@@ -202,7 +210,8 @@ class CarService {
         if (restoredRows > 0) {
           _logger.i(LogMessages.carRestored.replaceAll('{uuid}', carUuid));
         } else {
-          _logger.w(LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
+          _logger.w(
+              LogMessages.carNotFoundForRestore.replaceAll('{uuid}', carUuid));
         }
       },
       logger: _logger,

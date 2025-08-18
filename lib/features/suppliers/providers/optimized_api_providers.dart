@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
 import 'package:part_catalog/core/config/global_api_settings_service.dart';
 import 'package:part_catalog/core/service_locator.dart';
@@ -8,7 +10,6 @@ import 'package:part_catalog/features/suppliers/api/implementations/optimized_ar
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'optimized_api_providers.g.dart';
 
@@ -32,7 +33,7 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   Future<OptimizedArmtekApiClient?> build(String supplierCode) async {
     // Получаем конфигурацию поставщика
     final config = await ref.watch(supplierConfigProvider(supplierCode).future);
-    
+
     if (config == null || !config.isEnabled || supplierCode != 'armtek') {
       return null;
     }
@@ -40,7 +41,8 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
     try {
       // Создаем оптимизированный клиент
       return await OptimizedArmtekApiClient.create(
-        connectionMode: config.apiConfig.connectionMode ?? ApiConnectionMode.direct,
+        connectionMode:
+            config.apiConfig.connectionMode ?? ApiConnectionMode.direct,
         username: config.apiConfig.credentials?.username,
         password: config.apiConfig.credentials?.password,
         vkorg: config.apiConfig.credentials?.additionalParams?['VKORG'],
@@ -57,7 +59,7 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   Future<bool> testConnection() async {
     final client = await future;
     if (client == null) return false;
-    
+
     try {
       return await client.checkConnection();
     } catch (e) {
@@ -69,7 +71,7 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   Future<bool> performHealthCheck() async {
     final client = await future;
     if (client == null) return false;
-    
+
     try {
       return await client.performHealthCheck();
     } catch (e) {
@@ -96,7 +98,7 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   }
 
   /// Очищает кеш
-  Future<void> clearCache() async {   
+  Future<void> clearCache() async {
     final client = await future;
     await client?.clearCache();
   }
@@ -111,8 +113,9 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
       return [];
     }
 
-    final isOptimizedEnabled = await ref.watch(isOptimizedSystemEnabledProvider.future);
-    
+    final isOptimizedEnabled =
+        await ref.watch(isOptimizedSystemEnabledProvider.future);
+
     if (!isOptimizedEnabled) {
       // Fallback к старой системе
       return _searchWithLegacySystem(params);
@@ -126,10 +129,10 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
     OptimizedPartsSearchParams params,
   ) async {
     final results = <PartPriceModel>[];
-    
+
     // Получаем активные конфигурации поставщиков
     final configs = ref.read(enabledSupplierConfigsProvider);
-    
+
     for (final config in configs) {
       try {
         switch (config.supplierCode) {
@@ -137,7 +140,7 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
             final client = await ref.read(
               optimizedArmtekClientProvider(config.supplierCode).future,
             );
-            
+
             if (client != null) {
               final prices = await client.getPricesByArticle(
                 params.articleNumber,
@@ -146,7 +149,7 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
               results.addAll(prices);
             }
             break;
-          
+
           // TODO: Добавить другие поставщики
           default:
             // Пропускаем неизвестных поставщиков
@@ -160,7 +163,7 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
 
     // Сортируем по цене
     results.sort((a, b) => a.price.compareTo(b.price));
-    
+
     return results;
   }
 
@@ -173,7 +176,7 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
       articleNumber: params.articleNumber,
       brand: params.brand,
     );
-    
+
     return ref.read(partsSearchProvider(legacyParams).future);
   }
 
@@ -189,14 +192,14 @@ class OptimizedPartsSearchParams {
   final String? brand;
   final List<String>? supplierCodes; // Фильтр по поставщикам
   final bool useCache; // Использовать кеш
-  
+
   const OptimizedPartsSearchParams({
     required this.articleNumber,
     this.brand,
     this.supplierCodes,
     this.useCache = true,
   });
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -208,10 +211,10 @@ class OptimizedPartsSearchParams {
           useCache == other.useCache;
 
   @override
-  int get hashCode => 
-      articleNumber.hashCode ^ 
-      brand.hashCode ^ 
-      supplierCodes.hashCode ^ 
+  int get hashCode =>
+      articleNumber.hashCode ^
+      brand.hashCode ^
+      supplierCodes.hashCode ^
       useCache.hashCode;
 }
 
@@ -232,19 +235,20 @@ class SystemDiagnostics extends _$SystemDiagnostics {
   @override
   Future<Map<String, dynamic>> build() async {
     final diagnostics = <String, dynamic>{};
-    
+
     // Получаем диагностику от фабрики
     final factoryDiagnostics = OptimizedApiClientFactory.getAllDiagnostics();
     diagnostics.addAll(factoryDiagnostics);
-    
+
     // Добавляем информацию о статусе системы
-    final isOptimizedEnabled = await ref.watch(isOptimizedSystemEnabledProvider.future);
+    final isOptimizedEnabled =
+        await ref.watch(isOptimizedSystemEnabledProvider.future);
     diagnostics['system_status'] = {
       'optimized_enabled': isOptimizedEnabled,
       'active_suppliers': ref.watch(enabledSupplierConfigsProvider).length,
       'timestamp': DateTime.now().toIso8601String(),
     };
-    
+
     return diagnostics;
   }
 
@@ -290,7 +294,7 @@ Future<Map<String, dynamic>> supplierHealthStatus(
       final client = await ref.read(
         optimizedArmtekClientProvider(supplierCode).future,
       );
-      
+
       if (client == null) {
         return {
           'status': 'unavailable',
@@ -313,7 +317,7 @@ Future<Map<String, dynamic>> supplierHealthStatus(
         'circuit_breaker': circuitBreakerStatus,
         'timestamp': DateTime.now().toIso8601String(),
       };
-      
+
     default:
       return {
         'status': 'unknown',

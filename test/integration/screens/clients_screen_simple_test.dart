@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/clients/screens/clients_screen.dart';
 
@@ -54,7 +56,8 @@ void main() {
       expect(find.byType(AppBar), findsOneWidget);
     });
 
-    testWidgets('should show floating action button', (WidgetTester tester) async {
+    testWidgets('should show floating action button',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));
@@ -92,7 +95,8 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
     });
 
-    testWidgets('should show empty list initially', (WidgetTester tester) async {
+    testWidgets('should show empty list initially',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));
@@ -112,7 +116,8 @@ void main() {
       expect(find.byType(Column), findsOneWidget); // Основная структура экрана
     });
 
-    testWidgets('should handle tap on FAB without crashing', (WidgetTester tester) async {
+    testWidgets('should handle tap on FAB without crashing',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));
@@ -135,7 +140,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should contain required UI elements structure', (WidgetTester tester) async {
+    testWidgets('should contain required UI elements structure',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));

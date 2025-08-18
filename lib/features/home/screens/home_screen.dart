@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/core/widgets/language_switcher.dart';
@@ -14,50 +16,53 @@ class HomeScreen extends ConsumerWidget {
   });
 
   // Создаем навигационные элементы с учетом текущей локали
-  static List<({String route, IconData icon, IconData selectedIcon, String Function() labelKey})> _getNavigationDestinations() => [
-    (
-      route: AppRoutes.clients,
-      icon: Icons.people_alt_outlined,
-      selectedIcon: Icons.people, // Добавляем выбранную иконку
-      labelKey: () => t.clients.screenTitle
-    ),
-    (
-      route: AppRoutes.vehicles,
-      icon: Icons.directions_car_outlined,
-      selectedIcon: Icons.directions_car, // Добавляем выбранную иконку
-      labelKey: () => t.vehicles.screenTitle
-    ),
-    (
-      route: AppRoutes.orders,
-      icon: Icons.list_alt_outlined,
-      selectedIcon: Icons.list_alt, // Добавляем выбранную иконку
-      labelKey: () => t.orders.screenTitle
-    ),
-    (
-      route: AppRoutes.partsSearch,
-      icon: Icons.search_outlined,
-      selectedIcon: Icons.search,
-      labelKey: () => t.suppliers.partsSearch.screenTitle
-    ),
-    (
-      // Новый элемент навигации
-      route: AppRoutes.apiControlCenter,
-      icon: Icons.settings_input_component_outlined,
-      selectedIcon: Icons.settings_input_component,
-      labelKey: () => t.settings.apiControlCenter
-          .screenTitle // Убедитесь, что эта строка локализации существует
-    ),
-    // Добавьте другие основные разделы здесь
-  ];
+  static List<
+          ({String route, IconData icon, IconData selectedIcon, String Function() labelKey})>
+      _getNavigationDestinations() => [
+            (
+              route: AppRoutes.clients,
+              icon: Icons.people_alt_outlined,
+              selectedIcon: Icons.people, // Добавляем выбранную иконку
+              labelKey: () => t.clients.screenTitle
+            ),
+            (
+              route: AppRoutes.vehicles,
+              icon: Icons.directions_car_outlined,
+              selectedIcon: Icons.directions_car, // Добавляем выбранную иконку
+              labelKey: () => t.vehicles.screenTitle
+            ),
+            (
+              route: AppRoutes.orders,
+              icon: Icons.list_alt_outlined,
+              selectedIcon: Icons.list_alt, // Добавляем выбранную иконку
+              labelKey: () => t.orders.screenTitle
+            ),
+            (
+              route: AppRoutes.partsSearch,
+              icon: Icons.search_outlined,
+              selectedIcon: Icons.search,
+              labelKey: () => t.suppliers.partsSearch.screenTitle
+            ),
+            (
+              // Новый элемент навигации
+              route: AppRoutes.apiControlCenter,
+              icon: Icons.settings_input_component_outlined,
+              selectedIcon: Icons.settings_input_component,
+              labelKey: () => t.settings.apiControlCenter
+                  .screenTitle // Убедитесь, что эта строка локализации существует
+            ),
+            // Добавьте другие основные разделы здесь
+          ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Слушаем изменения локали для обновления меню
     ref.watch(localeProvider);
-    
+
     final String location = GoRouterState.of(context).uri.toString();
     final navigationDestinations = _getNavigationDestinations();
-    final int currentIndex = _calculateSelectedIndex(location, navigationDestinations);
+    final int currentIndex =
+        _calculateSelectedIndex(location, navigationDestinations);
 
     // Определяем ширину экрана
     final screenWidth = MediaQuery.of(context).size.width;
@@ -130,7 +135,16 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  int _calculateSelectedIndex(String location, List<({String route, IconData icon, IconData selectedIcon, String Function() labelKey})> destinations) {
+  int _calculateSelectedIndex(
+      String location,
+      List<
+              ({
+                String route,
+                IconData icon,
+                IconData selectedIcon,
+                String Function() labelKey
+              })>
+          destinations) {
     final index = destinations.indexWhere(
       (dest) => location.startsWith(dest.route),
     );

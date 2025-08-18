@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
@@ -36,8 +38,8 @@ void main() {
             orderServiceProvider.overrideWithValue(mockOrderService),
           ],
           child: TranslationProvider(
-            child: MaterialApp(
-              home: const OrdersScreen(),
+            child: const MaterialApp(
+              home: OrdersScreen(),
             ),
           ),
         ),
@@ -46,20 +48,23 @@ void main() {
 
     testWidgets('should show loading indicator initially', (tester) async {
       // Arrange
-      when(mockOrderService.watchOrders()).thenAnswer((_) => const Stream.empty());
+      when(mockOrderService.watchOrders())
+          .thenAnswer((_) => const Stream.empty());
 
       // Act
       await pumpTestApp(tester);
-      
+
       // Assert
       // На первом кадре будет индикатор загрузки
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should show list of orders when data is available', (tester) async {
+    testWidgets('should show list of orders when data is available',
+        (tester) async {
       // Arrange
       final List<OrderModelComposite> orders = [TestData.testOrder1];
-      when(mockOrderService.watchOrders()).thenAnswer((_) => Stream.value(orders));
+      when(mockOrderService.watchOrders())
+          .thenAnswer((_) => Stream.value(orders));
 
       // Act
       await pumpTestApp(tester);
@@ -73,7 +78,8 @@ void main() {
       expect(find.text(orders.first.displayName), findsOneWidget);
     });
 
-    testWidgets('should show empty message when there are no orders', (tester) async {
+    testWidgets('should show empty message when there are no orders',
+        (tester) async {
       // Arrange
       when(mockOrderService.watchOrders()).thenAnswer((_) => Stream.value([]));
 
@@ -86,10 +92,12 @@ void main() {
       expect(find.text('Заказы-наряды не найдены'), findsOneWidget);
     });
 
-    testWidgets('should show error message when stream has error', (tester) async {
+    testWidgets('should show error message when stream has error',
+        (tester) async {
       // Arrange
       final error = Exception('Failed to load');
-      when(mockOrderService.watchOrders()).thenAnswer((_) => Stream.error(error));
+      when(mockOrderService.watchOrders())
+          .thenAnswer((_) => Stream.error(error));
 
       // Act
       await pumpTestApp(tester);

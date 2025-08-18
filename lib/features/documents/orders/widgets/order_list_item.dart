@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
@@ -28,7 +30,8 @@ class OrderListItem extends ConsumerWidget {
       decimalDigits: 2,
     );
 
-    final clientAsync = ref.watch(clientProvider(orderHeader.orderData.clientId!));
+    final clientAsync =
+        ref.watch(clientProvider(orderHeader.orderData.clientId!));
     final carAsync = ref.watch(carProvider(orderHeader.orderData.carId!));
 
     return Card(
@@ -45,7 +48,8 @@ class OrderListItem extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      t.orders.orderNumberFormat(number: orderHeader.coreData.code),
+                      t.orders
+                          .orderNumberFormat(number: orderHeader.coreData.code),
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -54,9 +58,11 @@ class OrderListItem extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: orderHeader.docData.status.color.withAlpha((255 * 0.15).round()),
+                      color: orderHeader.docData.status.color
+                          .withAlpha((255 * 0.15).round()),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
@@ -78,8 +84,15 @@ class OrderListItem extends ConsumerWidget {
                   theme: theme,
                   hasData: client != null,
                 ),
-                loading: () => _buildInfoRow(icon: Icons.person_outline, text: t.orders.loadingClient, theme: theme),
-                error: (e, s) => _buildInfoRow(icon: Icons.person_outline, text: t.errors.dataLoadingError, theme: theme, hasData: false),
+                loading: () => _buildInfoRow(
+                    icon: Icons.person_outline,
+                    text: t.orders.loadingClient,
+                    theme: theme),
+                error: (e, s) => _buildInfoRow(
+                    icon: Icons.person_outline,
+                    text: t.errors.dataLoadingError,
+                    theme: theme,
+                    hasData: false),
               ),
               const SizedBox(height: 4),
               carAsync.when(
@@ -89,13 +102,21 @@ class OrderListItem extends ConsumerWidget {
                   theme: theme,
                   hasData: car != null,
                 ),
-                loading: () => _buildInfoRow(icon: Icons.directions_car_outlined, text: t.orders.loadingVehicle, theme: theme),
-                error: (e, s) => _buildInfoRow(icon: Icons.directions_car_outlined, text: t.errors.dataLoadingError, theme: theme, hasData: false),
+                loading: () => _buildInfoRow(
+                    icon: Icons.directions_car_outlined,
+                    text: t.orders.loadingVehicle,
+                    theme: theme),
+                error: (e, s) => _buildInfoRow(
+                    icon: Icons.directions_car_outlined,
+                    text: t.errors.dataLoadingError,
+                    theme: theme,
+                    hasData: false),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 16, color: theme.colorScheme.primary),
+                  Icon(Icons.calendar_today_outlined,
+                      size: 16, color: theme.colorScheme.primary),
                   const SizedBox(width: 4),
                   Text(
                     '${t.common.createdAt}: ${dateFormat.format(orderHeader.docData.documentDate)}',
@@ -109,7 +130,8 @@ class OrderListItem extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    currencyFormat.format(orderHeader.docData.totalAmount ?? 0.0),
+                    currencyFormat
+                        .format(orderHeader.docData.totalAmount ?? 0.0),
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: theme.colorScheme.primary,
@@ -132,7 +154,9 @@ class OrderListItem extends ConsumerWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: hasData ? Colors.grey.shade700 : Colors.grey.shade400),
+        Icon(icon,
+            size: 16,
+            color: hasData ? Colors.grey.shade700 : Colors.grey.shade400),
         const SizedBox(width: 8),
         Expanded(
           child: Text(

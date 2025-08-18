@@ -8,7 +8,8 @@ import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 /// Фабрика для создания оптимизированных API клиентов
 /// с поддержкой отказоустойчивости, кэширования и мониторинга
 class OptimizedApiClientFactory {
-  static final ContextLogger _logger = ContextLogger(context: 'OptimizedApiClientFactory');
+  static final ContextLogger _logger =
+      ContextLogger(context: 'OptimizedApiClientFactory');
   static ResilientApiClientManager? _clientManager;
 
   /// Получает менеджер клиентов (singleton)
@@ -28,11 +29,11 @@ class OptimizedApiClientFactory {
     Map<String, String>? additionalHeaders,
   }) {
     final clientName = 'supplier_${supplierCode.toLowerCase()}';
-    
+
     // Определяем эффективный URL в зависимости от режима
     String effectiveBaseUrl;
     Map<String, String> headers = {};
-    
+
     switch (connectionMode) {
       case ApiConnectionMode.direct:
         effectiveBaseUrl = baseUrl;
@@ -42,7 +43,7 @@ class OptimizedApiClientFactory {
           headers['x-api-password'] = password;
         }
         break;
-        
+
       case ApiConnectionMode.proxy:
         effectiveBaseUrl = proxyUrl ?? baseUrl;
         if (proxyAuthToken != null) {
@@ -50,7 +51,7 @@ class OptimizedApiClientFactory {
         }
         headers['X-Target-Service'] = supplierCode.toLowerCase();
         break;
-        
+
       // case ApiConnectionMode.hybrid:
       //   // В гибридном режиме начинаем с прокси, fallback на direct
       //   effectiveBaseUrl = proxyUrl ?? baseUrl;
@@ -87,21 +88,21 @@ class OptimizedApiClientFactory {
           healthCheckInterval: Duration(seconds: 30),
           successThreshold: 3,
         );
-        cacheConfig = CacheConfig(
+        cacheConfig = const CacheConfig(
           defaultTtl: CachePolicies.pricesAndStock,
           keySpecificTtl: {
             'search': CachePolicies.searchResults,
             'brands': CachePolicies.staticData,
             'stores': CachePolicies.staticData,
-            'ping': const Duration(minutes: 1),
+            'ping': Duration(minutes: 1),
           },
         );
         break;
-        
+
       default:
         retryConfig = RetryConfig.networkOptimized;
         circuitBreakerConfig = CircuitBreakerConfig.networkOptimized;
-        cacheConfig = CacheConfig(
+        cacheConfig = const CacheConfig(
           defaultTtl: CachePolicies.pricesAndStock,
           keySpecificTtl: {
             'search': CachePolicies.searchResults,
@@ -143,7 +144,7 @@ class OptimizedApiClientFactory {
     String? apiKey,
   }) {
     const clientName = 'parts_catalog';
-    
+
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -160,14 +161,14 @@ class OptimizedApiClientFactory {
       defaultHeaders: headers,
       retryConfig: RetryConfig.conservative,
       circuitBreakerConfig: CircuitBreakerConfig.conservative,
-      cacheConfig: CacheConfig(
+      cacheConfig: const CacheConfig(
         defaultTtl: CachePolicies.productCatalog,
         keySpecificTtl: {
           'catalogs': CachePolicies.staticData,
           'models': CachePolicies.staticData,
-          'car-info': const Duration(hours: 2),
-          'groups': const Duration(hours: 1),
-          'parts': const Duration(minutes: 30),
+          'car-info': Duration(hours: 2),
+          'groups': Duration(hours: 1),
+          'parts': Duration(minutes: 30),
           'prices': CachePolicies.pricesAndStock,
         },
       ),
@@ -190,7 +191,7 @@ class OptimizedApiClientFactory {
     String? authToken,
   }) {
     const clientName = 'internal_api';
-    
+
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -289,7 +290,7 @@ class OptimizedApiClientFactory {
     _logger.i('Removing API client', metadata: {
       'clientName': clientName,
     });
-    
+
     clientManager.remove(clientName);
   }
 
@@ -312,7 +313,7 @@ class OptimizedApiClientFactory {
     for (final entry in diagnostics.entries) {
       final clientName = entry.key;
       final clientDiagnostics = entry.value;
-      
+
       stats['clients'][clientName] = {
         'circuitBreakerState': clientDiagnostics['circuitBreaker']?['state'],
         'metrics': clientDiagnostics['metrics'],
@@ -341,7 +342,7 @@ class OptimizedApiClientFactory {
       final clientName = entry.key;
       final clientDiagnostics = entry.value;
       final circuitBreakerState = clientDiagnostics['circuitBreaker']?['state'];
-      
+
       final isHealthy = circuitBreakerState == 'closed';
       if (isHealthy) {
         report['summary']['healthyClients']++;

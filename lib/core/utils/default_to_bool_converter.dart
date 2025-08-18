@@ -61,7 +61,6 @@ class DefaultToBoolConverter implements JsonConverter<bool?, Object?> {
 
 // Пример использования DefaultToBoolConverter в @freezed модели:
 /*
-import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
 
 @freezed
 class UserStructureItem with _$UserStructureItem {

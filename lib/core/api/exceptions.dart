@@ -6,7 +6,7 @@ abstract class ApiException implements Exception {
   final dynamic cause;
   final int? statusCode;
   final Map<String, dynamic>? metadata;
-  
+
   const ApiException(
     this.message, {
     this.cause,
@@ -22,7 +22,7 @@ abstract class ApiException implements Exception {
 class NetworkException extends ApiException {
   final Duration? timeout;
   final String? url;
-  
+
   const NetworkException(
     super.message, {
     super.statusCode,
@@ -33,7 +33,8 @@ class NetworkException extends ApiException {
   });
 
   @override
-  String toString() => 'NetworkException: $message${url != null ? ' (URL: $url)' : ''}';
+  String toString() =>
+      'NetworkException: $message${url != null ? ' (URL: $url)' : ''}';
 }
 
 /// Исключение при таймауте запроса
@@ -46,14 +47,15 @@ class TimeoutException extends NetworkException {
   }) : super(statusCode: 408);
 
   @override
-  String toString() => 'TimeoutException: $message${timeout != null ? ' (Timeout: ${timeout!.inMilliseconds}ms)' : ''}';
+  String toString() =>
+      'TimeoutException: $message${timeout != null ? ' (Timeout: ${timeout!.inMilliseconds}ms)' : ''}';
 }
 
 /// Исключение при ошибках в ответе API
 class ApiResponseException extends ApiException {
   final String? errorCode;
   final String? responseBody;
-  
+
   const ApiResponseException(
     super.message, {
     super.statusCode,
@@ -64,13 +66,14 @@ class ApiResponseException extends ApiException {
   });
 
   @override
-  String toString() => 'ApiResponseException: $message${errorCode != null ? ' (Code: $errorCode)' : ''}';
+  String toString() =>
+      'ApiResponseException: $message${errorCode != null ? ' (Code: $errorCode)' : ''}';
 }
 
 /// Исключение при ошибках авторизации
 class AuthenticationException extends ApiException {
   final String? authMethod;
-  
+
   const AuthenticationException(
     super.message, {
     super.statusCode = 401,
@@ -86,7 +89,7 @@ class AuthenticationException extends ApiException {
 /// Исключение при отсутствии прав доступа
 class AuthorizationException extends ApiException {
   final String? requiredPermission;
-  
+
   const AuthorizationException(
     super.message, {
     super.statusCode = 403,
@@ -102,7 +105,7 @@ class AuthorizationException extends ApiException {
 /// Исключение при ошибках конфигурации
 class ConfigurationException extends ApiException {
   final String? configKey;
-  
+
   const ConfigurationException(
     super.message, {
     super.cause,
@@ -111,13 +114,14 @@ class ConfigurationException extends ApiException {
   });
 
   @override
-  String toString() => 'ConfigurationException: $message${configKey != null ? ' (Key: $configKey)' : ''}';
+  String toString() =>
+      'ConfigurationException: $message${configKey != null ? ' (Key: $configKey)' : ''}';
 }
 
 /// Исключение при ошибках валидации данных
 class ValidationException extends ApiException {
   final List<String>? validationErrors;
-  
+
   const ValidationException(
     super.message, {
     super.statusCode = 422,
@@ -136,7 +140,7 @@ class ValidationException extends ApiException {
 /// Исключение при недоступности сервиса
 class ServiceUnavailableException extends ApiException {
   final Duration? retryAfter;
-  
+
   const ServiceUnavailableException(
     super.message, {
     super.statusCode = 503,
@@ -146,14 +150,15 @@ class ServiceUnavailableException extends ApiException {
   });
 
   @override
-  String toString() => 'ServiceUnavailableException: $message${retryAfter != null ? ' (Retry after: ${retryAfter!.inSeconds}s)' : ''}';
+  String toString() =>
+      'ServiceUnavailableException: $message${retryAfter != null ? ' (Retry after: ${retryAfter!.inSeconds}s)' : ''}';
 }
 
 /// Исключение при превышении лимита запросов
 class RateLimitException extends ApiException {
   final Duration? retryAfter;
   final int? remainingRequests;
-  
+
   const RateLimitException(
     super.message, {
     super.statusCode = 429,
@@ -164,14 +169,15 @@ class RateLimitException extends ApiException {
   });
 
   @override
-  String toString() => 'RateLimitException: $message${retryAfter != null ? ' (Retry after: ${retryAfter!.inSeconds}s)' : ''}';
+  String toString() =>
+      'RateLimitException: $message${retryAfter != null ? ' (Retry after: ${retryAfter!.inSeconds}s)' : ''}';
 }
 
 /// Исключение при ошибках сериализации/десериализации
 class SerializationException extends ApiException {
   final String? fieldName;
   final Type? expectedType;
-  
+
   const SerializationException(
     super.message, {
     super.cause,
@@ -181,7 +187,8 @@ class SerializationException extends ApiException {
   });
 
   @override
-  String toString() => 'SerializationException: $message${fieldName != null ? ' (Field: $fieldName)' : ''}';
+  String toString() =>
+      'SerializationException: $message${fieldName != null ? ' (Field: $fieldName)' : ''}';
 }
 
 /// Утилита для преобразования DioException в типизированные исключения
@@ -191,7 +198,7 @@ class ApiExceptionMapper {
     final requestPath = dioException.requestOptions.path;
     final baseUrl = dioException.requestOptions.baseUrl;
     final fullUrl = '$baseUrl$requestPath';
-    
+
     final metadata = <String, dynamic>{
       'method': dioException.requestOptions.method,
       'url': fullUrl,
@@ -272,14 +279,15 @@ class ApiExceptionMapper {
     }
   }
 
-  static ApiException _mapResponseException(Response response, Map<String, dynamic> metadata) {
+  static ApiException _mapResponseException(
+      Response response, Map<String, dynamic> metadata) {
     final statusCode = response.statusCode!;
     final responseBody = response.data?.toString();
-    
+
     // Пытаемся извлечь сообщение об ошибке из ответа
     String message = 'Ошибка сервера';
     String? errorCode;
-    
+
     if (response.data is Map<String, dynamic>) {
       final data = response.data as Map<String, dynamic>;
       message = data['message'] ?? data['error'] ?? data['detail'] ?? message;
@@ -324,10 +332,11 @@ class ApiExceptionMapper {
         if (response.data is Map<String, dynamic>) {
           final data = response.data as Map<String, dynamic>;
           if (data['errors'] is List) {
-            validationErrors = (data['errors'] as List).map((e) => e.toString()).toList();
+            validationErrors =
+                (data['errors'] as List).map((e) => e.toString()).toList();
           }
         }
-        
+
         return ValidationException(
           message,
           statusCode: statusCode,
@@ -344,7 +353,7 @@ class ApiExceptionMapper {
             retryAfter = Duration(seconds: seconds);
           }
         }
-        
+
         return RateLimitException(
           message,
           statusCode: statusCode,

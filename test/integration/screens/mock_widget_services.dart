@@ -1,4 +1,5 @@
 import 'package:mockito/annotations.dart';
+
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
@@ -9,6 +10,8 @@ import 'package:part_catalog/features/documents/orders/services/order_service.da
   OrderService,
   OrdersDao,
 ], customMocks: [
-  MockSpec<AppDatabase>(as: #MockAppDatabase, unsupportedMembers: {#clientsDao, #carsDao, #supplierSettingsDao})
+  MockSpec<AppDatabase>(
+      as: #MockAppDatabase,
+      unsupportedMembers: {#clientsDao, #carsDao, #supplierSettingsDao})
 ])
 void main() {}

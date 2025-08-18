@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:part_catalog/core/database/items/orders_items.dart';
 import 'package:uuid/uuid.dart';
+
+import 'package:part_catalog/core/database/items/orders_items.dart';
 
 /// Таблица для хранения запчастей, связанных с заказ-нарядами.
 class OrderPartsItems extends Table {

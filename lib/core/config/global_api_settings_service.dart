@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // --- Провайдер для GlobalApiSettingsService ---
 final globalApiSettingsServiceProvider =
@@ -76,9 +77,11 @@ class GlobalApiSettingsService {
   Future<bool> getUseOptimizedSystem() async {
     try {
       final prefs = await _prefs;
-      return prefs.getBool(_useOptimizedSystemKey) ?? true; // По умолчанию включена
+      return prefs.getBool(_useOptimizedSystemKey) ??
+          true; // По умолчанию включена
     } catch (e, s) {
-      _logger.e('Error getting optimized system setting', error: e, stackTrace: s);
+      _logger.e('Error getting optimized system setting',
+          error: e, stackTrace: s);
       return true;
     }
   }
@@ -139,9 +142,11 @@ class GlobalApiSettingsService {
   Future<bool> getCircuitBreakerEnabled() async {
     try {
       final prefs = await _prefs;
-      return prefs.getBool(_circuitBreakerEnabledKey) ?? true; // По умолчанию включен
+      return prefs.getBool(_circuitBreakerEnabledKey) ??
+          true; // По умолчанию включен
     } catch (e, s) {
-      _logger.e('Error getting circuit breaker setting', error: e, stackTrace: s);
+      _logger.e('Error getting circuit breaker setting',
+          error: e, stackTrace: s);
       return true;
     }
   }
@@ -181,7 +186,8 @@ class GlobalApiSettingsService {
   Future<int> getRequestTimeout() async {
     try {
       final prefs = await _prefs;
-      return prefs.getInt(_requestTimeoutKey) ?? 30000; // По умолчанию 30 секунд
+      return prefs.getInt(_requestTimeoutKey) ??
+          30000; // По умолчанию 30 секунд
     } catch (e, s) {
       _logger.e('Error getting request timeout', error: e, stackTrace: s);
       return 30000;
@@ -222,7 +228,8 @@ class GlobalApiSettingsService {
       await prefs.remove(_requestTimeoutKey);
       _logger.i('Optimized system settings reset to defaults');
     } catch (e, s) {
-      _logger.e('Error resetting optimized system settings', error: e, stackTrace: s);
+      _logger.e('Error resetting optimized system settings',
+          error: e, stackTrace: s);
     }
   }
 }

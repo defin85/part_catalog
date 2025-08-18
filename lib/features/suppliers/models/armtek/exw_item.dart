@@ -1,5 +1,6 @@
-// filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\exw_item.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+// filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\exw_item.dart
 
 part 'exw_item.freezed.dart';
 part 'exw_item.g.dart';

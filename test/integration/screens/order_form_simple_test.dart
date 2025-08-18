@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
 
@@ -11,7 +13,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: TranslationProvider(
-            child: MaterialApp(
+            child: const MaterialApp(
               home: OrderFormScreen(orderUuid: null),
             ),
           ),
@@ -31,14 +33,14 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: TranslationProvider(
-            child: MaterialApp(
+            child: const MaterialApp(
               home: OrderFormScreen(orderUuid: null),
             ),
           ),
         ),
       );
 
-      await tester.pumpAndSettle(Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
       // Assert
       expect(find.text(t.orders.newOrderTitle), findsOneWidget);
@@ -49,27 +51,21 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: TranslationProvider(
-            child: MaterialApp(
+            child: const MaterialApp(
               home: OrderFormScreen(orderUuid: null),
             ),
           ),
         ),
       );
 
-      await tester.pumpAndSettle(Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 2));
 
       // Assert - check for key form components
       expect(find.byType(TextFormField), findsAtLeastNWidgets(1));
       // Check for any kind of button (save functionality)
-      final buttons = find.byType(ElevatedButton)
-          .evaluate()
-          .length + 
-          find.byType(FloatingActionButton)
-          .evaluate()
-          .length +
-          find.byType(IconButton)
-          .evaluate()
-          .length;
+      final buttons = find.byType(ElevatedButton).evaluate().length +
+          find.byType(FloatingActionButton).evaluate().length +
+          find.byType(IconButton).evaluate().length;
       expect(buttons, greaterThan(0));
     });
   });

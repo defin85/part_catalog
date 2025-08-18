@@ -1,8 +1,10 @@
-// filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\models\user_info_response.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'user_ftp_data.dart';
 import 'user_structure_root.dart';
+
+// filepath: c:\FlutterProject\part_catalog\lib\features\armtek\api\models\user_info_response.dart
+
 
 part 'user_info_response.freezed.dart';
 part 'user_info_response.g.dart';

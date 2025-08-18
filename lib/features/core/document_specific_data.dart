@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/core/document_status.dart';
 
 part 'document_specific_data.freezed.dart';

@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Импортируем базовый Ref
 import 'package:logger/logger.dart';
-import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import 'package:part_catalog/core/utils/logger_config.dart';
 
 part 'core_providers.g.dart';
 

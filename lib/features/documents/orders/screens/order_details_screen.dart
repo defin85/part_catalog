@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Импорт Riverpod
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-// --- Обновленные импорты ---
+import 'package:printing/printing.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
 import 'package:part_catalog/core/service_locator.dart';
@@ -13,11 +15,12 @@ import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
-// Импортируем провайдеры
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
 import 'package:part_catalog/features/documents/orders/services/pdf_service.dart';
-import 'package:printing/printing.dart';
+
+// --- Обновленные импорты ---
+// Импортируем провайдеры
 
 // Преобразуем в ConsumerWidget
 class OrderDetailsScreen extends ConsumerWidget {
@@ -178,18 +181,18 @@ class OrderDetailsScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: theme.cardColor,
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black12,
                   blurRadius: 8,
-                  offset: const Offset(0, -2),
+                  offset: Offset(0, -2),
                 )
               ],
             ),
             child: availableActions.length == 1
                 ? ElevatedButton(
-                    onPressed: () => _changeStatus(
-                        context, ref, order, availableActions.first.status, logger),
+                    onPressed: () => _changeStatus(context, ref, order,
+                        availableActions.first.status, logger),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: availableActions.first.color,
                     ),
@@ -199,8 +202,8 @@ class OrderDetailsScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: PopupMenuButton<DocumentStatus>(
-                          onSelected: (status) =>
-                              _changeStatus(context, ref, order, status, logger),
+                          onSelected: (status) => _changeStatus(
+                              context, ref, order, status, logger),
                           itemBuilder: (context) => availableActions
                               .map((action) => PopupMenuItem(
                                     value: action.status,
@@ -208,9 +211,11 @@ class OrderDetailsScreen extends ConsumerWidget {
                                   ))
                               .toList(),
                           child: ElevatedButton(
-                            onPressed: null, // Отключена, так как меню открывается по нажатию
+                            onPressed:
+                                null, // Отключена, так как меню открывается по нажатию
                             style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(theme.primaryColor),
+                              backgroundColor:
+                                  WidgetStateProperty.all(theme.primaryColor),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -853,15 +858,17 @@ class OrderDetailsScreen extends ConsumerWidget {
 
   // --- Вспомогательные функции (остаются без изменений) ---
 
-  List<({String text, Color color, DocumentStatus status})> _getAvailableStatusActions(
-      DocumentStatus currentStatus, Translations t) {
+  List<({String text, Color color, DocumentStatus status})>
+      _getAvailableStatusActions(DocumentStatus currentStatus, Translations t) {
     switch (currentStatus) {
       case DocumentStatus.newDoc:
-        return [(
-          text: t.orders.startWorkAction,
-          color: Colors.orange,
-          status: DocumentStatus.inProgress
-        )];
+        return [
+          (
+            text: t.orders.startWorkAction,
+            color: Colors.orange,
+            status: DocumentStatus.inProgress
+          )
+        ];
       case DocumentStatus.inProgress:
         return [
           (
@@ -876,17 +883,21 @@ class OrderDetailsScreen extends ConsumerWidget {
           ),
         ];
       case DocumentStatus.waitingForParts:
-        return [(
-          text: t.orders.resumeWorkAction,
-          color: Colors.orange,
-          status: DocumentStatus.inProgress
-        )];
+        return [
+          (
+            text: t.orders.resumeWorkAction,
+            color: Colors.orange,
+            status: DocumentStatus.inProgress
+          )
+        ];
       case DocumentStatus.readyForPickup:
-        return [(
-          text: t.orders.completeOrderAction,
-          color: Colors.green,
-          status: DocumentStatus.completed
-        )];
+        return [
+          (
+            text: t.orders.completeOrderAction,
+            color: Colors.green,
+            status: DocumentStatus.completed
+          )
+        ];
       default:
         return [];
     }

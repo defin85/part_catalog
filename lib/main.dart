@@ -1,18 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/database/database.dart';
-// Используем slang для локализации
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_router.dart';
 import 'package:part_catalog/core/observers/provider_observer.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/widgets/language_switcher.dart';
 import 'package:part_catalog/debug/db_check.dart';
+
+// Используем slang для локализации
 
 void main() {
   // Выполнение в защищенной зоне для перехвата всех ошибок
@@ -40,7 +43,7 @@ void main() {
 
     // Передаем существующий экземпляр в setupLocator
     setupLocator(database);
-    
+
     // Проверяем содержимое таблицы supplier_settings в debug режиме
     await checkSupplierSettingsTable();
 
@@ -75,7 +78,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Получаем текущую локаль из провайдера
     final currentLocale = ref.watch(localeProvider);
-    
+
     // Используем MaterialApp.router для интеграции с GoRouter
     return MaterialApp.router(
       // Передаем конфигурацию роутера

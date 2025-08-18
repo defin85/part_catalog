@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
@@ -22,6 +23,7 @@ void setupTestLocator() {
 
   // Регистрируем моки
   locator.registerLazySingleton<AppDatabase>(() => mockAppDatabase);
-  locator.registerLazySingleton<OrderService>(() => OrderService(locator<AppDatabase>()));
+  locator.registerLazySingleton<OrderService>(
+      () => OrderService(locator<AppDatabase>()));
   locator.registerLazySingleton<OrdersDao>(() => mockOrdersDao);
 }

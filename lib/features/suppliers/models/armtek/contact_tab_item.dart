@@ -1,6 +1,8 @@
-// filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\contact_tab_item.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
+
+// filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\contact_tab_item.dart
 
 part 'contact_tab_item.freezed.dart';
 part 'contact_tab_item.g.dart';

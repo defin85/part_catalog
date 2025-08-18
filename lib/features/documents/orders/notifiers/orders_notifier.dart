@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:part_catalog/core/database/database.dart'; // Для OrderService
 import 'package:part_catalog/core/extensions/composite_extensions.dart';
 import 'package:part_catalog/core/providers/core_providers.dart'; // Для appLoggerProvider
@@ -10,7 +12,6 @@ import 'package:part_catalog/core/utils/log_messages.dart';
 import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'orders_notifier.g.dart';
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
+
 import '../../helpers/test_helpers.dart';
 
 // Исправленный тест для OrderFormScreen
@@ -18,7 +21,7 @@ void main() {
       await tester.pumpTestApp(
         const OrderFormScreen(),
       );
-      
+
       // Даем время виджету полностью загрузиться
       await tester.pumpAndSettle();
 
@@ -29,7 +32,7 @@ void main() {
       await tester.pumpTestApp(
         const OrderFormScreen(),
       );
-      
+
       await tester.pumpAndSettle();
 
       // Проверяем наличие текстовых полей

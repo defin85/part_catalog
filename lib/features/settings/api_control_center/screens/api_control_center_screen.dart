@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_routes.dart';
-// import 'package:part_catalog/core/config/global_api_settings_service.dart'; // Больше не нужен напрямую
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/settings/api_control_center/notifiers/api_control_center_notifier.dart';
 import 'package:part_catalog/features/settings/api_control_center/state/api_control_center_state.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart'; // Для тестовой кнопки
+
+// import 'package:part_catalog/core/config/global_api_settings_service.dart'; // Больше не нужен напрямую
 
 class ApiControlCenterScreen extends ConsumerWidget {
   const ApiControlCenterScreen({super.key});
@@ -140,7 +143,8 @@ class ApiControlCenterScreen extends ConsumerWidget {
                   logger.i(
                       'Configure button pressed for ${supplierInfo.displayName}');
                   // Открываем экран настроек поставщика
-                  context.go('${AppRoutes.supplierConfig}/${supplierInfo.code}');
+                  context
+                      .go('${AppRoutes.supplierConfig}/${supplierInfo.code}');
                 },
                     // Тестовая кнопка для имитации сохранения настроек
                     onTestToggleConfigured: () {

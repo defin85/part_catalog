@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/features/core/document_specific_data.dart';
 import 'package:part_catalog/features/core/document_status.dart';
@@ -24,7 +26,7 @@ void main() {
           status: DocumentStatus.newDoc,
           documentDate: DateTime.now(),
         ),
-        orderData: OrderSpecificData(
+        orderData: const OrderSpecificData(
           clientId: 'client-1',
           carId: 'car-1',
           description: 'Test order description',

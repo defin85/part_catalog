@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
-import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+
+import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 
 class PdfService {
   Future<Uint8List> generateOrderPdf(OrderModelComposite order) async {
@@ -9,7 +11,8 @@ class PdfService {
 
     // Загружаем шрифты из локальных ассетов
     final fontData = await rootBundle.load('assets/fonts/DejaVuSans.ttf');
-    final boldFontData = await rootBundle.load('assets/fonts/DejaVuSans-Bold.ttf');
+    final boldFontData =
+        await rootBundle.load('assets/fonts/DejaVuSans-Bold.ttf');
     final font = pw.Font.ttf(fontData);
     final boldFont = pw.Font.ttf(boldFontData);
 
@@ -33,12 +36,15 @@ class PdfService {
     return pdf.save();
   }
 
-  pw.Widget _buildHeader(OrderModelComposite order, pw.Font font, pw.Font boldFont) {
+  pw.Widget _buildHeader(
+      OrderModelComposite order, pw.Font font, pw.Font boldFont) {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Text('Заказ-наряд № ${order.code}', style: pw.TextStyle(font: boldFont, fontSize: 24)),
-        pw.Text('от ${order.documentDate.toLocal().toString().split(' ')[0]}', style: pw.TextStyle(font: font, fontSize: 16)),
+        pw.Text('Заказ-наряд № ${order.code}',
+            style: pw.TextStyle(font: boldFont, fontSize: 24)),
+        pw.Text('от ${order.documentDate.toLocal().toString().split(' ')[0]}',
+            style: pw.TextStyle(font: font, fontSize: 16)),
       ],
     );
   }
@@ -54,7 +60,8 @@ class PdfService {
     );
   }
 
-  pw.Widget _buildItemsTable(OrderModelComposite order, pw.Font font, pw.Font boldFont) {
+  pw.Widget _buildItemsTable(
+      OrderModelComposite order, pw.Font font, pw.Font boldFont) {
     final headers = ['#', 'Наименование', 'Кол-во', 'Цена', 'Сумма'];
 
     final data = order.items.map((item) {
@@ -79,13 +86,16 @@ class PdfService {
     );
   }
 
-  pw.Widget _buildTotal(OrderModelComposite order, pw.Font font, pw.Font boldFont) {
-    final total = order.items.fold<double>(0, (sum, item) => sum + (item.totalPrice ?? 0));
+  pw.Widget _buildTotal(
+      OrderModelComposite order, pw.Font font, pw.Font boldFont) {
+    final total = order.items
+        .fold<double>(0, (sum, item) => sum + (item.totalPrice ?? 0));
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.end,
       children: [
         pw.Text('Итого: ', style: pw.TextStyle(font: boldFont, fontSize: 18)),
-        pw.Text('${total.toStringAsFixed(2)} руб.', style: pw.TextStyle(font: boldFont, fontSize: 18)),
+        pw.Text('${total.toStringAsFixed(2)} руб.',
+            style: pw.TextStyle(font: boldFont, fontSize: 18)),
       ],
     );
   }

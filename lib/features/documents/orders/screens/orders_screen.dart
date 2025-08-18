@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/documents/orders/providers/orders_pagination_provider.dart';
@@ -68,7 +70,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           }
           return ListView.builder(
             controller: _scrollController,
-            itemCount: state.hasReachedMax ? state.orders.length : state.orders.length + 1,
+            itemCount: state.hasReachedMax
+                ? state.orders.length
+                : state.orders.length + 1,
             itemBuilder: (context, index) {
               if (index >= state.orders.length) {
                 return const Center(child: CircularProgressIndicator());

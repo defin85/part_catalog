@@ -159,24 +159,26 @@ class TestData {
 
   // Методы для получения списков с различными сценариями
   static List<ClientModelComposite> getEmptyClientsList() => [];
-  
-  static List<ClientModelComposite> getSingleClientList() => [testClientPhysical];
-  
+
+  static List<ClientModelComposite> getSingleClientList() =>
+      [testClientPhysical];
+
   static List<ClientModelComposite> getLargeClientsList() => List.generate(
-    100,
-    (index) => createTestClient(
-      code: 'TEST${index.toString().padLeft(3, '0')}',
-      displayName: 'Тестовый клиент $index',
-    ),
-  );
+        100,
+        (index) => createTestClient(
+          code: 'TEST${index.toString().padLeft(3, '0')}',
+          displayName: 'Тестовый клиент $index',
+        ),
+      );
 
   // Методы для поиска
   static List<ClientModelComposite> searchClients(String query) {
-    return testClients.where((client) =>
-      client.displayName.toLowerCase().contains(query.toLowerCase()) ||
-      client.code.toLowerCase().contains(query.toLowerCase()) ||
-      client.contactInfo.toLowerCase().contains(query.toLowerCase())
-    ).toList();
+    return testClients
+        .where((client) =>
+            client.displayName.toLowerCase().contains(query.toLowerCase()) ||
+            client.code.toLowerCase().contains(query.toLowerCase()) ||
+            client.contactInfo.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 
   // Интеграционные тестовые данные
@@ -240,9 +242,18 @@ class TestData {
       'steps': [
         {'action': 'navigate_to', 'screen': 'clients'},
         {'action': 'select_client', 'clientId': testClientPhysical.uuid},
-        {'action': 'create_order', 'data': {'description': 'Ремонт двигателя'}},
-        {'action': 'add_service', 'data': {'name': 'Диагностика', 'price': 1500}},
-        {'action': 'add_part', 'data': {'name': 'Масло', 'price': 800}},
+        {
+          'action': 'create_order',
+          'data': {'description': 'Ремонт двигателя'}
+        },
+        {
+          'action': 'add_service',
+          'data': {'name': 'Диагностика', 'price': 1500}
+        },
+        {
+          'action': 'add_part',
+          'data': {'name': 'Масло', 'price': 800}
+        },
         {'action': 'save_order'},
         {'action': 'verify_order_created'},
       ],
@@ -253,7 +264,10 @@ class TestData {
         {'action': 'navigate_to', 'screen': 'clients'},
         {'action': 'search', 'query': 'Иван'},
         {'action': 'select_client', 'clientId': testClientPhysical.uuid},
-        {'action': 'edit_client', 'data': {'phone': '+7 (900) 111-22-33'}},
+        {
+          'action': 'edit_client',
+          'data': {'phone': '+7 (900) 111-22-33'}
+        },
         {'action': 'save_client'},
         {'action': 'verify_client_updated'},
       ],

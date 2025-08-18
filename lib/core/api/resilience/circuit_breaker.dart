@@ -5,9 +5,9 @@ import 'package:part_catalog/core/utils/context_logger.dart';
 
 /// Состояния circuit breaker
 enum CircuitBreakerState {
-  closed,    // Нормальная работа
-  open,      // Заблокированное состояние
-  halfOpen,  // Тестовое состояние
+  closed, // Нормальная работа
+  open, // Заблокированное состояние
+  halfOpen, // Тестовое состояние
 }
 
 /// Конфигурация circuit breaker
@@ -71,10 +71,10 @@ class CircuitBreakerStats {
   DateTime? lastSuccess;
   DateTime? stateChangedAt;
 
-  double get failureRate => 
+  double get failureRate =>
       totalRequests > 0 ? failedRequests / totalRequests : 0.0;
 
-  double get successRate => 
+  double get successRate =>
       totalRequests > 0 ? successfulRequests / totalRequests : 0.0;
 
   void recordSuccess() {
@@ -157,7 +157,7 @@ class CircuitBreaker {
     // Проверяем состояние circuit breaker
     if (_state == CircuitBreakerState.open) {
       _stats.recordCircuitOpen();
-      
+
       _logger.w('Circuit breaker is OPEN, rejecting $opName', metadata: {
         'circuitBreakerName': name,
         'state': _state.name,
@@ -203,7 +203,7 @@ class CircuitBreaker {
       });
 
       await healthCheckOperation();
-      
+
       _logger.i('Health check passed, transitioning to HALF_OPEN', metadata: {
         'circuitBreakerName': name,
       });
@@ -211,7 +211,8 @@ class CircuitBreaker {
       await _transitionTo(CircuitBreakerState.halfOpen);
       return true;
     } catch (e) {
-      _logger.w('Health check failed', 
+      _logger.w(
+        'Health check failed',
         metadata: {
           'circuitBreakerName': name,
         },
@@ -222,14 +223,15 @@ class CircuitBreaker {
   }
 
   /// Принудительно переводит circuit breaker в указанное состояние
-  Future<void> forceState(CircuitBreakerState newState, {String? reason}) async {
-    _logger.i('Force transitioning circuit breaker to ${newState.name}', 
-      metadata: {
-        'circuitBreakerName': name,
-        'fromState': _state.name,
-        'toState': newState.name,
-        'reason': reason ?? 'manual',
-      });
+  Future<void> forceState(CircuitBreakerState newState,
+      {String? reason}) async {
+    _logger.i('Force transitioning circuit breaker to ${newState.name}',
+        metadata: {
+          'circuitBreakerName': name,
+          'fromState': _state.name,
+          'toState': newState.name,
+          'reason': reason ?? 'manual',
+        });
 
     await _transitionTo(newState);
   }
@@ -265,19 +267,21 @@ class CircuitBreaker {
     };
   }
 
-  Future<void> _onSuccess(String operationName, Map<String, dynamic>? metadata) async {
+  Future<void> _onSuccess(
+      String operationName, Map<String, dynamic>? metadata) async {
     _stats.recordSuccess();
     _consecutiveFailures = 0;
     _consecutiveSuccesses++;
 
     if (_state == CircuitBreakerState.halfOpen) {
       if (_consecutiveSuccesses >= config.successThreshold) {
-        _logger.i('Circuit breaker recovery successful, transitioning to CLOSED', 
-          metadata: {
-            'circuitBreakerName': name,
-            'consecutiveSuccesses': _consecutiveSuccesses,
-            'requiredSuccesses': config.successThreshold,
-          });
+        _logger.i(
+            'Circuit breaker recovery successful, transitioning to CLOSED',
+            metadata: {
+              'circuitBreakerName': name,
+              'consecutiveSuccesses': _consecutiveSuccesses,
+              'requiredSuccesses': config.successThreshold,
+            });
 
         await _transitionTo(CircuitBreakerState.closed);
       }
@@ -285,8 +289,8 @@ class CircuitBreaker {
   }
 
   Future<void> _onFailure(
-    dynamic exception, 
-    String operationName, 
+    dynamic exception,
+    String operationName,
     Map<String, dynamic>? metadata,
   ) async {
     if (!_shouldTripCircuit(exception)) {
@@ -298,7 +302,8 @@ class CircuitBreaker {
     _consecutiveFailures++;
     _lastFailureTime = DateTime.now();
 
-    _logger.w('Operation failed in circuit breaker', 
+    _logger.w(
+      'Operation failed in circuit breaker',
       metadata: {
         'circuitBreakerName': name,
         'operationName': operationName,
@@ -310,22 +315,20 @@ class CircuitBreaker {
       error: exception,
     );
 
-    if (_state == CircuitBreakerState.closed && 
+    if (_state == CircuitBreakerState.closed &&
         _consecutiveFailures >= config.failureThreshold) {
-      
-      _logger.e('Circuit breaker tripped, transitioning to OPEN', 
-        metadata: {
-          'circuitBreakerName': name,
-          'consecutiveFailures': _consecutiveFailures,
-          'failureThreshold': config.failureThreshold,
-        });
+      _logger.e('Circuit breaker tripped, transitioning to OPEN', metadata: {
+        'circuitBreakerName': name,
+        'consecutiveFailures': _consecutiveFailures,
+        'failureThreshold': config.failureThreshold,
+      });
 
       await _transitionTo(CircuitBreakerState.open);
     } else if (_state == CircuitBreakerState.halfOpen) {
-      _logger.w('Circuit breaker test failed, transitioning back to OPEN', 
-        metadata: {
-          'circuitBreakerName': name,
-        });
+      _logger.w('Circuit breaker test failed, transitioning back to OPEN',
+          metadata: {
+            'circuitBreakerName': name,
+          });
 
       await _transitionTo(CircuitBreakerState.open);
     }
@@ -397,7 +400,7 @@ class CircuitBreaker {
 
     final elapsed = DateTime.now().difference(_lastFailureTime!);
     final remaining = config.timeout - elapsed;
-    
+
     return remaining.isNegative ? Duration.zero : remaining;
   }
 
@@ -443,7 +446,7 @@ class CircuitBreakerManager {
   void remove(String name) {
     final circuitBreaker = _circuitBreakers.remove(name);
     circuitBreaker?.dispose();
-    
+
     _logger.d('Removed circuit breaker', metadata: {
       'name': name,
     });
@@ -452,18 +455,18 @@ class CircuitBreakerManager {
   /// Получает статус всех circuit breaker
   Map<String, Map<String, dynamic>> getAllStatus() {
     final result = <String, Map<String, dynamic>>{};
-    
+
     for (final entry in _circuitBreakers.entries) {
       result[entry.key] = entry.value.getStatus();
     }
-    
+
     return result;
   }
 
   /// Сбрасывает все circuit breaker
   void resetAll() {
     _logger.i('Resetting all circuit breakers');
-    
+
     for (final circuitBreaker in _circuitBreakers.values) {
       circuitBreaker.reset();
     }
@@ -472,9 +475,10 @@ class CircuitBreakerManager {
   /// Принудительно закрывает все circuit breaker
   Future<void> closeAll() async {
     _logger.i('Closing all circuit breakers');
-    
+
     for (final circuitBreaker in _circuitBreakers.values) {
-      await circuitBreaker.forceState(CircuitBreakerState.closed, reason: 'manager_close_all');
+      await circuitBreaker.forceState(CircuitBreakerState.closed,
+          reason: 'manager_close_all');
     }
   }
 
@@ -531,7 +535,8 @@ mixin CircuitBreakerSupport {
     String? operationName,
     Map<String, dynamic>? metadata,
   }) {
-    final circuitBreaker = getCircuitBreaker(circuitBreakerName, config: config);
+    final circuitBreaker =
+        getCircuitBreaker(circuitBreakerName, config: config);
     return circuitBreaker.execute(
       operation,
       operationName: operationName,

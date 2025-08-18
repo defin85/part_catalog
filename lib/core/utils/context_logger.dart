@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/utils/logger_config.dart';
 
 /// Логгер с поддержкой контекста для структурированного логирования
@@ -16,7 +17,8 @@ class ContextLogger {
         _persistentMetadata = metadata ?? {};
 
   /// Создает дочерний логгер с дополнительным контекстом
-  ContextLogger child(String childContext, [Map<String, dynamic>? additionalMetadata]) {
+  ContextLogger child(String childContext,
+      [Map<String, dynamic>? additionalMetadata]) {
     return ContextLogger(
       context: '$_context.$childContext',
       logger: _logger,
@@ -45,33 +47,43 @@ class ContextLogger {
       ..._persistentMetadata,
       ...?metadata,
     };
-    
+
     final metaStr = allMetadata.isNotEmpty
         ? ' [${allMetadata.entries.map((e) => '${e.key}: ${e.value}').join(', ')}]'
         : '';
-    
+
     return '[$_context] $message$metaStr';
   }
 
   // Методы логирования
-  void d(String message, {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
-    _logger.d(_formatMessage(message, metadata), error: error, stackTrace: stackTrace);
+  void d(String message,
+      {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
+    _logger.d(_formatMessage(message, metadata),
+        error: error, stackTrace: stackTrace);
   }
 
-  void i(String message, {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
-    _logger.i(_formatMessage(message, metadata), error: error, stackTrace: stackTrace);
+  void i(String message,
+      {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
+    _logger.i(_formatMessage(message, metadata),
+        error: error, stackTrace: stackTrace);
   }
 
-  void w(String message, {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
-    _logger.w(_formatMessage(message, metadata), error: error, stackTrace: stackTrace);
+  void w(String message,
+      {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
+    _logger.w(_formatMessage(message, metadata),
+        error: error, stackTrace: stackTrace);
   }
 
-  void e(String message, {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
-    _logger.e(_formatMessage(message, metadata), error: error, stackTrace: stackTrace);
+  void e(String message,
+      {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
+    _logger.e(_formatMessage(message, metadata),
+        error: error, stackTrace: stackTrace);
   }
 
-  void f(String message, {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
-    _logger.f(_formatMessage(message, metadata), error: error, stackTrace: stackTrace);
+  void f(String message,
+      {Map<String, dynamic>? metadata, dynamic error, StackTrace? stackTrace}) {
+    _logger.f(_formatMessage(message, metadata),
+        error: error, stackTrace: stackTrace);
   }
 
   /// Логирование операции с измерением времени
@@ -82,27 +94,28 @@ class ContextLogger {
   }) async {
     final stopwatch = Stopwatch()..start();
     final operationId = DateTime.now().millisecondsSinceEpoch;
-    
+
     i('Starting $operationName', metadata: {
       ...?metadata,
       'operationId': operationId,
     });
-    
+
     try {
       final result = await operation();
       stopwatch.stop();
-      
+
       i('Completed $operationName', metadata: {
         ...?metadata,
         'operationId': operationId,
         'duration': '${stopwatch.elapsedMilliseconds}ms',
       });
-      
+
       return result;
     } catch (error, stackTrace) {
       stopwatch.stop();
-      
-      e('Failed $operationName', 
+
+      e(
+        'Failed $operationName',
         metadata: {
           ...?metadata,
           'operationId': operationId,
@@ -111,33 +124,40 @@ class ContextLogger {
         error: error,
         stackTrace: stackTrace,
       );
-      
+
       rethrow;
     }
   }
 
   /// Логирование с автоматическим определением уровня по типу исключения
-  void exception(dynamic exception, StackTrace? stackTrace, [Map<String, dynamic>? metadata]) {
+  void exception(dynamic exception, StackTrace? stackTrace,
+      [Map<String, dynamic>? metadata]) {
     final level = _getLogLevelForException(exception);
-    
+
     switch (level) {
       case Level.debug:
-        d('Exception occurred', metadata: metadata, error: exception, stackTrace: stackTrace);
+        d('Exception occurred',
+            metadata: metadata, error: exception, stackTrace: stackTrace);
         break;
       case Level.info:
-        i('Exception occurred', metadata: metadata, error: exception, stackTrace: stackTrace);
+        i('Exception occurred',
+            metadata: metadata, error: exception, stackTrace: stackTrace);
         break;
       case Level.warning:
-        w('Exception occurred', metadata: metadata, error: exception, stackTrace: stackTrace);
+        w('Exception occurred',
+            metadata: metadata, error: exception, stackTrace: stackTrace);
         break;
       case Level.error:
-        e('Exception occurred', metadata: metadata, error: exception, stackTrace: stackTrace);
+        e('Exception occurred',
+            metadata: metadata, error: exception, stackTrace: stackTrace);
         break;
       case Level.fatal:
-        f('Exception occurred', metadata: metadata, error: exception, stackTrace: stackTrace);
+        f('Exception occurred',
+            metadata: metadata, error: exception, stackTrace: stackTrace);
         break;
       default:
-        e('Exception occurred', metadata: metadata, error: exception, stackTrace: stackTrace);
+        e('Exception occurred',
+            metadata: metadata, error: exception, stackTrace: stackTrace);
     }
   }
 
@@ -147,7 +167,7 @@ class ContextLogger {
     if (exception is StateError) return Level.error;
     if (exception is ArgumentError) return Level.warning;
     if (exception is FormatException) return Level.warning;
-    
+
     return Level.error;
   }
 }
@@ -159,7 +179,8 @@ mixin ContextLoggerMixin {
   );
 
   /// Создает логгер для метода
-  ContextLogger methodLogger(String methodName, [Map<String, dynamic>? metadata]) {
+  ContextLogger methodLogger(String methodName,
+      [Map<String, dynamic>? metadata]) {
     return logger.child(methodName, metadata);
   }
 }
@@ -169,7 +190,8 @@ class ContextLoggerFactory {
   static final Map<String, ContextLogger> _loggers = {};
 
   /// Получает или создает логгер для контекста
-  static ContextLogger getLogger(String context, {
+  static ContextLogger getLogger(
+    String context, {
     Logger? baseLogger,
     Map<String, dynamic>? metadata,
   }) {
@@ -189,7 +211,8 @@ class ContextLoggerFactory {
   }
 
   /// Создает логгер для модуля
-  static ContextLogger forModule(String moduleName, [Map<String, dynamic>? metadata]) {
+  static ContextLogger forModule(String moduleName,
+      [Map<String, dynamic>? metadata]) {
     return getLogger(moduleName, metadata: metadata);
   }
 

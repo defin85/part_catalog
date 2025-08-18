@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/features/core/entity_core_data.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
@@ -88,8 +89,7 @@ void main() {
         // Arrange
         when(mockDatabase.carsDao).thenReturn(mockCarsDao);
         const carUuid = TestConstants.testUuid1;
-        when(mockCarsDao.getCarByUuid(any))
-            .thenAnswer((_) async => null);
+        when(mockCarsDao.getCarByUuid(any)).thenAnswer((_) async => null);
 
         // Act
         final result = await carService.getCarByUuid(carUuid);
@@ -103,8 +103,7 @@ void main() {
         // Arrange
         when(mockDatabase.carsDao).thenReturn(mockCarsDao);
         const carUuid = TestConstants.testUuid1;
-        when(mockCarsDao.getCarByUuid(any))
-            .thenAnswer((_) async => null);
+        when(mockCarsDao.getCarByUuid(any)).thenAnswer((_) async => null);
 
         // Act
         await carService.getCarByUuid(carUuid);
@@ -134,7 +133,7 @@ void main() {
         final mockCar = MockCarModelComposite();
         final mockCoreData = MockEntityCoreData();
         final mockCarData = MockCarSpecificData();
-        
+
         when(mockCar.uuid).thenReturn(TestConstants.testUuid1);
         when(mockCar.coreData).thenReturn(mockCoreData);
         when(mockCar.carData).thenReturn(mockCarData);
@@ -183,14 +182,19 @@ void main() {
 // Простые моки для тестирования
 class MockCarModelComposite extends Mock implements CarModelComposite {
   @override
-  String get uuid => super.noSuchMethod(Invocation.getter(#uuid), returnValue: '');
-  
+  String get uuid =>
+      super.noSuchMethod(Invocation.getter(#uuid), returnValue: '');
+
   @override
-  EntityCoreData get coreData => super.noSuchMethod(Invocation.getter(#coreData), returnValue: MockEntityCoreData());
-  
+  EntityCoreData get coreData =>
+      super.noSuchMethod(Invocation.getter(#coreData),
+          returnValue: MockEntityCoreData());
+
   @override
-  CarSpecificData get carData => super.noSuchMethod(Invocation.getter(#carData), returnValue: MockCarSpecificData());
+  CarSpecificData get carData => super.noSuchMethod(Invocation.getter(#carData),
+      returnValue: MockCarSpecificData());
 }
 
 class MockEntityCoreData extends Mock implements EntityCoreData {}
+
 class MockCarSpecificData extends Mock implements CarSpecificData {}

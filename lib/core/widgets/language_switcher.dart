@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// Импортируем сгенерированный файл slang
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
+
+// Импортируем сгенерированный файл slang
 
 // Провайдер для текущей локали
 final localeProvider = StateNotifierProvider<LocaleNotifier, AppLocale>((ref) {
@@ -11,7 +14,7 @@ final localeProvider = StateNotifierProvider<LocaleNotifier, AppLocale>((ref) {
 // Нотификатор для управления локалью
 class LocaleNotifier extends StateNotifier<AppLocale> {
   LocaleNotifier() : super(LocaleSettings.currentLocale);
-  
+
   void setLocale(AppLocale locale) {
     state = locale;
     LocaleSettings.setLocale(locale);

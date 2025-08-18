@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
@@ -15,28 +16,30 @@ final suppliersServiceProvider = Provider<SuppliersService>((ref) {
 });
 
 /// Провайдер для поиска запчастей
-final partsSearchProvider = FutureProvider.family<List<PartPriceModel>, PartsSearchParams>((ref, params) async {
+final partsSearchProvider =
+    FutureProvider.family<List<PartPriceModel>, PartsSearchParams>(
+        (ref, params) async {
   final suppliersService = ref.read(suppliersServiceProvider);
-  
+
   if (params.articleNumber.isEmpty) {
     return [];
   }
-  
+
   // Получаем цены от всех доступных поставщиков
   final results = await suppliersService.getPricesFromAllSuppliers(
     params.articleNumber,
     brand: params.brand,
   );
-  
+
   // Объединяем результаты от всех поставщиков
   final allPrices = <PartPriceModel>[];
   for (final supplierResults in results.values) {
     allPrices.addAll(supplierResults);
   }
-  
+
   // Сортируем по цене
   allPrices.sort((a, b) => a.price.compareTo(b.price));
-  
+
   return allPrices;
 });
 
@@ -44,12 +47,12 @@ final partsSearchProvider = FutureProvider.family<List<PartPriceModel>, PartsSea
 class PartsSearchParams {
   final String articleNumber;
   final String? brand;
-  
+
   const PartsSearchParams({
     required this.articleNumber,
     this.brand,
   });
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -63,4 +66,5 @@ class PartsSearchParams {
 }
 
 /// Провайдер для состояния поиска (текущие параметры)
-final partsSearchStateProvider = StateProvider<PartsSearchParams?>((ref) => null);
+final partsSearchStateProvider =
+    StateProvider<PartsSearchParams?>((ref) => null);

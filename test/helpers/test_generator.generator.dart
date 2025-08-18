@@ -1,13 +1,26 @@
 import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as path;
+
+import 'package:part_catalog/{form_import_path}';
+import 'package:part_catalog/{screen_import_path}';
+import 'package:part_catalog/{widget_import_path}';
+
+import '../helpers/base_widget_test.dart';
+import '../helpers/base_widget_test.dart';
+import '../helpers/base_widget_test.dart';
 
 /// Генератор тестов для виджетов
 class TestGenerator {
   static const String _widgetTestTemplate = '''
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:part_catalog/{widget_import_path}';
-import '../helpers/base_widget_test.dart';
 
 class {widget_class_name}Test extends BaseWidgetTest {
   @override
@@ -59,11 +72,6 @@ void main() {
 ''';
 
   static const String _screenTestTemplate = '''
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:part_catalog/{screen_import_path}';
-import '../helpers/base_widget_test.dart';
 
 class {screen_class_name}Test extends BaseScreenTest {
   @override
@@ -150,10 +158,6 @@ void main() {
 ''';
 
   static const String _formTestTemplate = '''
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:part_catalog/{form_import_path}';
-import '../helpers/base_widget_test.dart';
 
 class {form_class_name}Test extends BaseFormTest {
   @override
@@ -245,7 +249,8 @@ void main() {
       case 'screen':
         template = _screenTestTemplate;
         template = template.replaceAll('{screen_class_name}', widgetClassName);
-        template = template.replaceAll('{screen_import_path}', widgetImportPath);
+        template =
+            template.replaceAll('{screen_import_path}', widgetImportPath);
         break;
       case 'form':
         template = _formTestTemplate;
@@ -255,7 +260,8 @@ void main() {
       default:
         template = _widgetTestTemplate;
         template = template.replaceAll('{widget_class_name}', widgetClassName);
-        template = template.replaceAll('{widget_import_path}', widgetImportPath);
+        template =
+            template.replaceAll('{widget_import_path}', widgetImportPath);
     }
 
     final testFile = File(outputPath);
@@ -266,7 +272,8 @@ void main() {
   }
 
   /// Генерирует тесты для всех виджетов в директории
-  static Future<void> generateAllWidgetTests(String sourceDir, String testDir) async {
+  static Future<void> generateAllWidgetTests(
+      String sourceDir, String testDir) async {
     final sourceDirectory = Directory(sourceDir);
     if (!sourceDirectory.existsSync()) {
       throw Exception('Source directory not found: $sourceDir');
@@ -280,8 +287,9 @@ void main() {
 
     for (final widgetFile in widgetFiles) {
       final relativePath = path.relative(widgetFile.path, from: sourceDir);
-      final testPath = path.join(testDir, relativePath.replaceAll('.dart', '_test.dart'));
-      
+      final testPath =
+          path.join(testDir, relativePath.replaceAll('.dart', '_test.dart'));
+
       // Определяем тип теста на основе содержимого и пути
       String? testType;
       if (relativePath.contains('screen')) {
@@ -304,9 +312,9 @@ void main() {
     if (!file.existsSync()) return WidgetComplexity.unknown;
 
     final content = file.readAsStringSync();
-    
+
     int complexity = 0;
-    
+
     // Сложные паттерны
     final complexPatterns = [
       'StatefulWidget',
@@ -375,7 +383,8 @@ void main() {
     final sourceFiles = Directory(sourceDir)
         .listSync(recursive: true)
         .whereType<File>()
-        .where((file) => file.path.endsWith('.dart') && _isWidgetFile(file.path))
+        .where(
+            (file) => file.path.endsWith('.dart') && _isWidgetFile(file.path))
         .toList();
 
     // Убираем неиспользуемую переменную testFiles
@@ -384,7 +393,8 @@ void main() {
 
     for (final sourceFile in sourceFiles) {
       final relativePath = path.relative(sourceFile.path, from: sourceDir);
-      final expectedTestPath = path.join(testDir, relativePath.replaceAll('.dart', '_test.dart'));
+      final expectedTestPath =
+          path.join(testDir, relativePath.replaceAll('.dart', '_test.dart'));
       final hasTest = File(expectedTestPath).existsSync();
       final complexity = analyzeWidgetComplexity(sourceFile.path);
 
@@ -420,10 +430,10 @@ void main() {
     // Простая эвристика для определения файлов виджетов
     final fileName = path.basename(filePath).toLowerCase();
     return fileName.contains('widget') ||
-           fileName.contains('screen') ||
-           fileName.contains('page') ||
-           fileName.contains('dialog') ||
-           fileName.contains('form');
+        fileName.contains('screen') ||
+        fileName.contains('page') ||
+        fileName.contains('dialog') ||
+        fileName.contains('form');
   }
 }
 
@@ -490,20 +500,21 @@ class TestCoverageReport {
 
   int get totalFiles => items.length;
   int get testedFiles => items.values.where((item) => item.hasTest).length;
-  int get shouldBeTestedFiles => items.values.where((item) => item.shouldBeTested).length;
+  int get shouldBeTestedFiles =>
+      items.values.where((item) => item.shouldBeTested).length;
   int get needsTestFiles => items.values.where((item) => item.needsTest).length;
 
-  double get coveragePercentage => 
+  double get coveragePercentage =>
       shouldBeTestedFiles > 0 ? (testedFiles / shouldBeTestedFiles) * 100 : 100;
 
   void printReport() {
     // Test Coverage Report
     // Total files: $totalFiles
-    // Files with tests: $testedFiles  
+    // Files with tests: $testedFiles
     // Files that should be tested: $shouldBeTestedFiles
     // Files needing tests: $needsTestFiles
     // Coverage: ${coveragePercentage.toStringAsFixed(1)}%
-    
+
     // Files needing tests listed above
   }
 }
@@ -515,9 +526,9 @@ void main() async {
     'lib/',
     'test/widgets/',
   );
-  
+
   report.printReport();
-  
+
   // Генерируем недостающие тесты
   await TestGenerator.generateAllWidgetTests(
     'lib/features/',

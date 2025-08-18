@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
+
 import 'package:part_catalog/core/database/daos/supplier_settings_dao.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
@@ -15,20 +16,20 @@ class ConnectionTestResult {
   final bool success;
   final String? errorMessage;
   final String? successMessage;
-  
+
   const ConnectionTestResult({
     required this.success,
     this.errorMessage,
     this.successMessage,
   });
-  
+
   factory ConnectionTestResult.success([String? message]) {
     return ConnectionTestResult(
       success: true,
       successMessage: message ?? 'Подключение успешно установлено',
     );
   }
-  
+
   factory ConnectionTestResult.failure(String errorMessage) {
     return ConnectionTestResult(
       success: false,
@@ -42,7 +43,7 @@ class ConnectionTestResult {
 class SupplierConfigService {
   final SupplierSettingsDao _supplierSettingsDao;
   final _logger = AppLoggers.suppliers;
-  
+
   // Кеш конфигураций в памяти
   final Map<String, SupplierConfig> _configCache = {};
 
@@ -50,21 +51,23 @@ class SupplierConfigService {
     _logger.i('SupplierConfigService created, initializing...');
     _loadConfigs();
   }
-  
+
   /// Очистить поврежденные данные из базы
   Future<void> cleanupCorruptedData() async {
     try {
       final settings = await _supplierSettingsDao.getAllSupplierSettings();
       for (final setting in settings) {
-        if (setting.encryptedCredentials != null && 
+        if (setting.encryptedCredentials != null &&
             !_isValidBase64(setting.encryptedCredentials!)) {
           _logger.w('Removing corrupted setting for ${setting.supplierCode}');
-          await _supplierSettingsDao.deleteSupplierSettingByCode(setting.supplierCode);
+          await _supplierSettingsDao
+              .deleteSupplierSettingByCode(setting.supplierCode);
         }
       }
       await _loadConfigs(); // Перезагружаем конфигурации
     } catch (e, stackTrace) {
-      _logger.e('Failed to cleanup corrupted data', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to cleanup corrupted data',
+          error: e, stackTrace: stackTrace);
     }
   }
 
@@ -72,13 +75,14 @@ class SupplierConfigService {
   Future<void> _loadConfigs() async {
     try {
       await _loadFromDatabase();
-      _logger.i('Loaded ${_configCache.length} supplier configurations from database');
+      _logger.i(
+          'Loaded ${_configCache.length} supplier configurations from database');
     } catch (e, stackTrace) {
-      _logger.e('Failed to load supplier configurations', 
+      _logger.e('Failed to load supplier configurations',
           error: e, stackTrace: stackTrace);
     }
   }
-  
+
   /// Принудительно перезагрузить конфигурации из базы данных
   Future<void> reloadConfigs() async {
     _logger.d('Manually reloading configurations from database...');
@@ -91,38 +95,44 @@ class SupplierConfigService {
       _logger.d('Loading all settings from database...');
       final settings = await _supplierSettingsDao.getAllSupplierSettings();
       _logger.d('Found ${settings.length} settings in database');
-      
+
       _configCache.clear();
-      
+
       for (final setting in settings) {
         _logger.d('Processing setting: ${setting.supplierCode}');
-        _logger.d('Setting data: id=${setting.id}, enabled=${setting.isEnabled}');
-        _logger.d('Encrypted credentials length: ${setting.encryptedCredentials?.length ?? 0}');
-        _logger.d('Additional config length: ${setting.additionalConfig?.length ?? 0}');
-        
+        _logger
+            .d('Setting data: id=${setting.id}, enabled=${setting.isEnabled}');
+        _logger.d(
+            'Encrypted credentials length: ${setting.encryptedCredentials?.length ?? 0}');
+        _logger.d(
+            'Additional config length: ${setting.additionalConfig?.length ?? 0}');
+
         final config = _convertSettingToConfig(setting);
         if (config != null) {
           _configCache[config.supplierCode] = config;
-          _logger.d('Successfully converted and cached config for: ${config.supplierCode}');
+          _logger.d(
+              'Successfully converted and cached config for: ${config.supplierCode}');
         } else {
-          _logger.w('Failed to convert setting to config for: ${setting.supplierCode}');
+          _logger.w(
+              'Failed to convert setting to config for: ${setting.supplierCode}');
         }
       }
-      
+
       _logger.d('Final cache size: ${_configCache.length}');
     } catch (e, stackTrace) {
-      _logger.e('Failed to load configurations from database', 
+      _logger.e('Failed to load configurations from database',
           error: e, stackTrace: stackTrace);
     }
   }
 
-
   /// Конвертировать SupplierConfig в SupplierSettingsItem для БД
-  SupplierSettingsItemsCompanion _convertConfigToSetting(SupplierConfig config) {
+  SupplierSettingsItemsCompanion _convertConfigToSetting(
+      SupplierConfig config) {
     return SupplierSettingsItemsCompanion(
       supplierCode: Value(config.supplierCode),
       isEnabled: Value(config.isEnabled),
-      encryptedCredentials: Value(_encryptCredentials(config.apiConfig.credentials)),
+      encryptedCredentials:
+          Value(_encryptCredentials(config.apiConfig.credentials)),
       lastCheckStatus: Value(config.lastCheckStatus),
       lastCheckMessage: Value(config.lastCheckMessage),
       lastSuccessfulCheckAt: Value(config.lastSuccessfulCheckAt),
@@ -138,7 +148,8 @@ class SupplierConfigService {
           'retryAttempts': config.apiConfig.retryAttempts,
           'proxyUrl': config.apiConfig.proxyUrl,
           'proxyAuthToken': config.apiConfig.proxyAuthToken,
-          if (config.apiConfig.rateLimit != null) 'rateLimit': config.apiConfig.rateLimit!.toJson(),
+          if (config.apiConfig.rateLimit != null)
+            'rateLimit': config.apiConfig.rateLimit!.toJson(),
         },
         'businessConfig': config.businessConfig?.toJson() ?? {},
       })),
@@ -151,15 +162,19 @@ class SupplierConfigService {
     try {
       _logger.d('Converting setting to config for: ${setting.supplierCode}');
       _logger.d('Setting ID: ${setting.id}, enabled: ${setting.isEnabled}');
-      _logger.d('createdAt: ${setting.createdAt}, updatedAt: ${setting.updatedAt}');
-      
+      _logger.d(
+          'createdAt: ${setting.createdAt}, updatedAt: ${setting.updatedAt}');
+
       Map<String, dynamic> additionalConfig = {};
-      if (setting.additionalConfig != null && setting.additionalConfig!.isNotEmpty) {
+      if (setting.additionalConfig != null &&
+          setting.additionalConfig!.isNotEmpty) {
         _logger.d('Parsing additionalConfig JSON...');
         _logger.d('Raw additionalConfig: ${setting.additionalConfig}');
         try {
-          additionalConfig = json.decode(setting.additionalConfig!) as Map<String, dynamic>;
-          _logger.d('Parsed additionalConfig keys: ${additionalConfig.keys.toList()}');
+          additionalConfig =
+              json.decode(setting.additionalConfig!) as Map<String, dynamic>;
+          _logger.d(
+              'Parsed additionalConfig keys: ${additionalConfig.keys.toList()}');
         } catch (e) {
           _logger.e('Failed to parse additionalConfig JSON: $e');
           // Продолжаем с пустой конфигурацией
@@ -167,13 +182,15 @@ class SupplierConfigService {
       } else {
         _logger.d('No additionalConfig found, using defaults');
       }
-      
-      final apiConfigData = additionalConfig['apiConfig'] as Map<String, dynamic>? ?? {};
-      final businessConfigData = additionalConfig['businessConfig'] as Map<String, dynamic>? ?? {};
-      
+
+      final apiConfigData =
+          additionalConfig['apiConfig'] as Map<String, dynamic>? ?? {};
+      final businessConfigData =
+          additionalConfig['businessConfig'] as Map<String, dynamic>? ?? {};
+
       _logger.d('apiConfigData: $apiConfigData');
       _logger.d('businessConfigData: $businessConfigData');
-      
+
       // Расшифровываем учетные данные
       _logger.d('Decrypting credentials...');
       _logger.d('Encrypted credentials: ${setting.encryptedCredentials}');
@@ -182,23 +199,26 @@ class SupplierConfigService {
         credentials = _decryptCredentials(setting.encryptedCredentials);
         _logger.d('Credentials decrypted successfully: ${credentials != null}');
         if (credentials != null) {
-          _logger.d('Credentials username: ${credentials.username?.isNotEmpty}');
-          _logger.d('Credentials additionalParams: ${credentials.additionalParams}');
+          _logger
+              .d('Credentials username: ${credentials.username?.isNotEmpty}');
+          _logger.d(
+              'Credentials additionalParams: ${credentials.additionalParams}');
         }
       } catch (e) {
         _logger.e('Failed to decrypt credentials: $e');
         credentials = null;
       }
-      
+
       // Получаем базовые значения с fallback'ами
-      final displayName = additionalConfig['displayName'] as String? ?? setting.supplierCode;
+      final displayName =
+          additionalConfig['displayName'] as String? ?? setting.supplierCode;
       final baseUrl = apiConfigData['baseUrl'] as String? ?? '';
       final authTypeName = apiConfigData['authType'] as String? ?? 'none';
-      
+
       _logger.d('Using displayName: $displayName');
       _logger.d('Using baseUrl: $baseUrl');
       _logger.d('Using authType: $authTypeName');
-      
+
       // Находим AuthenticationType
       AuthenticationType authType;
       try {
@@ -211,7 +231,7 @@ class SupplierConfigService {
         _logger.w('Failed to find authType for $authTypeName, using none: $e');
         authType = AuthenticationType.none;
       }
-      
+
       // Создаем SupplierApiConfig
       SupplierApiConfig apiConfig;
       try {
@@ -226,21 +246,23 @@ class SupplierConfigService {
                       (e) => e.name == apiConfigData['connectionMode'],
                     );
                   } catch (e) {
-                    _logger.w('Invalid connectionMode: ${apiConfigData['connectionMode']}');
+                    _logger.w(
+                        'Invalid connectionMode: ${apiConfigData['connectionMode']}');
                     return ApiConnectionMode.direct;
                   }
                 })()
               : null,
-          timeout: apiConfigData['timeout'] != null 
-              ? Duration(milliseconds: apiConfigData['timeout'] as int) 
+          timeout: apiConfigData['timeout'] != null
+              ? Duration(milliseconds: apiConfigData['timeout'] as int)
               : null,
           retryAttempts: apiConfigData['retryAttempts'] as int?,
           proxyUrl: apiConfigData['proxyUrl'] as String?,
           proxyAuthToken: apiConfigData['proxyAuthToken'] as String?,
-          rateLimit: apiConfigData['rateLimit'] != null 
+          rateLimit: apiConfigData['rateLimit'] != null
               ? (() {
                   try {
-                    return RateLimitConfig.fromJson(apiConfigData['rateLimit'] as Map<String, dynamic>);
+                    return RateLimitConfig.fromJson(
+                        apiConfigData['rateLimit'] as Map<String, dynamic>);
                   } catch (e) {
                     _logger.w('Failed to parse rateLimit: $e');
                     return null;
@@ -253,7 +275,7 @@ class SupplierConfigService {
         _logger.e('Failed to create SupplierApiConfig: $e');
         return null;
       }
-      
+
       // Создаем SupplierBusinessConfig
       SupplierBusinessConfig? businessConfig;
       if (businessConfigData.isNotEmpty) {
@@ -265,7 +287,7 @@ class SupplierConfigService {
           businessConfig = null;
         }
       }
-      
+
       // Создаем финальный SupplierConfig
       final config = SupplierConfig(
         supplierCode: setting.supplierCode,
@@ -281,18 +303,21 @@ class SupplierConfigService {
         createdAt: setting.createdAt,
         updatedAt: setting.updatedAt,
       );
-      
+
       _logger.d('Successfully created config: ${config.supplierCode}');
       _logger.d('Config displayName: ${config.displayName}');
       _logger.d('Config baseUrl: ${config.apiConfig.baseUrl}');
       _logger.d('Config authType: ${config.apiConfig.authType}');
       _logger.d('Config enabled: ${config.isEnabled}');
-      
+
       return config;
     } catch (e, stackTrace) {
-      _logger.e('Failed to convert setting to config for ${setting.supplierCode}', 
-          error: e, stackTrace: stackTrace);
-      _logger.e('Setting data: id=${setting.id}, supplierCode=${setting.supplierCode}');
+      _logger.e(
+          'Failed to convert setting to config for ${setting.supplierCode}',
+          error: e,
+          stackTrace: stackTrace);
+      _logger.e(
+          'Setting data: id=${setting.id}, supplierCode=${setting.supplierCode}');
       _logger.e('additionalConfig: ${setting.additionalConfig}');
       _logger.e('encryptedCredentials: ${setting.encryptedCredentials}');
       return null;
@@ -302,7 +327,7 @@ class SupplierConfigService {
   /// Простое шифрование учетных данных (базовая реализация)
   String? _encryptCredentials(SupplierCredentials? credentials) {
     if (credentials == null) return null;
-    
+
     try {
       // TODO: Заменить на реальное шифрование в production
       final credentialsJson = json.encode(credentials.toJson());
@@ -315,34 +340,37 @@ class SupplierConfigService {
 
   /// Простая расшифровка учетных данных (базовая реализация)
   SupplierCredentials? _decryptCredentials(String? encryptedCredentials) {
-    if (encryptedCredentials == null || encryptedCredentials.isEmpty) return null;
-    
+    if (encryptedCredentials == null || encryptedCredentials.isEmpty)
+      return null;
+
     try {
       // Проверяем, что строка является валидным base64
       if (!_isValidBase64(encryptedCredentials)) {
-        _logger.w('Invalid base64 format in encrypted credentials, skipping decryption');
+        _logger.w(
+            'Invalid base64 format in encrypted credentials, skipping decryption');
         return null;
       }
-      
+
       // TODO: Заменить на реальную расшифровку в production
       final credentialsJson = utf8.decode(base64Decode(encryptedCredentials));
-      final credentialsMap = json.decode(credentialsJson) as Map<String, dynamic>;
+      final credentialsMap =
+          json.decode(credentialsJson) as Map<String, dynamic>;
       return SupplierCredentials.fromJson(credentialsMap);
     } catch (e) {
       _logger.w('Failed to decrypt credentials: $e');
       return null;
     }
   }
-  
+
   /// Проверяет, является ли строка валидным base64
   bool _isValidBase64(String str) {
     try {
       // base64 строка должна иметь длину, кратную 4
       if (str.length % 4 != 0) return false;
-      
+
       // Проверяем, содержит ли только валидные base64 символы
       if (!RegExp(r'^[A-Za-z0-9+/]*={0,2}$').hasMatch(str)) return false;
-      
+
       // Пытаемся декодировать
       base64Decode(str);
       return true;
@@ -356,13 +384,14 @@ class SupplierConfigService {
     _logger.d('Converting config to database setting...');
     final setting = _convertConfigToSetting(config);
     _logger.d('Setting created: supplierCode=${setting.supplierCode.value}');
-    
+
     try {
       _logger.d('Calling DAO upsertSupplierSetting...');
       await _supplierSettingsDao.upsertSupplierSetting(setting);
       _logger.d('DAO upsertSupplierSetting completed');
     } catch (e, stackTrace) {
-      _logger.e('DAO upsertSupplierSetting failed', error: e, stackTrace: stackTrace);
+      _logger.e('DAO upsertSupplierSetting failed',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -370,7 +399,8 @@ class SupplierConfigService {
   /// Получить конфигурацию поставщика
   SupplierConfig? getConfig(String supplierCode) {
     final config = _configCache[supplierCode];
-    _logger.d('getConfig for $supplierCode: ${config != null ? 'found' : 'null'}');
+    _logger
+        .d('getConfig for $supplierCode: ${config != null ? 'found' : 'null'}');
     _logger.d('Current cache keys: ${_configCache.keys.toList()}');
     return config;
   }
@@ -384,59 +414,64 @@ class SupplierConfigService {
 
   /// Получить только активные конфигурации
   List<SupplierConfig> getEnabledConfigs() {
-    return _configCache.values
-        .where((config) => config.isEnabled)
-        .toList();
+    return _configCache.values.where((config) => config.isEnabled).toList();
   }
 
   /// Сохранить или обновить конфигурацию
   Future<void> saveConfig(SupplierConfig config) async {
     _logger.i('Starting saveConfig for: ${config.supplierCode}');
     _logger.d('Config data: ${config.toJson()}');
-    
+
     final updatedConfig = config.copyWith(
       updatedAt: DateTime.now(),
       createdAt: config.createdAt ?? DateTime.now(),
     );
-    
+
     _logger.d('Updated config with timestamps: ${updatedConfig.toJson()}');
-    
+
     try {
       // Сохраняем в БД
       _logger.d('Saving to database...');
       await _saveConfigToDatabase(updatedConfig);
       _logger.d('Database save completed');
-      
+
       // Проверяем, что данные действительно сохранились
       _logger.d('Verifying save by reading from database...');
-      final savedSetting = await _supplierSettingsDao.getSupplierSettingByCode(config.supplierCode);
+      final savedSetting = await _supplierSettingsDao
+          .getSupplierSettingByCode(config.supplierCode);
       if (savedSetting != null) {
-        _logger.d('Verification successful - found saved setting with ID: ${savedSetting.id}');
-        
+        _logger.d(
+            'Verification successful - found saved setting with ID: ${savedSetting.id}');
+
         // Попробуем сконвертировать обратно в config для проверки
         _logger.d('Testing conversion back to config...');
         final reconvertedConfig = _convertSettingToConfig(savedSetting);
         if (reconvertedConfig != null) {
-          _logger.d('Verification successful - conversion back to config works');
+          _logger
+              .d('Verification successful - conversion back to config works');
           // Обновляем кеш проверенным объектом
           _configCache[config.supplierCode] = reconvertedConfig;
           _logger.d('Cache updated with verified config');
         } else {
-          _logger.e('Verification failed - cannot convert setting back to config');
+          _logger
+              .e('Verification failed - cannot convert setting back to config');
           // Все равно обновляем кеш исходным объектом
           _configCache[config.supplierCode] = updatedConfig;
-          _logger.d('Cache updated with original config despite conversion issue');
+          _logger
+              .d('Cache updated with original config despite conversion issue');
         }
       } else {
-        _logger.e('Verification failed - setting not found in database after save');
+        _logger.e(
+            'Verification failed - setting not found in database after save');
         // Обновляем кеш в любом случае
         _configCache[config.supplierCode] = updatedConfig;
         _logger.d('Cache updated despite database verification failure');
       }
-      
-      _logger.i('Successfully saved configuration for supplier: ${config.supplierCode}');
+
+      _logger.i(
+          'Successfully saved configuration for supplier: ${config.supplierCode}');
     } catch (e, stackTrace) {
-      _logger.e('Failed to save configuration for ${config.supplierCode}', 
+      _logger.e('Failed to save configuration for ${config.supplierCode}',
           error: e, stackTrace: stackTrace);
       rethrow;
     }
@@ -446,10 +481,10 @@ class SupplierConfigService {
   Future<void> deleteConfig(String supplierCode) async {
     // Удаляем из БД
     await _supplierSettingsDao.deleteSupplierSettingByCode(supplierCode);
-    
+
     // Удаляем из кеша
     _configCache.remove(supplierCode);
-    
+
     _logger.i('Deleted configuration for supplier: $supplierCode');
   }
 
@@ -457,23 +492,25 @@ class SupplierConfigService {
   /// Возвращает результат тестирования с сообщением об ошибке
   Future<ConnectionTestResult> testConnection(SupplierConfig config) async {
     _logger.i('Testing connection for supplier: ${config.supplierCode}');
-    
+
     try {
       switch (config.supplierCode.toLowerCase()) {
         case 'armtek':
           return await _testArmtekConnection(config);
-        
+
         default:
-          _logger.w('No test implementation for supplier: ${config.supplierCode}');
+          _logger
+              .w('No test implementation for supplier: ${config.supplierCode}');
           return ConnectionTestResult(
             success: false,
-            errorMessage: 'Тестирование подключения не поддерживается для поставщика ${config.supplierCode}',
+            errorMessage:
+                'Тестирование подключения не поддерживается для поставщика ${config.supplierCode}',
           );
       }
     } catch (e, stackTrace) {
-      _logger.e('Connection test failed for ${config.supplierCode}', 
+      _logger.e('Connection test failed for ${config.supplierCode}',
           error: e, stackTrace: stackTrace);
-      
+
       return ConnectionTestResult(
         success: false,
         errorMessage: ConnectionErrorHandler.getReadableErrorMessage(e),
@@ -482,11 +519,12 @@ class SupplierConfigService {
   }
 
   /// Тестирование подключения к Armtek API
-  Future<ConnectionTestResult> _testArmtekConnection(SupplierConfig config) async {
+  Future<ConnectionTestResult> _testArmtekConnection(
+      SupplierConfig config) async {
     try {
       final dio = Dio();
       final credentials = config.apiConfig.credentials;
-      
+
       // Создаем API клиент с настройками из конфигурации
       final apiClient = ArmtekApiClient(
         dio,
@@ -495,17 +533,18 @@ class SupplierConfigService {
         password: credentials?.password,
         vkorg: credentials?.additionalParams?['VKORG'],
       );
-      
+
       _logger.d('Testing Armtek connection to: ${config.apiConfig.baseUrl}');
-      
+
       // Используем ping endpoint для проверки подключения
       final response = await apiClient.pingService();
-      
+
       if (response.status == 200) {
         _logger.i('Armtek connection test successful');
-        return ConnectionTestResult.success('Подключение к Armtek API успешно установлено');
+        return ConnectionTestResult.success(
+            'Подключение к Armtek API успешно установлено');
       } else {
-        final errorMessage = response.messages?.isNotEmpty == true 
+        final errorMessage = response.messages?.isNotEmpty == true
             ? response.messages!.first.text
             : 'Неизвестная ошибка сервера';
         _logger.w('Armtek connection test failed: $errorMessage');
@@ -548,25 +587,25 @@ class SupplierConfigService {
   Future<void> importConfigs(String jsonString, {bool merge = true}) async {
     try {
       final Map<String, dynamic> importData = json.decode(jsonString);
-      
+
       if (!merge) {
         _configCache.clear();
       }
-      
+
       importData.forEach((key, value) {
         final config = SupplierConfig.fromJson(value);
         if (!merge || !_configCache.containsKey(key)) {
           _configCache[key] = config;
         }
       });
-      
+
       // Сохраняем все конфигурации в БД
       for (final config in _configCache.values) {
         await _saveConfigToDatabase(config);
       }
       _logger.i('Imported ${importData.length} supplier configurations');
     } catch (e, stackTrace) {
-      _logger.e('Failed to import supplier configurations', 
+      _logger.e('Failed to import supplier configurations',
           error: e, stackTrace: stackTrace);
       rethrow;
     }
@@ -593,7 +632,7 @@ class SupplierConfigService {
   /// Валидация конфигурации
   List<String> validateConfig(SupplierConfig config) {
     final errors = <String>[];
-    
+
     // Базовая валидация
     if (config.supplierCode.isEmpty) {
       errors.add('Код поставщика не может быть пустым');
@@ -604,7 +643,7 @@ class SupplierConfigService {
     if (config.apiConfig.baseUrl.isEmpty) {
       errors.add('URL API не может быть пустым');
     }
-    
+
     // Валидация учетных данных в зависимости от типа аутентификации
     final creds = config.apiConfig.credentials;
     switch (config.apiConfig.authType) {
@@ -629,7 +668,7 @@ class SupplierConfigService {
       default:
         break;
     }
-    
+
     // Специфичная валидация для поставщиков
     if (config.supplierCode == 'armtek') {
       final vkorg = creds?.additionalParams?['VKORG'];
@@ -637,7 +676,7 @@ class SupplierConfigService {
         errors.add('VKORG обязателен для Armtek');
       }
     }
-    
+
     return errors;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/parts_catalog/models/car_parameter.dart';
 import 'package:part_catalog/features/parts_catalog/models/option_code.dart';
 

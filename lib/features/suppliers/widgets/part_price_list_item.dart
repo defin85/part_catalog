@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 
@@ -124,12 +125,12 @@ class PartPriceListItem extends StatelessWidget {
 
   String _getSupplierInitials(String supplierName) {
     if (supplierName.isEmpty) return '?';
-    
+
     final words = supplierName.split(' ');
     if (words.length >= 2) {
       return '${words[0][0]}${words[1][0]}'.toUpperCase();
     } else {
-      return supplierName.length >= 2 
+      return supplierName.length >= 2
           ? supplierName.substring(0, 2).toUpperCase()
           : supplierName[0].toUpperCase();
     }

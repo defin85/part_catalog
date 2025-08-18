@@ -31,19 +31,19 @@ class DemoHomePage extends StatelessWidget {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+      body: const SingleChildScrollView(
+        padding: EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
-            const Icon(
+            SizedBox(height: 20),
+            Icon(
               Icons.car_repair,
               size: 100,
               color: Colors.blue,
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24),
+            Text(
               'Part Catalog',
               style: TextStyle(
                 fontSize: 32,
@@ -51,8 +51,8 @@ class DemoHomePage extends StatelessWidget {
                 color: Colors.blue,
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'Система управления каталогом запчастей для СТО',
               style: TextStyle(
                 fontSize: 18,
@@ -60,8 +60,8 @@ class DemoHomePage extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 48),
-            const FeatureCard(
+            SizedBox(height: 48),
+            FeatureCard(
               icon: Icons.api,
               title: 'Улучшенная интеграция с Armtek API',
               features: [
@@ -71,8 +71,8 @@ class DemoHomePage extends StatelessWidget {
                 'Поддержка всех бизнес-параметров из PHP примера',
               ],
             ),
-            const SizedBox(height: 32),
-            const FeatureCard(
+            SizedBox(height: 32),
+            FeatureCard(
               icon: Icons.settings_applications,
               title: 'Унифицированная система конфигурации',
               features: [
@@ -82,8 +82,8 @@ class DemoHomePage extends StatelessWidget {
                 'Контроль лимитов и retry механизмы',
               ],
             ),
-            const SizedBox(height: 32),
-            const FeatureCard(
+            SizedBox(height: 32),
+            FeatureCard(
               icon: Icons.architecture,
               title: 'Гибкая архитектура',
               features: [
@@ -93,20 +93,20 @@ class DemoHomePage extends StatelessWidget {
                 'Riverpod провайдеры для управления состоянием',
               ],
             ),
-            const SizedBox(height: 48),
-            const ConfigExampleCard(),
-            const SizedBox(height: 48),
-            const Divider(),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 48),
+            ConfigExampleCard(),
+            SizedBox(height: 48),
+            Divider(),
+            SizedBox(height: 24),
+            Text(
               'Документация:',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
-            const DocumentationLinks(),
+            SizedBox(height: 16),
+            DocumentationLinks(),
           ],
         ),
       ),
@@ -152,25 +152,25 @@ class FeatureCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ...features.map((feature) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    size: 16,
-                    color: Colors.green,
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          feature,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      feature,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
-            )),
+                )),
           ],
         ),
       ),
@@ -240,26 +240,26 @@ class DocumentationLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         _DocLink(
           icon: Icons.description,
           title: 'ARMTEK_API_IMPROVEMENTS.md',
           subtitle: 'Анализ и улучшения Armtek API',
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         _DocLink(
           icon: Icons.integration_instructions,
           title: 'UNIFIED_SUPPLIER_API_CONFIG.md',
           subtitle: 'Документация унифицированной системы',
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         _DocLink(
           icon: Icons.code,
           title: 'CLAUDE.md',
           subtitle: 'Руководство для разработчиков',
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         _DocLink(
           icon: Icons.map,
           title: 'ROADMAP.md',

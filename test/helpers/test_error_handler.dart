@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 
 /// Error handler для тестов с детальным логированием
@@ -10,7 +11,7 @@ class TestErrorHandler {
   static void setupErrorCapture() {
     _originalOnError = FlutterError.onError;
     _capturedErrors.clear();
-    
+
     FlutterError.onError = (FlutterErrorDetails details) {
       _capturedErrors.add(details);
       // Логируем ошибку для отладки
@@ -20,7 +21,7 @@ class TestErrorHandler {
         // ignore: avoid_print
         print('📍 Stack trace: ${details.stack}');
       }
-      
+
       // Вызываем оригинальный обработчик если нужно
       _originalOnError?.call(details);
     };
@@ -41,9 +42,9 @@ class TestErrorHandler {
   static List<FlutterErrorDetails> getOverflowErrors() {
     return _capturedErrors.where((error) {
       final message = error.exception.toString().toLowerCase();
-      return message.contains('overflow') || 
-             message.contains('renderflex') ||
-             message.contains('pixels');
+      return message.contains('overflow') ||
+          message.contains('renderflex') ||
+          message.contains('pixels');
     }).toList();
   }
 
@@ -51,9 +52,9 @@ class TestErrorHandler {
   static List<FlutterErrorDetails> getRenderErrors() {
     return _capturedErrors.where((error) {
       final message = error.exception.toString().toLowerCase();
-      return message.contains('render') || 
-             message.contains('layout') ||
-             message.contains('constraint');
+      return message.contains('render') ||
+          message.contains('layout') ||
+          message.contains('constraint');
     }).toList();
   }
 
@@ -68,10 +69,10 @@ class TestErrorHandler {
     String? testName,
   }) async {
     setupErrorCapture();
-    
+
     try {
       final result = await testFunction();
-      
+
       if (_capturedErrors.isNotEmpty) {
         // ignore: avoid_print
         print('⚠️ Test "$testName" captured ${_capturedErrors.length} errors:');
@@ -81,7 +82,7 @@ class TestErrorHandler {
         }
         fail('Test captured unexpected errors: ${_capturedErrors.length}');
       }
-      
+
       return result;
     } finally {
       restoreErrorHandler();
@@ -95,20 +96,21 @@ class TestErrorHandler {
     String? testName,
   }) async {
     setupErrorCapture();
-    
+
     try {
       final result = await testFunction();
-      
+
       // Проверяем что были получены ожидаемые ошибки
       for (final expectedError in expectedErrors) {
-        final found = _capturedErrors.any((error) =>
-          error.exception.toString().contains(expectedError));
-        
+        final found = _capturedErrors
+            .any((error) => error.exception.toString().contains(expectedError));
+
         if (!found) {
-          fail('Expected error "$expectedError" was not captured in test "$testName"');
+          fail(
+              'Expected error "$expectedError" was not captured in test "$testName"');
         }
       }
-      
+
       return result;
     } finally {
       restoreErrorHandler();

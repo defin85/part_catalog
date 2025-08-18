@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/core/widgets/custom_text_form_field.dart';
 
 void main() {
@@ -26,7 +28,7 @@ void main() {
           ),
         ),
       );
-      
+
       expect(find.byType(CustomTextFormField), findsOneWidget);
       expect(find.text('Test Label'), findsOneWidget);
     });
@@ -72,7 +74,8 @@ void main() {
               child: CustomTextFormField(
                 controller: controller,
                 labelText: 'Required Field',
-                validator: (value) => value?.isEmpty ?? true ? 'This field is required' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'This field is required' : null,
               ),
             ),
           ),
@@ -87,6 +90,5 @@ void main() {
       expect(isValid, false);
       expect(find.text('This field is required'), findsOneWidget);
     });
-
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'strings.g.dart';
 
 /// Класс для управления локализацией в приложении
@@ -46,7 +47,7 @@ class CustomAppLocale {
 
   /// Метод для получения делегата локализации Flutter
   static LocalizationsDelegate<Translations> get delegate =>
-      _LocalizationsDelegate(supportedLocales: supportedLocales);
+      const _LocalizationsDelegate(supportedLocales: supportedLocales);
 }
 
 /// Делегат локализации для работы с slang

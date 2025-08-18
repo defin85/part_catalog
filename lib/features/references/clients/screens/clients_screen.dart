@@ -1,21 +1,24 @@
 import 'dart:async'; // Для Timer
 
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/providers/core_providers.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-// Импортируем бизнес-модель (композитор)
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
 import 'package:part_catalog/features/references/clients/models/client_type.dart';
-// Импортируем провайдеры
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
-// Импортируем сервисы для обновления в service_locator при сбросе БД
 import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
+
+// Импортируем бизнес-модель (композитор)
+// Импортируем провайдеры
+// Импортируем сервисы для обновления в service_locator при сбросе БД
 
 // Преобразуем в ConsumerStatefulWidget
 class ClientsScreen extends ConsumerStatefulWidget {

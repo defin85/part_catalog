@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:retrofit/retrofit.dart';
+
 import 'package:part_catalog/features/parts_catalog/models/car2.dart';
 import 'package:part_catalog/features/parts_catalog/models/car_info.dart';
 import 'package:part_catalog/features/parts_catalog/models/car_parameter_info.dart';
@@ -10,7 +12,6 @@ import 'package:part_catalog/features/parts_catalog/models/model.dart';
 import 'package:part_catalog/features/parts_catalog/models/parts.dart';
 import 'package:part_catalog/features/parts_catalog/models/schemas_response.dart';
 import 'package:part_catalog/features/parts_catalog/models/suggest.dart';
-import 'package:retrofit/retrofit.dart';
 
 part 'api_client_parts_catalogs.g.dart';
 

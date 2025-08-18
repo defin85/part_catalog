@@ -1,6 +1,8 @@
 import 'dart:convert'; // For base64Encode
 
 import 'package:dio/dio.dart';
+import 'package:retrofit/retrofit.dart';
+
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
 import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart';
@@ -16,14 +18,11 @@ import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
-import 'package:retrofit/retrofit.dart';
 
 part 'armtek_api_client.g.dart';
 
 const String armtekBaseUrl =
     "http://ws.armtek.ru/api"; // Можно вынести в конфигурацию
-
-
 
 @RestApi(baseUrl: armtekBaseUrl)
 abstract class ArmtekRestInterface {
@@ -77,7 +76,8 @@ abstract class ArmtekRestInterface {
   @FormUrlEncoded()
   Future<ArmtekResponseWrapper<List<SearchResult>>> searchParts({
     @Field("VKORG") required String vkorg,
-    @Field("PIN") required String articleNumber, // Артикул (в API используется PIN)
+    @Field("PIN")
+    required String articleNumber, // Артикул (в API используется PIN)
     @Field("BRAND") String? brand,
     @Field("format") String format = "json",
     @Field("KUNNR_RG") String? kunnrRg, // Код покупателя
@@ -92,7 +92,8 @@ abstract class ArmtekRestInterface {
   @FormUrlEncoded()
   Future<ArmtekResponseWrapper<List<SearchResult>>> getPrices({
     @Field("VKORG") required String vkorg,
-    @Field("PIN") required String articleNumber, // Артикул (в API используется PIN)
+    @Field("PIN")
+    required String articleNumber, // Артикул (в API используется PIN)
     @Field("BRAND") String? brand,
     @Field("format") String format = "json",
     @Field("KUNNR_RG") String? kunnrRg, // Код покупателя
@@ -141,12 +142,12 @@ class ArmtekApiClient implements BaseSupplierApiClient {
       onRequest: (options, handler) {
         // _logger.d('Interceptor onRequest: ${options.method} ${options.uri}');
         // _logger.d('Base URL: ${options.baseUrl}, Effective URL: $_effectiveBaseUrl');
-        
+
         // Логируем тело запроса для POST
         // if (options.method == 'POST') {
         //   _logger.d('Request body: ${options.data}');
         // }
-        
+
         // Используем _effectiveBaseUrl для проверки, так как options.baseUrl может быть изменен Dio
         if (_effectiveBaseUrl == armtekBaseUrl ||
             _effectiveBaseUrl.contains('ws.armtek.ru')) {
@@ -172,7 +173,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
               proxyAuthToken; // Пример заголовка для прокси
           // _logger.d('Added X-Proxy-Auth-Token header for proxy request');
         }
-        
+
         // _logger.d('Final headers: ${options.headers}');
         return handler.next(options);
       },
@@ -200,8 +201,9 @@ class ArmtekApiClient implements BaseSupplierApiClient {
       throw Exception('VKORG not configured for Armtek API client');
     }
 
-    _logger.i('Поиск цен на запчасть: $articleNumber (бренд: ${brand ?? "любой"})');
-    
+    _logger.i(
+        'Поиск цен на запчасть: $articleNumber (бренд: ${brand ?? "любой"})');
+
     try {
       // Используем метод getPrices для получения цен
       final response = await _client.getPrices(
@@ -216,7 +218,8 @@ class ArmtekApiClient implements BaseSupplierApiClient {
       }
 
       final prices = response.responseData ?? [];
-      _logger.i('Получено ${prices.length} предложений для артикула $articleNumber');
+      _logger.i(
+          'Получено ${prices.length} предложений для артикула $articleNumber');
 
       return prices.map((item) {
         return PartPriceModel(
@@ -240,8 +243,10 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         );
       }).toList();
     } catch (e, stackTrace) {
-      _logger.e('Ошибка при получении цен от Armtek для артикула $articleNumber',
-          error: e, stackTrace: stackTrace);
+      _logger.e(
+          'Ошибка при получении цен от Armtek для артикула $articleNumber',
+          error: e,
+          stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -306,21 +311,22 @@ class ArmtekApiClient implements BaseSupplierApiClient {
 
   Future<ArmtekResponseWrapper<UserInfoResponse>> getUserInfo(
       UserInfoRequest request) async {
-    _logger.i('Getting user info for VKORG: ${request.vkorg}, structure: ${request.structure}, ftpData: ${request.ftpData}');
+    _logger.i(
+        'Getting user info for VKORG: ${request.vkorg}, structure: ${request.structure}, ftpData: ${request.ftpData}');
     _logger.d('Current base URL: $_effectiveBaseUrl');
-    
+
     try {
       final response = await _client.getUserInfo(
         vkorg: request.vkorg,
         structure: request.structure,
         ftpData: request.ftpData,
       );
-      
+
       _logger.i('getUserInfo response status: ${response.status}');
       return response;
     } catch (e, stackTrace) {
       _logger.e('Error in getUserInfo', error: e, stackTrace: stackTrace);
-      
+
       // Если это DioException, давайте посмотрим на детали
       if (e is DioException) {
         _logger.e('DioException details:');
@@ -331,7 +337,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         _logger.e('- Request headers: ${e.requestOptions.headers}');
         _logger.e('- Request URI: ${e.requestOptions.uri}');
       }
-      
+
       rethrow;
     }
   }
@@ -350,27 +356,30 @@ class ArmtekApiClient implements BaseSupplierApiClient {
           'format': 'json',
         },
       );
-      
-      
+
       // Парсим ответ вручную
       if (response.data is Map<String, dynamic>) {
         final Map<String, dynamic> responseMap = response.data;
         final int status = responseMap['STATUS'] ?? 500;
         final List<dynamic> respData = responseMap['RESP'] ?? [];
-        
+
         // _logger.d('getBrandList response status: $status');
         // _logger.d('getBrandList RESP length: ${respData.length}');
         // if (respData.isNotEmpty) {
         //   _logger.d('First RESP item: ${respData.first}');
         // }
-        
-        final List<ArmtekMessage> messages = (responseMap['MESSAGES'] as List<dynamic>?)
-            ?.map((e) => e is Map<String, dynamic> 
-                ? ArmtekMessage.fromJson(e)
-                : ArmtekMessage(type: 'INFO', text: e.toString(), date: DateTime.now().toIso8601String()))
-            .toList() ?? [];
-        
-        
+
+        final List<ArmtekMessage> messages =
+            (responseMap['MESSAGES'] as List<dynamic>?)
+                    ?.map((e) => e is Map<String, dynamic>
+                        ? ArmtekMessage.fromJson(e)
+                        : ArmtekMessage(
+                            type: 'INFO',
+                            text: e.toString(),
+                            date: DateTime.now().toIso8601String()))
+                    .toList() ??
+                [];
+
         // Обрабатываем данные в основном потоке (без изолята для упрощения)
         List<BrandItem> brandItems = [];
         for (var item in respData) {
@@ -390,9 +399,9 @@ class ArmtekApiClient implements BaseSupplierApiClient {
             continue;
           }
         }
-        
+
         // _logger.i('Successfully parsed ${brandItems.length} brands');
-        
+
         return ArmtekResponseWrapper<List<BrandItem>>(
           status: status,
           responseData: brandItems,
@@ -403,22 +412,32 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         return ArmtekResponseWrapper<List<BrandItem>>(
           status: 500,
           responseData: <BrandItem>[],
-          messages: [ArmtekMessage(type: 'ERROR', text: 'Unexpected response format', date: DateTime.now().toIso8601String())],
+          messages: [
+            ArmtekMessage(
+                type: 'ERROR',
+                text: 'Unexpected response format',
+                date: DateTime.now().toIso8601String())
+          ],
         );
       }
     } catch (e, stackTrace) {
       _logger.e('Error in getBrandList', error: e, stackTrace: stackTrace);
-      
+
       // Добавляем более детальную информацию об ошибке
       String errorDetails = 'Error: ${e.toString()}';
       if (e.toString().contains('type cast')) {
         errorDetails += ' - Possible null value in API response';
       }
-      
+
       return ArmtekResponseWrapper<List<BrandItem>>(
         status: 500,
         responseData: <BrandItem>[],
-        messages: [ArmtekMessage(type: 'ERROR', text: errorDetails, date: DateTime.now().toIso8601String())],
+        messages: [
+          ArmtekMessage(
+              type: 'ERROR',
+              text: errorDetails,
+              date: DateTime.now().toIso8601String())
+        ],
       );
     }
   }
@@ -430,27 +449,30 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     // Преобразуем VKORG в число
     final vkorgNum = int.parse(vkorg);
     // _logger.d('Sending getStoreList request with VKORG: $vkorgNum (type: ${vkorgNum.runtimeType})');
-    
+
     try {
       // Попробуем получить сырой ответ через Dio с полным URL
       final response = await _dio.post(
         '$_effectiveBaseUrl/ws_user/getStoreList',
         data: {'VKORG': vkorgNum},
       );
-      
-      
+
       // Парсим ответ вручную
       if (response.data is Map<String, dynamic>) {
         final Map<String, dynamic> responseMap = response.data;
         final int status = responseMap['STATUS'] ?? 500;
         final List<dynamic> respData = responseMap['RESP'] ?? [];
-        final List<ArmtekMessage> messages = (responseMap['MESSAGES'] as List<dynamic>?)
-            ?.map((e) => e is Map<String, dynamic> 
-                ? ArmtekMessage.fromJson(e)
-                : ArmtekMessage(type: 'INFO', text: e.toString(), date: DateTime.now().toIso8601String()))
-            .toList() ?? [];
-        
-        
+        final List<ArmtekMessage> messages =
+            (responseMap['MESSAGES'] as List<dynamic>?)
+                    ?.map((e) => e is Map<String, dynamic>
+                        ? ArmtekMessage.fromJson(e)
+                        : ArmtekMessage(
+                            type: 'INFO',
+                            text: e.toString(),
+                            date: DateTime.now().toIso8601String()))
+                    .toList() ??
+                [];
+
         // Обрабатываем данные в основном потоке (без изолята для упрощения)
         List<StoreItem> storeItems = [];
         for (var item in respData) {
@@ -470,9 +492,9 @@ class ArmtekApiClient implements BaseSupplierApiClient {
             continue;
           }
         }
-        
+
         // _logger.i('Successfully parsed ${storeItems.length} stores');
-        
+
         return ArmtekResponseWrapper<List<StoreItem>>(
           status: status,
           responseData: storeItems,
@@ -483,21 +505,29 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         return ArmtekResponseWrapper<List<StoreItem>>(
           status: 500,
           responseData: <StoreItem>[],
-          messages: [ArmtekMessage(type: 'ERROR', text: 'Unexpected response format', date: DateTime.now().toIso8601String())],
+          messages: [
+            ArmtekMessage(
+                type: 'ERROR',
+                text: 'Unexpected response format',
+                date: DateTime.now().toIso8601String())
+          ],
         );
       }
     } catch (e, stackTrace) {
       _logger.e('Error in getStoreList', error: e, stackTrace: stackTrace);
-      
-      
+
       return ArmtekResponseWrapper<List<StoreItem>>(
         status: 500,
         responseData: <StoreItem>[],
-        messages: [ArmtekMessage(type: 'ERROR', text: 'Error: ${e.toString()}', date: DateTime.now().toIso8601String())],
+        messages: [
+          ArmtekMessage(
+              type: 'ERROR',
+              text: 'Error: ${e.toString()}',
+              date: DateTime.now().toIso8601String())
+        ],
       );
     }
   }
-
 
   /// Поиск запчастей по артикулу (расширенный поиск)
   Future<List<PartPriceModel>> searchPartsByArticle(String articleNumber,
@@ -507,7 +537,7 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     }
 
     _logger.i('Поиск запчастей: $articleNumber (бренд: ${brand ?? "любой"})');
-    
+
     try {
       final response = await _client.searchParts(
         vkorg: _vkorg,
@@ -516,12 +546,14 @@ class ArmtekApiClient implements BaseSupplierApiClient {
       );
 
       if (response.status != 200 || response.responseData == null) {
-        _logger.w('Armtek поиска вернул пустой ответ для артикула $articleNumber');
+        _logger
+            .w('Armtek поиска вернул пустой ответ для артикула $articleNumber');
         return [];
       }
 
       final searchResults = response.responseData ?? [];
-      _logger.i('Найдено ${searchResults.length} вариантов для артикула $articleNumber');
+      _logger.i(
+          'Найдено ${searchResults.length} вариантов для артикула $articleNumber');
 
       return searchResults.map((item) {
         return PartPriceModel(
@@ -545,8 +577,10 @@ class ArmtekApiClient implements BaseSupplierApiClient {
         );
       }).toList();
     } catch (e, stackTrace) {
-      _logger.e('Ошибка при поиске запчастей Armtek для артикула $articleNumber',
-          error: e, stackTrace: stackTrace);
+      _logger.e(
+          'Ошибка при поиске запчастей Armtek для артикула $articleNumber',
+          error: e,
+          stackTrace: stackTrace);
       rethrow;
     }
   }

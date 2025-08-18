@@ -1,7 +1,7 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/core/database/daos/cars_dao.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
@@ -42,7 +42,8 @@ void main() {
   });
 
   group('OrderService', () {
-    test('getOrders returns an empty list when no orders are available', () async {
+    test('getOrders returns an empty list when no orders are available',
+        () async {
       // Arrange
       when(mockOrdersDao.getActiveOrderUuids()).thenAnswer((_) async => []);
 
@@ -54,7 +55,8 @@ void main() {
       verify(mockOrdersDao.getActiveOrderUuids()).called(1);
     });
 
-    test('getOrders returns a list of orders when orders are available', () async {
+    test('getOrders returns a list of orders when orders are available',
+        () async {
       // Arrange
       const orderUuid = 'test-uuid';
       final orderHeaderData = OrderHeaderData(
@@ -74,8 +76,10 @@ void main() {
         ),
       );
 
-      when(mockOrdersDao.getActiveOrderUuids()).thenAnswer((_) async => [orderUuid]);
-      when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeaderData);
+      when(mockOrdersDao.getActiveOrderUuids())
+          .thenAnswer((_) async => [orderUuid]);
+      when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+          .thenAnswer((_) async => orderHeaderData);
       when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
 
       // Act
@@ -94,15 +98,27 @@ void main() {
         // Arrange
         const clientUuid = 'client-uuid';
         const carUuid = 'car-uuid';
-        final clientCoreData = EntityCoreData(uuid: clientUuid, code: 'client-001', displayName: 'Test Client', createdAt: DateTime.now());
-        final carCoreData = EntityCoreData(uuid: carUuid, code: 'car-001', displayName: 'Test Car', createdAt: DateTime.now());
+        final clientCoreData = EntityCoreData(
+            uuid: clientUuid,
+            code: 'client-001',
+            displayName: 'Test Client',
+            createdAt: DateTime.now());
+        final carCoreData = EntityCoreData(
+            uuid: carUuid,
+            code: 'car-001',
+            displayName: 'Test Car',
+            createdAt: DateTime.now());
 
-        when(mockClientsDao.getClientCoreData(clientUuid)).thenAnswer((_) async => clientCoreData);
-        when(mockCarsDao.getCarCoreData(carUuid)).thenAnswer((_) async => carCoreData);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockClientsDao.getClientCoreData(clientUuid))
+            .thenAnswer((_) async => clientCoreData);
+        when(mockCarsDao.getCarCoreData(carUuid))
+            .thenAnswer((_) async => carCoreData);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
-        final result = await orderService.createNewOrder(clientUuid: clientUuid, carUuid: carUuid);
+        final result = await orderService.createNewOrder(
+            clientUuid: clientUuid, carUuid: carUuid);
 
         // Assert
         expect(result, isA<OrderModelComposite>());
@@ -124,11 +140,13 @@ void main() {
         const clientUuid = 'non-existent-client-uuid';
         const carUuid = 'car-uuid';
 
-        when(mockClientsDao.getClientCoreData(clientUuid)).thenAnswer((_) async => null);
+        when(mockClientsDao.getClientCoreData(clientUuid))
+            .thenAnswer((_) async => null);
 
         // Act & Assert
         expect(
-          () => orderService.createNewOrder(clientUuid: clientUuid, carUuid: carUuid),
+          () => orderService.createNewOrder(
+              clientUuid: clientUuid, carUuid: carUuid),
           throwsA(isA<Exception>()),
         );
         verify(mockClientsDao.getClientCoreData(clientUuid)).called(1);
@@ -140,14 +158,20 @@ void main() {
         // Arrange
         const clientUuid = 'client-uuid';
         const carUuid = 'non-existent-car-uuid';
-        final clientCoreData = EntityCoreData(uuid: clientUuid, code: 'client-001', displayName: 'Test Client', createdAt: DateTime.now());
+        final clientCoreData = EntityCoreData(
+            uuid: clientUuid,
+            code: 'client-001',
+            displayName: 'Test Client',
+            createdAt: DateTime.now());
 
-        when(mockClientsDao.getClientCoreData(clientUuid)).thenAnswer((_) async => clientCoreData);
+        when(mockClientsDao.getClientCoreData(clientUuid))
+            .thenAnswer((_) async => clientCoreData);
         when(mockCarsDao.getCarCoreData(carUuid)).thenAnswer((_) async => null);
 
         // Act
         try {
-          await orderService.createNewOrder(clientUuid: clientUuid, carUuid: carUuid);
+          await orderService.createNewOrder(
+              clientUuid: clientUuid, carUuid: carUuid);
           fail('should have thrown an exception');
         } catch (e) {
           expect(e, isA<Exception>());
@@ -171,10 +195,12 @@ void main() {
           carId: 'car-1',
         );
 
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
-        await Future.delayed(const Duration(milliseconds: 10)); // Add a small delay
+        await Future.delayed(
+            const Duration(milliseconds: 10)); // Add a small delay
         await orderService.updateOrder(initialOrder);
 
         // Assert
@@ -190,7 +216,8 @@ void main() {
         final capturedCoreData = verification.captured.first as EntityCoreData;
         expect(capturedCoreData.uuid, initialOrder.uuid);
         expect(capturedCoreData.modifiedAt, isNotNull);
-        expect(capturedCoreData.modifiedAt!.isAfter(initialOrder.createdAt), isTrue);
+        expect(capturedCoreData.modifiedAt!.isAfter(initialOrder.createdAt),
+            isTrue);
       });
     });
 
@@ -216,9 +243,12 @@ void main() {
           ),
         );
 
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeaderData);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeaderData);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.deleteOrder(orderUuid);
@@ -238,10 +268,12 @@ void main() {
         expect(capturedCoreData.deletedAt, isNotNull);
       });
 
-      test('should throw an exception if order to delete is not found', () async {
+      test('should throw an exception if order to delete is not found',
+          () async {
         // Arrange
         const orderUuid = 'non-existent-order-uuid';
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => null);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => null);
 
         // Act & Assert
         expect(
@@ -279,9 +311,12 @@ void main() {
           ),
         );
 
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeaderData);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeaderData);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.changeOrderStatus(orderUuid, newStatus);
@@ -296,15 +331,18 @@ void main() {
 
         verification.called(1);
 
-        final capturedDocData = verification.captured.first as DocumentSpecificData;
+        final capturedDocData =
+            verification.captured.first as DocumentSpecificData;
         expect(capturedDocData.status, newStatus);
       });
 
-      test('should throw an exception if order to change status is not found', () async {
+      test('should throw an exception if order to change status is not found',
+          () async {
         // Arrange
         const orderUuid = 'non-existent-order-uuid';
         const newStatus = DocumentStatus.completed;
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => null);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => null);
 
         // Act & Assert
         expect(
@@ -341,7 +379,8 @@ void main() {
         );
       }
 
-      test('addItemToOrder should add a new part to an existing order', () async {
+      test('addItemToOrder should add a new part to an existing order',
+          () async {
         // Arrange
         final orderHeader = createTestOrderHeader(DocumentStatus.newDoc);
         final newPart = OrderPartModelComposite.create(
@@ -351,23 +390,29 @@ void main() {
           price: 100.0,
         );
 
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.addItemToOrder(orderUuid, newPart);
 
         // Assert
-        final verification = verify(mockOrdersDao.saveFullOrderData(any, any, any, captureAny));
+        final verification =
+            verify(mockOrdersDao.saveFullOrderData(any, any, any, captureAny));
         verification.called(1);
 
-        final capturedItems = verification.captured.first as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
+        final capturedItems = verification.captured.first
+            as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
         expect(capturedItems, hasLength(1));
         expect(capturedItems.first.item1.uuid, newPart.uuid);
       });
 
-      test('updateOrderItem should update an existing part in an order', () async {
+      test('updateOrderItem should update an existing part in an order',
+          () async {
         // Arrange
         final partToUpdate = OrderPartModelComposite.create(
           documentUuid: orderUuid,
@@ -384,33 +429,38 @@ void main() {
         final orderHeader = createTestOrderHeader(DocumentStatus.newDoc);
         final initialItemData = partToUpdate.getAllData();
 
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
         when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => [
-          FullOrderItemData(
-            coreData: initialItemData.item1,
-            docItemData: initialItemData.item2,
-            partData: initialItemData.item3 as PartSpecificData?,
-            serviceData: null,
-            itemType: BaseItemType.part,
-          )
-        ]);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+              FullOrderItemData(
+                coreData: initialItemData.item1,
+                docItemData: initialItemData.item2,
+                partData: initialItemData.item3 as PartSpecificData?,
+                serviceData: null,
+                itemType: BaseItemType.part,
+              )
+            ]);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.updateOrderItem(orderUuid, updatedPart);
 
         // Assert
-        final verification = verify(mockOrdersDao.saveFullOrderData(any, any, any, captureAny));
+        final verification =
+            verify(mockOrdersDao.saveFullOrderData(any, any, any, captureAny));
         verification.called(1);
 
-        final capturedItems = verification.captured.first as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
+        final capturedItems = verification.captured.first
+            as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
         expect(capturedItems, hasLength(1));
         expect(capturedItems.first.item1.uuid, updatedPart.uuid);
         final capturedCoreData = capturedItems.first.item1;
         expect(capturedCoreData.name, 'Updated Part Name');
       });
 
-      test('removeItemFromOrder should remove an existing part from an order', () async {
+      test('removeItemFromOrder should remove an existing part from an order',
+          () async {
         // Arrange
         final partToRemove = OrderPartModelComposite.create(
           documentUuid: orderUuid,
@@ -421,26 +471,30 @@ void main() {
         final orderHeader = createTestOrderHeader(DocumentStatus.newDoc);
         final initialItemData = partToRemove.getAllData();
 
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
         when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => [
-          FullOrderItemData(
-            coreData: initialItemData.item1,
-            docItemData: initialItemData.item2,
-            partData: initialItemData.item3 as PartSpecificData?,
-            serviceData: null,
-            itemType: BaseItemType.part,
-          )
-        ]);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+              FullOrderItemData(
+                coreData: initialItemData.item1,
+                docItemData: initialItemData.item2,
+                partData: initialItemData.item3 as PartSpecificData?,
+                serviceData: null,
+                itemType: BaseItemType.part,
+              )
+            ]);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.removeItemFromOrder(partToRemove.uuid, orderUuid);
 
         // Assert
-        final verification = verify(mockOrdersDao.saveFullOrderData(any, any, any, captureAny));
+        final verification =
+            verify(mockOrdersDao.saveFullOrderData(any, any, any, captureAny));
         verification.called(1);
 
-        final capturedItems = verification.captured.first as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
+        final capturedItems = verification.captured.first
+            as List<Tuple3<ItemCoreData, DocumentItemSpecificData, dynamic>>;
         expect(capturedItems, isEmpty);
       });
     });
@@ -459,7 +513,8 @@ void main() {
           ),
           docData: DocumentSpecificData(
             documentDate: now,
-            status: DocumentStatus.completed, // Assume it must be completed to be posted
+            status: DocumentStatus
+                .completed, // Assume it must be completed to be posted
             isPosted: isPosted,
           ),
           orderData: const OrderSpecificData(
@@ -472,42 +527,54 @@ void main() {
       test('provesti should mark order as posted', () async {
         // Arrange
         final orderHeader = createTestOrderHeader(isPosted: false);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.provesti(orderUuid);
 
         // Assert
-        final verification = verify(mockOrdersDao.saveFullOrderData(any, captureAny, any, any));
+        final verification =
+            verify(mockOrdersDao.saveFullOrderData(any, captureAny, any, any));
         verification.called(1);
-        final capturedDocData = verification.captured.first as DocumentSpecificData;
+        final capturedDocData =
+            verification.captured.first as DocumentSpecificData;
         expect(capturedDocData.isPosted, isTrue);
       });
 
       test('otmenit should mark order as not posted', () async {
         // Arrange
         final orderHeader = createTestOrderHeader(isPosted: true);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
-        when(mockOrdersDao.saveFullOrderData(any, any, any, any)).thenAnswer((_) async => Future.value());
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
+        when(mockOrdersDao.saveFullOrderData(any, any, any, any))
+            .thenAnswer((_) async => Future.value());
 
         // Act
         await orderService.otmenit(orderUuid);
 
         // Assert
-        final verification = verify(mockOrdersDao.saveFullOrderData(any, captureAny, any, any));
+        final verification =
+            verify(mockOrdersDao.saveFullOrderData(any, captureAny, any, any));
         verification.called(1);
-        final capturedDocData = verification.captured.first as DocumentSpecificData;
+        final capturedDocData =
+            verification.captured.first as DocumentSpecificData;
         expect(capturedDocData.isPosted, isFalse);
       });
 
       test('provesti should do nothing if order is already posted', () async {
         // Arrange
         final orderHeader = createTestOrderHeader(isPosted: true);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
 
         // Act
         await orderService.provesti(orderUuid);
@@ -519,8 +586,10 @@ void main() {
       test('otmenit should do nothing if order is not posted', () async {
         // Arrange
         final orderHeader = createTestOrderHeader(isPosted: false);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid)).thenAnswer((_) async => orderHeader);
-        when(mockOrdersDao.getOrderItems(orderUuid)).thenAnswer((_) async => []);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid))
+            .thenAnswer((_) async => orderHeader);
+        when(mockOrdersDao.getOrderItems(orderUuid))
+            .thenAnswer((_) async => []);
 
         // Act
         await orderService.otmenit(orderUuid);
@@ -536,22 +605,38 @@ void main() {
       final now = DateTime.now();
 
       final orderHeader1 = OrderHeaderData(
-        coreData: EntityCoreData(uuid: orderUuid1, code: 'S-001', displayName: 'First Order', createdAt: now),
-        docData: DocumentSpecificData(documentDate: now, status: DocumentStatus.inProgress),
-        orderData: const OrderSpecificData(clientId: 'client-1', carId: 'car-1'),
+        coreData: EntityCoreData(
+            uuid: orderUuid1,
+            code: 'S-001',
+            displayName: 'First Order',
+            createdAt: now),
+        docData: DocumentSpecificData(
+            documentDate: now, status: DocumentStatus.inProgress),
+        orderData:
+            const OrderSpecificData(clientId: 'client-1', carId: 'car-1'),
       );
       final orderHeader2 = OrderHeaderData(
-        coreData: EntityCoreData(uuid: orderUuid2, code: 'S-002', displayName: 'Second Order', createdAt: now),
-        docData: DocumentSpecificData(documentDate: now, status: DocumentStatus.completed),
-        orderData: const OrderSpecificData(clientId: 'client-2', carId: 'car-2'),
+        coreData: EntityCoreData(
+            uuid: orderUuid2,
+            code: 'S-002',
+            displayName: 'Second Order',
+            createdAt: now),
+        docData: DocumentSpecificData(
+            documentDate: now, status: DocumentStatus.completed),
+        orderData:
+            const OrderSpecificData(clientId: 'client-2', carId: 'car-2'),
       );
 
-      test('getOrdersByStatus should return orders with the specified status', () async {
+      test('getOrdersByStatus should return orders with the specified status',
+          () async {
         // Arrange
         const statusToFetch = DocumentStatus.inProgress;
-        when(mockOrdersDao.getOrderUuidsByStatus(statusToFetch)).thenAnswer((_) async => [orderUuid1]);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid1)).thenAnswer((_) async => orderHeader1);
-        when(mockOrdersDao.getOrderItems(orderUuid1)).thenAnswer((_) async => []);
+        when(mockOrdersDao.getOrderUuidsByStatus(statusToFetch))
+            .thenAnswer((_) async => [orderUuid1]);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid1))
+            .thenAnswer((_) async => orderHeader1);
+        when(mockOrdersDao.getOrderItems(orderUuid1))
+            .thenAnswer((_) async => []);
 
         // Act
         final result = await orderService.getOrdersByStatus(statusToFetch);
@@ -566,9 +651,12 @@ void main() {
       test('searchOrders should return orders matching the query', () async {
         // Arrange
         const query = 'First';
-        when(mockOrdersDao.searchOrderUuids(query)).thenAnswer((_) async => [orderUuid1]);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid1)).thenAnswer((_) async => orderHeader1);
-        when(mockOrdersDao.getOrderItems(orderUuid1)).thenAnswer((_) async => []);
+        when(mockOrdersDao.searchOrderUuids(query))
+            .thenAnswer((_) async => [orderUuid1]);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid1))
+            .thenAnswer((_) async => orderHeader1);
+        when(mockOrdersDao.getOrderItems(orderUuid1))
+            .thenAnswer((_) async => []);
 
         // Act
         final result = await orderService.searchOrders(query);
@@ -579,12 +667,16 @@ void main() {
         verify(mockOrdersDao.searchOrderUuids(query)).called(1);
       });
 
-      test('getOrdersByClientUuid should return orders for a specific client', () async {
+      test('getOrdersByClientUuid should return orders for a specific client',
+          () async {
         // Arrange
         const clientId = 'client-1';
-        when(mockOrdersDao.getOrderUuidsByClientUuid(clientId)).thenAnswer((_) async => [orderUuid1]);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid1)).thenAnswer((_) async => orderHeader1);
-        when(mockOrdersDao.getOrderItems(orderUuid1)).thenAnswer((_) async => []);
+        when(mockOrdersDao.getOrderUuidsByClientUuid(clientId))
+            .thenAnswer((_) async => [orderUuid1]);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid1))
+            .thenAnswer((_) async => orderHeader1);
+        when(mockOrdersDao.getOrderItems(orderUuid1))
+            .thenAnswer((_) async => []);
 
         // Act
         final result = await orderService.getOrdersByClientUuid(clientId);
@@ -595,12 +687,16 @@ void main() {
         verify(mockOrdersDao.getOrderUuidsByClientUuid(clientId)).called(1);
       });
 
-      test('getOrdersByCarUuid should return orders for a specific car', () async {
+      test('getOrdersByCarUuid should return orders for a specific car',
+          () async {
         // Arrange
         const carId = 'car-2';
-        when(mockOrdersDao.getOrderUuidsByCarUuid(carId)).thenAnswer((_) async => [orderUuid2]);
-        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid2)).thenAnswer((_) async => orderHeader2);
-        when(mockOrdersDao.getOrderItems(orderUuid2)).thenAnswer((_) async => []);
+        when(mockOrdersDao.getOrderUuidsByCarUuid(carId))
+            .thenAnswer((_) async => [orderUuid2]);
+        when(mockOrdersDao.getOrderHeaderByUuid(orderUuid2))
+            .thenAnswer((_) async => orderHeader2);
+        when(mockOrdersDao.getOrderItems(orderUuid2))
+            .thenAnswer((_) async => []);
 
         // Act
         final result = await orderService.getOrdersByCarUuid(carId);

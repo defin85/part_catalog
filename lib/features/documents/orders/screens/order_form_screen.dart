@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Импорт Riverpod
 import 'package:intl/intl.dart';
-// --- Обновленные импорты ---
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/core/widgets/app_dialog.dart';
@@ -10,13 +11,15 @@ import 'package:part_catalog/core/widgets/section_title.dart';
 import 'package:part_catalog/core/widgets/selection_list_tile.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
-// Импортируем Notifier и State
 import 'package:part_catalog/features/documents/orders/notifiers/order_form_notifier.dart';
 import 'package:part_catalog/features/documents/orders/state/order_form_state.dart';
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/references/vehicles/providers/car_providers.dart';
+
+// --- Обновленные импорты ---
+// Импортируем Notifier и State
 
 // Преобразуем в ConsumerStatefulWidget
 class OrderFormScreen extends ConsumerStatefulWidget {
@@ -260,10 +263,13 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
             children: [
               SectionTitle(title: t.orders.clientInfoTitle),
               SelectionListTile(
-                title: formState.selectedClient?.displayName ?? t.orders.selectClientHint,
+                title: formState.selectedClient?.displayName ??
+                    t.orders.selectClientHint,
                 icon: Icons.person,
                 onTap: _selectClient,
-                subtitle: formState.selectedClient == null ? t.errors.fieldRequired : null,
+                subtitle: formState.selectedClient == null
+                    ? t.errors.fieldRequired
+                    : null,
                 subtitleColor: theme.colorScheme.error,
               ),
               const Divider(),
@@ -276,7 +282,9 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
                 icon: Icons.directions_car,
                 onTap: () => _selectCar(formState.selectedClient!.uuid),
                 enabled: formState.selectedClient != null,
-                subtitle: formState.selectedCar == null ? t.errors.fieldRequired : null,
+                subtitle: formState.selectedCar == null
+                    ? t.errors.fieldRequired
+                    : null,
                 subtitleColor: theme.colorScheme.error,
               ),
               const Divider(),
@@ -297,7 +305,8 @@ class _OrderFormScreenState extends ConsumerState<OrderFormScreen> {
                     ? dateFormat.format(formState.scheduledDate!)
                     : t.common.selectDate,
                 icon: Icons.calendar_today,
-                onTap: () => _selectDate(formState.scheduledDate ?? DateTime.now()),
+                onTap: () =>
+                    _selectDate(formState.scheduledDate ?? DateTime.now()),
               ),
               const Divider(),
 
@@ -545,7 +554,8 @@ class _ClientSelectionDialog extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, s) => Center(child: Text('${t.errors.dataLoadingError}: $e')),
+          error: (e, s) =>
+              Center(child: Text('${t.errors.dataLoadingError}: $e')),
         ),
       ),
       actions: [
@@ -564,7 +574,8 @@ class _CarSelectionDialog extends ConsumerStatefulWidget {
   const _CarSelectionDialog({required this.clientUuid});
 
   @override
-  ConsumerState<_CarSelectionDialog> createState() => _CarSelectionDialogState();
+  ConsumerState<_CarSelectionDialog> createState() =>
+      _CarSelectionDialogState();
 }
 
 class _CarSelectionDialogState extends ConsumerState<_CarSelectionDialog> {
@@ -573,14 +584,17 @@ class _CarSelectionDialogState extends ConsumerState<_CarSelectionDialog> {
     super.initState();
     // Устанавливаем фильтр при инициализации
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(carsNotifierProvider.notifier).setClientFilter(widget.clientUuid);
+      ref
+          .read(carsNotifierProvider.notifier)
+          .setClientFilter(widget.clientUuid);
     });
   }
 
   @override
   void dispose() {
     // Сбрасываем фильтр при закрытии диалога
-    Future.microtask(() => ref.read(carsNotifierProvider.notifier).setClientFilter(null));
+    Future.microtask(
+        () => ref.read(carsNotifierProvider.notifier).setClientFilter(null));
     super.dispose();
   }
 
@@ -612,7 +626,8 @@ class _CarSelectionDialogState extends ConsumerState<_CarSelectionDialog> {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, s) => Center(child: Text('${t.errors.dataLoadingError}: $e')),
+          error: (e, s) =>
+              Center(child: Text('${t.errors.dataLoadingError}: $e')),
         ),
       ),
       actions: [
@@ -645,9 +660,12 @@ class _ServiceFormDialogState extends ConsumerState<_ServiceFormDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.service?.name ?? '');
-    _descriptionController = TextEditingController(text: widget.service?.description ?? '');
-    _priceController = TextEditingController(text: widget.service?.price?.toString() ?? '');
-    _durationController = TextEditingController(text: widget.service?.duration?.toString() ?? '');
+    _descriptionController =
+        TextEditingController(text: widget.service?.description ?? '');
+    _priceController =
+        TextEditingController(text: widget.service?.price?.toString() ?? '');
+    _durationController =
+        TextEditingController(text: widget.service?.duration?.toString() ?? '');
   }
 
   @override
@@ -692,7 +710,8 @@ class _ServiceFormDialogState extends ConsumerState<_ServiceFormDialog> {
   Widget build(BuildContext context) {
     final t = context.t;
     return AppDialog(
-      title: Text(widget.service == null ? t.orders.addService : t.orders.editService),
+      title: Text(
+          widget.service == null ? t.orders.addService : t.orders.editService),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -702,7 +721,8 @@ class _ServiceFormDialogState extends ConsumerState<_ServiceFormDialog> {
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: t.common.name),
-                validator: (value) => (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
+                validator: (value) =>
+                    (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -714,7 +734,9 @@ class _ServiceFormDialogState extends ConsumerState<_ServiceFormDialog> {
                 controller: _priceController,
                 decoration: InputDecoration(labelText: t.common.price),
                 keyboardType: TextInputType.number,
-                validator: (value) => (double.tryParse(value ?? '') == null) ? t.errors.invalidNumber : null,
+                validator: (value) => (double.tryParse(value ?? '') == null)
+                    ? t.errors.invalidNumber
+                    : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -761,10 +783,13 @@ class _PartFormDialogState extends ConsumerState<_PartFormDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.part?.name ?? '');
-    _partNumberController = TextEditingController(text: widget.part?.partNumber ?? '');
+    _partNumberController =
+        TextEditingController(text: widget.part?.partNumber ?? '');
     _brandController = TextEditingController(text: widget.part?.brand ?? '');
-    _priceController = TextEditingController(text: widget.part?.price?.toString() ?? '');
-    _quantityController = TextEditingController(text: widget.part?.quantity?.toString() ?? '1');
+    _priceController =
+        TextEditingController(text: widget.part?.price?.toString() ?? '');
+    _quantityController =
+        TextEditingController(text: widget.part?.quantity?.toString() ?? '1');
   }
 
   @override
@@ -823,13 +848,15 @@ class _PartFormDialogState extends ConsumerState<_PartFormDialog> {
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: t.common.name),
-                validator: (value) => (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
+                validator: (value) =>
+                    (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _partNumberController,
                 decoration: InputDecoration(labelText: t.parts.partNumberLabel),
-                validator: (value) => (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
+                validator: (value) =>
+                    (value?.isEmpty ?? true) ? t.errors.fieldRequired : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -841,14 +868,18 @@ class _PartFormDialogState extends ConsumerState<_PartFormDialog> {
                 controller: _priceController,
                 decoration: InputDecoration(labelText: t.common.price),
                 keyboardType: TextInputType.number,
-                validator: (value) => (double.tryParse(value ?? '') == null) ? t.errors.invalidNumber : null,
+                validator: (value) => (double.tryParse(value ?? '') == null)
+                    ? t.errors.invalidNumber
+                    : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _quantityController,
                 decoration: InputDecoration(labelText: t.common.quantity),
                 keyboardType: TextInputType.number,
-                validator: (value) => (double.tryParse(value ?? '') == null) ? t.errors.invalidNumber : null,
+                validator: (value) => (double.tryParse(value ?? '') == null)
+                    ? t.errors.invalidNumber
+                    : null,
               ),
             ],
           ),

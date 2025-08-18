@@ -16,8 +16,8 @@ abstract class StoreItem with _$StoreItem {
 
   // Фабричный метод для создания из строки (когда API возвращает список строк)
   factory StoreItem.fromString(String storeString) => StoreItem(
-    keyzak: storeString,
-    sklCode: storeString,
-    sklName: storeString, // Используем ту же строку для всех полей
-  );
+        keyzak: storeString,
+        sklCode: storeString,
+        sklName: storeString, // Используем ту же строку для всех полей
+      );
 }

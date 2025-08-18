@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';

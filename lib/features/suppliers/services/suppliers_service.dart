@@ -1,4 +1,5 @@
 import 'package:part_catalog/core/utils/logger_config.dart';
+
 import '../api/api_client_manager.dart';
 import '../models/base/part_price_response.dart'; // Предполагается, что эта модель будет создана
 
@@ -37,8 +38,8 @@ class SuppliersService {
             'Received ${prices.length} price offers for "$articleNumber" from ${client.supplierName}');
       } catch (e, stackTrace) {
         // Логируем детали ошибки для отладки
-        if (e.toString().contains('VKORG not configured') || 
-            e.toString().contains('401') || 
+        if (e.toString().contains('VKORG not configured') ||
+            e.toString().contains('401') ||
             e.toString().contains('Unauthorized')) {
           _logger.w(
             'Authentication/configuration error for ${client.supplierName}: ${e.toString()}. '

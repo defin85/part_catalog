@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import 'package:part_catalog/core/api/cache/api_cache.dart';
 import 'package:part_catalog/core/api/cache/memory_cache.dart';
 import 'package:part_catalog/core/api/interceptors/api_interceptors.dart';
@@ -13,19 +14,19 @@ class ResilientApiClientConfig {
   final Duration receiveTimeout;
   final Duration sendTimeout;
   final Map<String, String> defaultHeaders;
-  
+
   // Retry configuration
   final RetryConfig retryConfig;
   final BackoffStrategy backoffStrategy;
-  
+
   // Circuit breaker configuration
   final CircuitBreakerConfig circuitBreakerConfig;
   final String circuitBreakerName;
-  
+
   // Cache configuration
   final CacheConfig cacheConfig;
   final bool enableCache;
-  
+
   // Logging configuration
   final bool enableLogging;
   final bool logRequestHeaders;
@@ -33,7 +34,7 @@ class ResilientApiClientConfig {
   final bool logResponseHeaders;
   final bool logResponseBody;
   final int maxBodyLogLength;
-  
+
   // Metrics configuration
   final bool enableMetrics;
 
@@ -71,7 +72,7 @@ class ResilientApiClientConfig {
       circuitBreakerName: 'supplier_$supplierName',
       retryConfig: RetryConfig.networkOptimized,
       circuitBreakerConfig: CircuitBreakerConfig.networkOptimized,
-      cacheConfig: CacheConfig(
+      cacheConfig: const CacheConfig(
         defaultTtl: CachePolicies.pricesAndStock,
         keySpecificTtl: {
           'products': CachePolicies.productCatalog,
@@ -89,7 +90,7 @@ class ResilientApiClientConfig {
       circuitBreakerName: 'parts_catalog',
       retryConfig: RetryConfig.conservative,
       circuitBreakerConfig: CircuitBreakerConfig.conservative,
-      cacheConfig: CacheConfig(
+      cacheConfig: const CacheConfig(
         defaultTtl: CachePolicies.productCatalog,
         keySpecificTtl: {
           'reference': CachePolicies.staticData,
@@ -129,17 +130,18 @@ class ResilientApiClient {
     // required ContextLogger logger,
     ApiCache? cache,
     MetricsInterceptor? metricsInterceptor,
-  }) : _dio = dio,
-       _retryPolicy = retryPolicy,
-       _circuitBreaker = circuitBreaker,
-       _cache = cache,
-       // _logger = logger,
-       _metricsInterceptor = metricsInterceptor;
+  })  : _dio = dio,
+        _retryPolicy = retryPolicy,
+        _circuitBreaker = circuitBreaker,
+        _cache = cache,
+        // _logger = logger,
+        _metricsInterceptor = metricsInterceptor;
 
   /// Фабричный метод для создания resilient API client
   static ResilientApiClient create(ResilientApiClientConfig config) {
-    final logger = ContextLogger(context: 'ResilientApiClient[${config.circuitBreakerName}]');
-    
+    final logger = ContextLogger(
+        context: 'ResilientApiClient[${config.circuitBreakerName}]');
+
     // Создаем Dio с базовой конфигурацией
     final dio = Dio(BaseOptions(
       baseUrl: config.baseUrl,
@@ -384,12 +386,14 @@ class ResilientApiClient {
 
   /// Принудительно закрывает circuit breaker
   Future<void> forceCloseCircuitBreaker() async {
-    await _circuitBreaker.forceState(CircuitBreakerState.closed, reason: 'manual_close');
+    await _circuitBreaker.forceState(CircuitBreakerState.closed,
+        reason: 'manual_close');
   }
 
   /// Принудительно открывает circuit breaker
   Future<void> forceOpenCircuitBreaker() async {
-    await _circuitBreaker.forceState(CircuitBreakerState.open, reason: 'manual_open');
+    await _circuitBreaker.forceState(CircuitBreakerState.open,
+        reason: 'manual_open');
   }
 
   /// Выполняет health check для circuit breaker
@@ -397,11 +401,12 @@ class ResilientApiClient {
     String? testEndpoint,
   }) async {
     final endpoint = testEndpoint ?? '/health';
-    
+
     return _circuitBreaker.healthCheck(() async {
       final response = await _dio.get(endpoint);
       if (response.statusCode != 200) {
-        throw Exception('Health check failed with status ${response.statusCode}');
+        throw Exception(
+            'Health check failed with status ${response.statusCode}');
       }
     });
   }
@@ -449,7 +454,7 @@ class ResilientApiClientManager {
         'name': name,
         'baseUrl': config.baseUrl,
       });
-      
+
       return ResilientApiClient.create(config);
     });
   }
@@ -463,7 +468,7 @@ class ResilientApiClientManager {
   void remove(String name) {
     final client = _clients.remove(name);
     client?.dispose();
-    
+
     _logger.d('Removed resilient API client', metadata: {
       'name': name,
     });
@@ -472,18 +477,18 @@ class ResilientApiClientManager {
   /// Получает диагностику всех clients
   Map<String, Map<String, dynamic>> getAllDiagnostics() {
     final result = <String, Map<String, dynamic>>{};
-    
+
     for (final entry in _clients.entries) {
       result[entry.key] = entry.value.getDiagnostics();
     }
-    
+
     return result;
   }
 
   /// Выполняет health check для всех clients
   Future<Map<String, bool>> performHealthCheckAll() async {
     final result = <String, bool>{};
-    
+
     for (final entry in _clients.entries) {
       try {
         result[entry.key] = await entry.value.performHealthCheck();
@@ -491,14 +496,14 @@ class ResilientApiClientManager {
         result[entry.key] = false;
       }
     }
-    
+
     return result;
   }
 
   /// Сбрасывает все circuit breakers
   void resetAllCircuitBreakers() {
     _logger.i('Resetting all circuit breakers');
-    
+
     for (final client in _clients.values) {
       client.resetCircuitBreaker();
     }
@@ -507,7 +512,7 @@ class ResilientApiClientManager {
   /// Принудительно закрывает все circuit breakers
   Future<void> forceCloseAllCircuitBreakers() async {
     _logger.i('Force closing all circuit breakers');
-    
+
     for (final client in _clients.values) {
       await client.forceCloseCircuitBreaker();
     }
@@ -516,7 +521,7 @@ class ResilientApiClientManager {
   /// Очищает кеш всех clients
   Future<void> clearAllCaches() async {
     _logger.i('Clearing all caches');
-    
+
     for (final client in _clients.values) {
       await client.clearCache();
     }

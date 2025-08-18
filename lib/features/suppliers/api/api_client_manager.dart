@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
 import 'package:part_catalog/core/api/resilient_api_client.dart';
 import 'package:part_catalog/core/service_locator.dart';
@@ -8,6 +9,7 @@ import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_c
 import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart';
 
 import 'base_supplier_api_client.dart';
+
 // import 'implementations/autodoc_api_client.dart'; // Пример
 // import 'implementations/exist_api_client.dart';  // Пример
 
@@ -25,7 +27,7 @@ class ApiClientManager {
   // Карты для кэширования созданных клиентов (опционально, для производительности)
   final Map<String, BaseSupplierApiClient> _cachedDirectClients = {};
   final Map<String, BaseSupplierApiClient> _cachedProxyClients = {};
-  
+
   // Карта для кэширования оптимизированных клиентов
   final Map<String, ResilientApiClient> _optimizedClients = {};
 
@@ -82,7 +84,8 @@ class ApiClientManager {
         if (username != null && password != null) {
           _logger.i(
               'Creating new ArmtekApiClient (direct) with provided credentials for $supplierCode.');
-          return ArmtekApiClient(_dio, username: username, password: password, vkorg: vkorg);
+          return ArmtekApiClient(_dio,
+              username: username, password: password, vkorg: vkorg);
         } else {
           // Если учетные данные не переданы, можно вернуть кэшированный/стандартный клиент
           // или создать клиент без учетных данных, если это поддерживается.
@@ -131,14 +134,16 @@ class ApiClientManager {
   /// Возвращает список всех доступных клиентов API в зависимости от текущего режима.
   List<BaseSupplierApiClient> getAllAvailableClients() {
     _logger.d('Getting all available clients for mode: $_currentMode');
-    
+
     // Если кэш пуст, создаем клиентов по умолчанию
-    if (_currentMode == ApiConnectionMode.direct && _cachedDirectClients.isEmpty) {
+    if (_currentMode == ApiConnectionMode.direct &&
+        _cachedDirectClients.isEmpty) {
       _initializeDefaultDirectClients();
-    } else if (_currentMode == ApiConnectionMode.proxy && _cachedProxyClients.isEmpty) {
+    } else if (_currentMode == ApiConnectionMode.proxy &&
+        _cachedProxyClients.isEmpty) {
       _initializeDefaultProxyClients();
     }
-    
+
     if (_currentMode == ApiConnectionMode.direct) {
       return _cachedDirectClients.values.toList();
     } else if (_currentMode == ApiConnectionMode.proxy) {
@@ -169,10 +174,11 @@ class ApiClientManager {
     String? vkorg,
     String? proxyAuthToken,
   }) async {
-    _logger.d('Getting optimized client for supplier: $supplierCode, mode: $_currentMode');
+    _logger.d(
+        'Getting optimized client for supplier: $supplierCode, mode: $_currentMode');
 
     final clientKey = '${supplierCode.toLowerCase()}_${_currentMode.name}';
-    
+
     // Проверяем кэш
     if (_optimizedClients.containsKey(clientKey)) {
       return _optimizedClients[clientKey];
@@ -181,7 +187,7 @@ class ApiClientManager {
     // Определяем базовый URL для поставщика
     String? baseUrl;
     Map<String, String> additionalHeaders = {};
-    
+
     switch (supplierCode.toLowerCase()) {
       case 'armtek':
         baseUrl = armtekBaseUrl;
@@ -272,7 +278,7 @@ class ApiClientManager {
   /// Инициализирует клиентов для прямого режима подключения по умолчанию
   void _initializeDefaultDirectClients() {
     _logger.i('Initializing default direct clients');
-    
+
     // Создаем Armtek клиент с настройками по умолчанию
     try {
       // TODO: В будущем получать настройки из SupplierConfigService
@@ -280,32 +286,36 @@ class ApiClientManager {
       // Для реальных запросов потребуется настройка через UI
       final armtekClient = ArmtekApiClient(_dio);
       _cachedDirectClients[SupplierCode.armtek.code] = armtekClient;
-      _logger.i('Created default Armtek direct client (no auth - limited functionality)');
-      _logger.w('Armtek client requires username/password/VKORG for full functionality. Configure in Settings.');
+      _logger.i(
+          'Created default Armtek direct client (no auth - limited functionality)');
+      _logger.w(
+          'Armtek client requires username/password/VKORG for full functionality. Configure in Settings.');
     } catch (e, stackTrace) {
-      _logger.e('Failed to create default Armtek direct client', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to create default Armtek direct client',
+          error: e, stackTrace: stackTrace);
     }
-    
+
     // TODO: Добавить других поставщиков по мере реализации
   }
 
   /// Инициализирует клиентов для прокси режима подключения по умолчанию
   void _initializeDefaultProxyClients() {
     _logger.i('Initializing default proxy clients');
-    
+
     if (_proxyUrl == null || _proxyUrl!.isEmpty) {
       _logger.w('Cannot initialize proxy clients: proxy URL is not set');
       return;
     }
-    
+
     try {
       final armtekClient = ArmtekApiClient(_dio, baseUrl: _proxyUrl);
       _cachedProxyClients[SupplierCode.armtek.code] = armtekClient;
       _logger.i('Created default Armtek proxy client with URL: $_proxyUrl');
     } catch (e, stackTrace) {
-      _logger.e('Failed to create default Armtek proxy client', error: e, stackTrace: stackTrace);
+      _logger.e('Failed to create default Armtek proxy client',
+          error: e, stackTrace: stackTrace);
     }
-    
+
     // TODO: Добавить других поставщиков по мере реализации
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:part_catalog/core/config/global_api_settings_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import 'package:part_catalog/core/config/global_api_settings_service.dart';
 
 part 'optimized_system_settings_provider.g.dart';
 
@@ -34,7 +35,8 @@ class OptimizedSystemSettings {
       useOptimizedSystem: useOptimizedSystem ?? this.useOptimizedSystem,
       enableCaching: enableCaching ?? this.enableCaching,
       enableMetrics: enableMetrics ?? this.enableMetrics,
-      circuitBreakerEnabled: circuitBreakerEnabled ?? this.circuitBreakerEnabled,
+      circuitBreakerEnabled:
+          circuitBreakerEnabled ?? this.circuitBreakerEnabled,
       retryAttempts: retryAttempts ?? this.retryAttempts,
       requestTimeout: requestTimeout ?? this.requestTimeout,
     );
@@ -75,7 +77,8 @@ class OptimizedSystemSettings {
 
 /// Провайдер для управления настройками оптимизированной системы
 @riverpod
-class OptimizedSystemSettingsNotifier extends _$OptimizedSystemSettingsNotifier {
+class OptimizedSystemSettingsNotifier
+    extends _$OptimizedSystemSettingsNotifier {
   late final GlobalApiSettingsService _settingsService;
 
   @override
@@ -104,16 +107,18 @@ class OptimizedSystemSettingsNotifier extends _$OptimizedSystemSettingsNotifier 
   /// Обновить настройки оптимизированной системы
   Future<void> updateSettings(OptimizedSystemSettings newSettings) async {
     state = const AsyncValue.loading();
-    
+
     try {
       // Сохраняем каждую настройку
-      await _settingsService.setUseOptimizedSystem(newSettings.useOptimizedSystem);
+      await _settingsService
+          .setUseOptimizedSystem(newSettings.useOptimizedSystem);
       await _settingsService.setEnableCaching(newSettings.enableCaching);
       await _settingsService.setEnableMetrics(newSettings.enableMetrics);
-      await _settingsService.setCircuitBreakerEnabled(newSettings.circuitBreakerEnabled);
+      await _settingsService
+          .setCircuitBreakerEnabled(newSettings.circuitBreakerEnabled);
       await _settingsService.setRetryAttempts(newSettings.retryAttempts);
       await _settingsService.setRequestTimeout(newSettings.requestTimeout);
-      
+
       state = AsyncValue.data(newSettings);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -141,7 +146,8 @@ class OptimizedSystemSettingsNotifier extends _$OptimizedSystemSettingsNotifier 
   /// Включить/выключить circuit breaker
   Future<void> toggleCircuitBreaker(bool enabled) async {
     final currentSettings = await future;
-    await updateSettings(currentSettings.copyWith(circuitBreakerEnabled: enabled));
+    await updateSettings(
+        currentSettings.copyWith(circuitBreakerEnabled: enabled));
   }
 
   /// Установить количество попыток повтора
@@ -159,7 +165,7 @@ class OptimizedSystemSettingsNotifier extends _$OptimizedSystemSettingsNotifier 
   /// Сбросить настройки к значениям по умолчанию
   Future<void> resetToDefaults() async {
     state = const AsyncValue.loading();
-    
+
     try {
       await _settingsService.resetOptimizedSystemSettings();
       final defaultSettings = OptimizedSystemSettings.defaults();
@@ -190,11 +196,12 @@ class OptimizedSystemSettingsNotifier extends _$OptimizedSystemSettingsNotifier 
         useOptimizedSystem: settingsMap['useOptimizedSystem'] as bool? ?? true,
         enableCaching: settingsMap['enableCaching'] as bool? ?? true,
         enableMetrics: settingsMap['enableMetrics'] as bool? ?? true,
-        circuitBreakerEnabled: settingsMap['circuitBreakerEnabled'] as bool? ?? true,
+        circuitBreakerEnabled:
+            settingsMap['circuitBreakerEnabled'] as bool? ?? true,
         retryAttempts: settingsMap['retryAttempts'] as int? ?? 3,
         requestTimeout: settingsMap['requestTimeout'] as int? ?? 30000,
       );
-      
+
       await updateSettings(settings);
     } catch (e) {
       throw Exception('Ошибка импорта настроек: $e');
@@ -205,36 +212,42 @@ class OptimizedSystemSettingsNotifier extends _$OptimizedSystemSettingsNotifier 
 /// Краткие провайдеры для отдельных настроек
 @riverpod
 Future<bool> useOptimizedSystem(Ref ref) async {
-  final settings = await ref.watch(optimizedSystemSettingsNotifierProvider.future);
+  final settings =
+      await ref.watch(optimizedSystemSettingsNotifierProvider.future);
   return settings.useOptimizedSystem;
 }
 
 @riverpod
 Future<bool> enableCaching(Ref ref) async {
-  final settings = await ref.watch(optimizedSystemSettingsNotifierProvider.future);
+  final settings =
+      await ref.watch(optimizedSystemSettingsNotifierProvider.future);
   return settings.enableCaching;
 }
 
 @riverpod
 Future<bool> enableMetrics(Ref ref) async {
-  final settings = await ref.watch(optimizedSystemSettingsNotifierProvider.future);
+  final settings =
+      await ref.watch(optimizedSystemSettingsNotifierProvider.future);
   return settings.enableMetrics;
 }
 
 @riverpod
 Future<bool> circuitBreakerEnabled(Ref ref) async {
-  final settings = await ref.watch(optimizedSystemSettingsNotifierProvider.future);
+  final settings =
+      await ref.watch(optimizedSystemSettingsNotifierProvider.future);
   return settings.circuitBreakerEnabled;
 }
 
 @riverpod
 Future<int> retryAttempts(Ref ref) async {
-  final settings = await ref.watch(optimizedSystemSettingsNotifierProvider.future);
+  final settings =
+      await ref.watch(optimizedSystemSettingsNotifierProvider.future);
   return settings.retryAttempts;
 }
 
 @riverpod
 Future<int> requestTimeout(Ref ref) async {
-  final settings = await ref.watch(optimizedSystemSettingsNotifierProvider.future);
+  final settings =
+      await ref.watch(optimizedSystemSettingsNotifierProvider.future);
   return settings.requestTimeout;
 }

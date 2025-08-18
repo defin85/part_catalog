@@ -1,6 +1,8 @@
-// filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\za_item.dart
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/core/utils/default_to_bool_converter.dart';
+
+// filepath: c:\FlutterProject\part_catalog\lib\features\suppliers\models\armtek\za_item.dart
 
 part 'za_item.freezed.dart';
 part 'za_item.g.dart';

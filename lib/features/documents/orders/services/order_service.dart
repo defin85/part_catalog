@@ -1,3 +1,5 @@
+import 'package:rxdart/rxdart.dart';
+
 import 'package:part_catalog/core/database/daos/cars_dao.dart';
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
 import 'package:part_catalog/core/database/daos/orders_dao.dart'; // Содержит OrderHeaderData, FullOrderItemData, Tuple3
@@ -9,15 +11,15 @@ import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/document_item_specific_data.dart';
 import 'package:part_catalog/features/core/document_status.dart';
-// --- Новые импорты ---
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
-// --- Импорты @freezed моделей данных (предполагается, что они существуют) ---
 import 'package:part_catalog/features/core/item_core_data.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_part_model_composite.dart';
 import 'package:part_catalog/features/documents/orders/models/order_service_model_composite.dart';
+
+// --- Новые импорты ---
+// --- Импорты @freezed моделей данных (предполагается, что они существуют) ---
 // --- Остальные импорты ---
-import 'package:rxdart/rxdart.dart';
 
 /// Сервис для работы с заказ-нарядами
 ///
@@ -75,12 +77,16 @@ class OrderService {
       if (itemType == BaseItemType.part && fullItemData.partData != null) {
         // Используем публичный фабричный конструктор fromData
         itemEntity = OrderPartModelComposite(
-            coreData: itemCore, docItemData: itemDoc, partData: fullItemData.partData!);
+            coreData: itemCore,
+            docItemData: itemDoc,
+            partData: fullItemData.partData!);
       } else if (itemType == BaseItemType.service &&
           fullItemData.serviceData != null) {
         // Используем публичный фабричный конструктор fromData
         itemEntity = OrderServiceModelComposite(
-            coreData: itemCore, docItemData: itemDoc, serviceData: fullItemData.serviceData!);
+            coreData: itemCore,
+            docItemData: itemDoc,
+            serviceData: fullItemData.serviceData!);
       } else {
         // Используем константу
         _logger.w(LogMessages.orderItemInvalidData
@@ -128,11 +134,17 @@ class OrderService {
 
           if (itemType == BaseItemType.part && fullItemData.partData != null) {
             // Используем публичный фабричный конструктор fromData
-            itemEntity = OrderPartModelComposite(coreData: itemCore, docItemData: itemDoc, partData: fullItemData.partData!);
+            itemEntity = OrderPartModelComposite(
+                coreData: itemCore,
+                docItemData: itemDoc,
+                partData: fullItemData.partData!);
           } else if (itemType == BaseItemType.service &&
               fullItemData.serviceData != null) {
             // Используем публичный фабричный конструктор fromData
-            itemEntity = OrderServiceModelComposite(coreData: itemCore, docItemData: itemDoc, serviceData: fullItemData.serviceData!);
+            itemEntity = OrderServiceModelComposite(
+                coreData: itemCore,
+                docItemData: itemDoc,
+                serviceData: fullItemData.serviceData!);
           } else {
             // Используем константу
             _logger.w(LogMessages.orderItemInvalidData
@@ -197,7 +209,7 @@ class OrderService {
                       error: e,
                       stackTrace: s);
                   // Возвращаем пустой стрим или стрим с ошибкой, чтобы CombineLatest продолжил работу
-                  return Stream<OrderModelComposite>.empty();
+                  return const Stream<OrderModelComposite>.empty();
                   // или return Stream.error(e); - но это остановит CombineLatest
                 }))
             .toList();
@@ -220,11 +232,14 @@ class OrderService {
   }
 
   /// Реактивно наблюдает за пагинированным списком заголовков заказ-нарядов.
-  Stream<List<OrderHeaderData>> watchOrderHeadersPaginated({required int limit, int? offset}) {
+  Stream<List<OrderHeaderData>> watchOrderHeadersPaginated(
+      {required int limit, int? offset}) {
     try {
-      return _ordersDao.watchActiveOrderHeadersPaginated(limit: limit, offset: offset);
+      return _ordersDao.watchActiveOrderHeadersPaginated(
+          limit: limit, offset: offset);
     } catch (e, stackTrace) {
-      _logger.e('Error watching paginated order headers', error: e, stackTrace: stackTrace);
+      _logger.e('Error watching paginated order headers',
+          error: e, stackTrace: stackTrace);
       return Stream.error(e);
     }
   }
@@ -360,7 +375,8 @@ class OrderService {
         // Сохраняем в базу данных
         await _saveOrder(orderModel);
         // Используем константу
-        _logger.i(LogMessages.orderCreated.replaceAll('{uuid}', orderModel.uuid));
+        _logger
+            .i(LogMessages.orderCreated.replaceAll('{uuid}', orderModel.uuid));
         return orderModel;
       },
       operationName: 'createNewOrder(client: $clientUuid, car: $carUuid)',
@@ -725,7 +741,8 @@ class OrderService {
 
       // Обновляем флаг isPosted в композиторе (предполагаем, что метод есть)
       final updatedOrder = order.copyWith(
-        docData: order.docData.copyWith(isPosted: true, postedAt: DateTime.now()),
+        docData:
+            order.docData.copyWith(isPosted: true, postedAt: DateTime.now()),
         coreData: order.coreData.copyWith(modifiedAt: DateTime.now()),
       );
 

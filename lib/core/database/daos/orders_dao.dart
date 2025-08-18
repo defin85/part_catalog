@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:rxdart/rxdart.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/items/cars_items.dart'; // Нужен для JOIN
 import 'package:part_catalog/core/database/items/clients_items.dart'; // Нужен для JOIN
@@ -8,19 +10,19 @@ import 'package:part_catalog/core/database/items/order_parts_items.dart';
 import 'package:part_catalog/core/database/items/order_services_items.dart';
 import 'package:part_catalog/core/database/items/orders_items.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-// Логгер и сообщения
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/document_item_specific_data.dart';
 import 'package:part_catalog/features/core/document_specific_data.dart';
 import 'package:part_catalog/features/core/document_status.dart'; // Используем DocumentStatus
-// Импортируем @freezed модели данных
 import 'package:part_catalog/features/core/entity_core_data.dart';
 import 'package:part_catalog/features/core/item_core_data.dart';
 import 'package:part_catalog/features/documents/orders/models/order_specific_data.dart';
 import 'package:part_catalog/features/documents/orders/models/part_specific_data.dart';
 import 'package:part_catalog/features/documents/orders/models/service_specific_data.dart';
-import 'package:rxdart/rxdart.dart';
+
+// Логгер и сообщения
+// Импортируем @freezed модели данных
 
 part 'orders_dao.g.dart';
 
@@ -214,10 +216,12 @@ class OrdersDao extends DatabaseAccessor<AppDatabase> with _$OrdersDaoMixin {
   }
 
   /// Возвращает пагинированный поток списка заголовков активных заказ-нарядов.
-  Stream<List<OrderHeaderData>> watchActiveOrderHeadersPaginated({required int limit, int? offset}) {
+  Stream<List<OrderHeaderData>> watchActiveOrderHeadersPaginated(
+      {required int limit, int? offset}) {
     final query = select(ordersItems)
       ..where((o) => o.deletedAt.isNull())
-      ..orderBy([(o) => OrderingTerm.desc(o.createdAt)]) // Сортируем по дате создания
+      ..orderBy(
+          [(o) => OrderingTerm.desc(o.createdAt)]) // Сортируем по дате создания
       ..limit(limit, offset: offset);
     return query
         .watch()
@@ -383,7 +387,7 @@ class OrdersDao extends DatabaseAccessor<AppDatabase> with _$OrdersDaoMixin {
     try {
       return (update(ordersItems)..where((o) => o.uuid.equals(uuid)))
           .write(OrdersItemsCompanion(
-        deletedAt: Value(null),
+        deletedAt: const Value(null),
         modifiedAt:
             Value(DateTime.now()), // Обновляем modifiedAt при восстановлении
       ));
@@ -582,7 +586,7 @@ class OrdersDao extends DatabaseAccessor<AppDatabase> with _$OrdersDaoMixin {
       documentUuid: Value(service.documentUuid),
       lineNumber: Value(core.lineNumber), // Сохраняем номер строки
       name: Value(core.name),
-      description: Value(null),
+      description: const Value(null),
       price: Value(docItem.price ?? 0.0),
       duration: Value(service.duration),
       performedBy: Value(service.performedBy),
@@ -607,7 +611,7 @@ class OrdersDao extends DatabaseAccessor<AppDatabase> with _$OrdersDaoMixin {
       // uuid, documentUuid, createdAt не обновляем
       lineNumber: Value(core.lineNumber), // Обновляем номер строки
       name: Value(core.name),
-      description: Value(null),
+      description: const Value(null),
       price: Value(docItem.price ?? 0.0),
       duration: Value(service.duration),
       performedBy: Value(service.performedBy),

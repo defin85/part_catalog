@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
 import 'package:part_catalog/core/api/resilient_api_client.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
@@ -26,9 +27,9 @@ class OptimizedApiClientPartsCatalogs {
     required ResilientApiClient resilientClient,
     String? apiKey,
     String language = 'ru',
-  }) : _resilientClient = resilientClient,
-       _apiKey = apiKey,
-       _language = language;
+  })  : _resilientClient = resilientClient,
+        _apiKey = apiKey,
+        _language = language;
 
   /// Фабричный метод для создания оптимизированного клиента каталогов
   static OptimizedApiClientPartsCatalogs create({
@@ -58,7 +59,8 @@ class OptimizedApiClientPartsCatalogs {
   Map<String, dynamic>? getCacheStats() => _resilientClient.getCacheStats();
 
   /// Получает статус circuit breaker
-  Map<String, dynamic> getCircuitBreakerStatus() => _resilientClient.getCircuitBreakerStatus();
+  Map<String, dynamic> getCircuitBreakerStatus() =>
+      _resilientClient.getCircuitBreakerStatus();
 
   /// Выполняет health check
   Future<bool> performHealthCheck() => _resilientClient.performHealthCheck();
@@ -75,18 +77,19 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting catalogs list');
-    
+
     try {
       final response = await _resilientClient.get(
         '/catalogs/',
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => Catalog.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getCatalogs');
       return [];
     } catch (e, stackTrace) {
@@ -102,22 +105,24 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting models for catalog: $catalogId');
-    
+
     try {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/models/',
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => Model.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getModels');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting models for catalog $catalogId', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting models for catalog $catalogId',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -132,7 +137,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting cars for catalog: $catalogId, model: $modelId');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'modelId': modelId,
@@ -143,18 +148,20 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/cars2/',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => Car2.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getCars2');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting cars for catalog $catalogId', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting cars for catalog $catalogId',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -168,7 +175,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting car by ID: $carId in catalog: $catalogId');
-    
+
     try {
       final queryParams = <String, dynamic>{
         if (criteria != null) 'criteria': criteria,
@@ -177,12 +184,14 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/cars2/$carId',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       return Car2.fromJson(response.data);
     } catch (e, stackTrace) {
-      _logger.e('Error getting car by ID $carId', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting car by ID $carId',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -195,8 +204,9 @@ class OptimizedApiClientPartsCatalogs {
     String? apiKey,
     String? language,
   }) async {
-    _logger.i('Getting car parameters for catalog: $catalogId, model: $modelId');
-    
+    _logger
+        .i('Getting car parameters for catalog: $catalogId, model: $modelId');
+
     try {
       final queryParams = <String, dynamic>{
         'modelId': modelId,
@@ -206,18 +216,20 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/cars-parameters/',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => CarParameterInfo.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getCarsParameters');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting car parameters', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting car parameters',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -232,7 +244,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting groups for catalog: $catalogId, car: $carId');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'carId': carId,
@@ -243,14 +255,15 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/groups2/',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => Group.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getGroups');
       return [];
     } catch (e, stackTrace) {
@@ -267,7 +280,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting car info for: $q');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'q': q,
@@ -277,18 +290,20 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/car/info',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => CarInfo.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getCarInfo');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting car info for $q', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting car info for $q',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -303,8 +318,9 @@ class OptimizedApiClientPartsCatalogs {
     String? apiKey,
     String? language,
   }) async {
-    _logger.i('Getting parts for catalog: $catalogId, car: $carId, group: $groupId');
-    
+    _logger.i(
+        'Getting parts for catalog: $catalogId, car: $carId, group: $groupId');
+
     try {
       final queryParams = <String, dynamic>{
         'carId': carId,
@@ -319,9 +335,10 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/parts2',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(
-          apiKey: apiKey, 
-          language: language, 
+        options: Options(
+            headers: _buildHeaders(
+          apiKey: apiKey,
+          language: language,
           additionalHeaders: headers,
         )),
       );
@@ -341,7 +358,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting groups suggestions for: $q');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'q': q,
@@ -350,18 +367,20 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/groups-suggest',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => Suggest.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getGroupsSuggest');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting groups suggestions', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting groups suggestions',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -377,7 +396,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting groups by SID: $sid');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'sid': sid,
@@ -389,18 +408,20 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/groups-by-sid',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       final data = response.data;
       if (data is List) {
         return data.map((item) => Group.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getGroupsBySid');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting groups by SID', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting groups by SID',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -412,7 +433,7 @@ class OptimizedApiClientPartsCatalogs {
     String? apiKey,
   }) async {
     _logger.i('Getting example prices for: $code, brand: $brand');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'code': code,
@@ -427,13 +448,16 @@ class OptimizedApiClientPartsCatalogs {
 
       final data = response.data;
       if (data is List) {
-        return data.map((item) => ExamplePricesResponse.fromJson(item)).toList();
+        return data
+            .map((item) => ExamplePricesResponse.fromJson(item))
+            .toList();
       }
-      
+
       _logger.w('Unexpected response format for getExamplePrices');
       return [];
     } catch (e, stackTrace) {
-      _logger.e('Error getting example prices', error: e, stackTrace: stackTrace);
+      _logger.e('Error getting example prices',
+          error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -447,7 +471,7 @@ class OptimizedApiClientPartsCatalogs {
     String? apiKey,
   }) async {
     _logger.i('Getting groups tree for catalog: $catalogId');
-    
+
     try {
       final queryParams = <String, dynamic>{
         if (carId != null) 'carId': carId,
@@ -465,7 +489,7 @@ class OptimizedApiClientPartsCatalogs {
       if (data is List) {
         return data.map((item) => GroupsTreeResponse.fromJson(item)).toList();
       }
-      
+
       _logger.w('Unexpected response format for getGroupsTree');
       return [];
     } catch (e, stackTrace) {
@@ -487,7 +511,7 @@ class OptimizedApiClientPartsCatalogs {
     String? language,
   }) async {
     _logger.i('Getting schemas for catalog: $catalogId, car: $carId');
-    
+
     try {
       final queryParams = <String, dynamic>{
         'carId': carId,
@@ -501,7 +525,8 @@ class OptimizedApiClientPartsCatalogs {
       final response = await _resilientClient.get(
         '/catalogs/$catalogId/schemas',
         queryParameters: queryParams,
-        options: Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
+        options:
+            Options(headers: _buildHeaders(apiKey: apiKey, language: language)),
       );
 
       return SchemasResponse.fromJson(response.data);
@@ -524,19 +549,19 @@ class OptimizedApiClientPartsCatalogs {
     Map<String, String>? additionalHeaders,
   }) {
     final headers = <String, String>{};
-    
+
     final effectiveApiKey = apiKey ?? _apiKey;
     if (effectiveApiKey != null) {
       headers['Authorization'] = 'Bearer $effectiveApiKey';
     }
-    
+
     final effectiveLanguage = language ?? _language;
     headers['Accept-Language'] = effectiveLanguage;
-    
+
     if (additionalHeaders != null) {
       headers.addAll(additionalHeaders);
     }
-    
+
     return headers;
   }
 }

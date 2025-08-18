@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:part_catalog/core/utils/context_logger.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'logger_providers.g.dart';
 
@@ -33,12 +34,15 @@ Logger categoryLogger(Ref ref, String category) {
 
 /// Провайдер для контекстного логгера
 @riverpod
-ContextLogger contextLogger(Ref ref, String context, {
+ContextLogger contextLogger(
+  Ref ref,
+  String context, {
   Map<String, dynamic>? metadata,
 }) {
   // Получаем базовый логгер для контекста
-  final baseLogger = ref.watch(categoryLoggerProvider(context.split('.').first));
-  
+  final baseLogger =
+      ref.watch(categoryLoggerProvider(context.split('.').first));
+
   return ContextLogger(
     context: context,
     logger: baseLogger,
@@ -48,7 +52,9 @@ ContextLogger contextLogger(Ref ref, String context, {
 
 /// Провайдер для логгера класса
 @riverpod
-ContextLogger classLogger(Ref ref, Type classType, {
+ContextLogger classLogger(
+  Ref ref,
+  Type classType, {
   Map<String, dynamic>? metadata,
 }) {
   return ref.watch(contextLoggerProvider(
@@ -62,7 +68,7 @@ ContextLogger classLogger(Ref ref, Type classType, {
 class LoggingConfiguration extends _$LoggingConfiguration {
   @override
   LoggingConfig build() {
-    return LoggingConfig(
+    return const LoggingConfig(
       level: Level.debug,
       enableColors: true,
       enableEmojis: true,
@@ -132,7 +138,7 @@ extension LoggerRefExtension on Ref {
     // Пытаемся определить контекст из стека вызовов
     final stackTrace = StackTrace.current.toString();
     final lines = stackTrace.split('\n');
-    
+
     // Ищем имя провайдера в стеке
     String context = 'Unknown';
     for (final line in lines) {
@@ -144,7 +150,7 @@ extension LoggerRefExtension on Ref {
         }
       }
     }
-    
+
     return watch(contextLoggerProvider(context));
   }
 

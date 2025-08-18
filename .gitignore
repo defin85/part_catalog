@@ -59,3 +59,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local env and databases
+.env
+*.sqlite
+*.db
+/backups/
+/logs/
+/coverage/
+
+# Local binaries
+/CodeWeaver.exe

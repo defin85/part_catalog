@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/features/references/clients/providers/client_providers.dart';
 import 'package:part_catalog/features/references/clients/screens/clients_screen.dart';
 
@@ -16,7 +18,8 @@ void main() {
       mockClientService = MockClientService();
     });
 
-    testWidgets('should show loading indicator initially', (WidgetTester tester) async {
+    testWidgets('should show loading indicator initially',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => const Stream.empty());
@@ -36,7 +39,8 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should show empty state when no clients', (WidgetTester tester) async {
+    testWidgets('should show empty state when no clients',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));
@@ -56,7 +60,8 @@ void main() {
       expect(find.text('Нет клиентов'), findsOneWidget);
     });
 
-    testWidgets('should show clients list when data available', (WidgetTester tester) async {
+    testWidgets('should show clients list when data available',
+        (WidgetTester tester) async {
       // Arrange
       final testClients = [TestData.testClientPhysical];
       when(mockClientService.watchClients())
@@ -76,10 +81,12 @@ void main() {
       // Assert
       expect(find.byType(ListView), findsOneWidget);
       expect(find.byType(ListTile), findsOneWidget);
-      expect(find.text(TestData.testClientPhysical.displayName), findsOneWidget);
+      expect(
+          find.text(TestData.testClientPhysical.displayName), findsOneWidget);
     });
 
-    testWidgets('should show floating action button', (WidgetTester tester) async {
+    testWidgets('should show floating action button',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));
@@ -119,7 +126,8 @@ void main() {
       expect(find.byType(TextField), findsOneWidget);
     });
 
-    testWidgets('should filter clients on search input', (WidgetTester tester) async {
+    testWidgets('should filter clients on search input',
+        (WidgetTester tester) async {
       // Arrange
       final allClients = TestData.testClients;
       when(mockClientService.watchClients())
@@ -146,7 +154,8 @@ void main() {
       // но поскольку мы мокируем сервис, тест проверяет основную структуру
     });
 
-    testWidgets('should handle tap on client item', (WidgetTester tester) async {
+    testWidgets('should handle tap on client item',
+        (WidgetTester tester) async {
       // Arrange
       final testClients = [TestData.testClientPhysical];
       when(mockClientService.watchClients())
@@ -170,7 +179,8 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('should show app bar with correct title', (WidgetTester tester) async {
+    testWidgets('should show app bar with correct title',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.value([]));
@@ -188,7 +198,8 @@ void main() {
       expect(find.text('Клиенты'), findsOneWidget);
     });
 
-    testWidgets('should show error state when stream has error', (WidgetTester tester) async {
+    testWidgets('should show error state when stream has error',
+        (WidgetTester tester) async {
       // Arrange
       when(mockClientService.watchClients())
           .thenAnswer((_) => Stream.error('Database error'));

@@ -16,7 +16,8 @@ class MemoryCache implements ApiCache {
   CacheMetrics get metrics => _metrics;
 
   @override
-  Future<T?> get<T>(String key, T Function(Map<String, dynamic>) fromJson) async {
+  Future<T?> get<T>(
+      String key, T Function(Map<String, dynamic>) fromJson) async {
     if (!_config.enabled) return null;
 
     final item = _cache[key];
@@ -132,12 +133,12 @@ class MemoryCache implements ApiCache {
   Future<bool> contains(String key) async {
     final item = _cache[key];
     if (item == null) return false;
-    
+
     if (item.isExpired) {
       await remove(key);
       return false;
     }
-    
+
     return true;
   }
 
@@ -197,7 +198,8 @@ class MemoryCache implements ApiCache {
       'maxSize': _config.maxSize,
       'itemCount': _cache.length,
       'metrics': _metrics.toJson(),
-      'utilizationPercent': (_currentSize / _config.maxSize * 100).toStringAsFixed(2),
+      'utilizationPercent':
+          (_currentSize / _config.maxSize * 100).toStringAsFixed(2),
     };
   }
 

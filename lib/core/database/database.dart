@@ -4,24 +4,26 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
-import 'package:part_catalog/core/service_locator.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:part_catalog/core/service_locator.dart';
+
 import 'daos/cars_dao.dart';
-// импорты DAO
 import 'daos/clients_dao.dart';
 import 'daos/orders_dao.dart';
 import 'daos/supplier_settings_dao.dart';
 import 'items/cars_items.dart';
-// импорты таблиц
 import 'items/clients_items.dart';
 import 'items/order_parts_items.dart';
 import 'items/order_services_items.dart';
 import 'items/orders_items.dart';
 import 'items/supplier_settings_items.dart';
+
+// импорты DAO
+// импорты таблиц
 
 part 'database.g.dart';
 

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/items/supplier_settings_items.dart';
 

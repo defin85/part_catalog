@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 
 import '../../mocks/mock_services.mocks.dart';
@@ -13,10 +14,10 @@ void main() {
     setUp(() {
       mockDatabase = MockAppDatabase();
       mockClientsDao = MockClientsDao();
-      
+
       // Настраиваем мок базы данных для возврата мок DAO
       when(mockDatabase.clientsDao).thenReturn(mockClientsDao);
-      
+
       clientService = ClientService(mockDatabase);
     });
 
@@ -24,7 +25,7 @@ void main() {
       test('should initialize successfully with database', () {
         // Arrange & Act
         final service = ClientService(mockDatabase);
-        
+
         // Assert
         expect(service, isNotNull);
       });
@@ -122,7 +123,8 @@ void main() {
         await clientService.isCodeUnique(testCode);
 
         // Assert
-        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: null)).called(1);
+        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: null))
+            .called(1);
       });
 
       test('should pass excludeUuid parameter to DAO', () async {
@@ -136,7 +138,8 @@ void main() {
         await clientService.isCodeUnique(testCode, excludeUuid: excludeUuid);
 
         // Assert
-        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: excludeUuid)).called(1);
+        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: excludeUuid))
+            .called(1);
       });
 
       test('should return DAO result', () async {

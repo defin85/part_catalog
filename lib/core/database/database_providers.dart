@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/database_error_recovery.dart';
 import 'package:part_catalog/core/service_locator.dart';
@@ -10,7 +11,8 @@ final databaseErrorRecoveryProvider = Provider<DatabaseErrorRecovery>((ref) {
 });
 
 /// Провайдер для проверки состояния БД
-final databaseHealthProvider = FutureProvider<DatabaseHealthStatus>((ref) async {
+final databaseHealthProvider =
+    FutureProvider<DatabaseHealthStatus>((ref) async {
   final errorRecovery = ref.watch(databaseErrorRecoveryProvider);
   return errorRecovery.checkDatabaseHealth();
 });
@@ -24,19 +26,19 @@ final databaseMaintenanceProvider = Provider<DatabaseMaintenanceService>((ref) {
 /// Сервис для автоматического обслуживания БД
 class DatabaseMaintenanceService {
   DatabaseMaintenanceService(this._errorRecovery);
-  
+
   final DatabaseErrorRecovery _errorRecovery;
-  
+
   /// Выполняет полное профилактическое обслуживание БД
   Future<void> performFullMaintenance() async {
     await _errorRecovery.performMaintenance();
   }
-  
+
   /// Проверяет здоровье БД и возвращает статус
   Future<DatabaseHealthStatus> checkHealth() async {
     return _errorRecovery.checkDatabaseHealth();
   }
-  
+
   /// Выполняет быструю проверку БД (только соединение)
   Future<bool> quickHealthCheck() async {
     try {

@@ -1,16 +1,18 @@
 import 'package:drift/drift.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/items/cars_items.dart';
 import 'package:part_catalog/core/database/items/clients_items.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-// Логгер
 import 'package:part_catalog/core/utils/logger_config.dart';
-// Импортируем @freezed модели данных
 import 'package:part_catalog/features/core/entity_core_data.dart';
-// Импортируем @freezed модели для клиента
 import 'package:part_catalog/features/references/clients/models/client_specific_data.dart';
 import 'package:part_catalog/features/references/clients/models/client_type.dart';
 import 'package:part_catalog/features/references/vehicles/models/car_specific_data.dart';
+
+// Логгер
+// Импортируем @freezed модели данных
+// Импортируем @freezed модели для клиента
 
 part 'cars_dao.g.dart';
 

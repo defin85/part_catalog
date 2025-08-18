@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
@@ -8,7 +9,7 @@ part 'supplier_config.g.dart';
 
 // Helper functions for JSON serialization
 String? _connectionModeToJson(ApiConnectionMode? mode) => mode?.name;
-ApiConnectionMode? _connectionModeFromJson(String? name) => 
+ApiConnectionMode? _connectionModeFromJson(String? name) =>
     name != null ? ApiConnectionModeExtension.fromName(name) : null;
 
 /// Типы аутентификации для API поставщиков
@@ -25,9 +26,10 @@ enum AuthenticationType {
 @freezed
 abstract class SupplierConfig with _$SupplierConfig {
   const SupplierConfig._();
-  
+
   const factory SupplierConfig({
-    required String supplierCode, // Уникальный код поставщика (armtek, autotrade, etc.)
+    required String
+        supplierCode, // Уникальный код поставщика (armtek, autotrade, etc.)
     required String displayName, // Отображаемое название
     String? description, // Описание поставщика
     required bool isEnabled, // Включен ли поставщик
@@ -51,13 +53,13 @@ abstract class SupplierConfig with _$SupplierConfig {
 @freezed
 abstract class SupplierApiConfig with _$SupplierApiConfig {
   const SupplierApiConfig._();
-  
+
   const factory SupplierApiConfig({
     required String baseUrl, // Базовый URL API
     String? proxyUrl, // URL прокси-сервера (если используется)
     String? proxyAuthToken, // Токен авторизации для прокси
     @JsonKey(
-      name: 'connectionMode', 
+      name: 'connectionMode',
       fromJson: _connectionModeFromJson,
       toJson: _connectionModeToJson,
     )
@@ -78,7 +80,7 @@ abstract class SupplierApiConfig with _$SupplierApiConfig {
 @freezed
 abstract class SupplierCredentials with _$SupplierCredentials {
   const SupplierCredentials._();
-  
+
   const factory SupplierCredentials({
     String? username, // Для Basic Auth
     String? password, // Для Basic Auth
@@ -86,7 +88,8 @@ abstract class SupplierCredentials with _$SupplierCredentials {
     String? token, // Для Bearer token
     String? refreshToken, // Для OAuth2
     DateTime? tokenExpiry, // Срок действия токена
-    Map<String, String>? additionalParams, // Дополнительные параметры (VKORG и т.д.)
+    Map<String, String>?
+        additionalParams, // Дополнительные параметры (VKORG и т.д.)
   }) = _SupplierCredentials;
 
   factory SupplierCredentials.fromJson(Map<String, dynamic> json) =>
@@ -97,7 +100,7 @@ abstract class SupplierCredentials with _$SupplierCredentials {
 @freezed
 abstract class RateLimitConfig with _$RateLimitConfig {
   const RateLimitConfig._();
-  
+
   const factory RateLimitConfig({
     int? dailyLimit, // Дневной лимит запросов
     int? hourlyLimit, // Часовой лимит запросов
@@ -113,7 +116,7 @@ abstract class RateLimitConfig with _$RateLimitConfig {
 @freezed
 abstract class SupplierBusinessConfig with _$SupplierBusinessConfig {
   const SupplierBusinessConfig._();
-  
+
   const factory SupplierBusinessConfig({
     // Параметры специфичные для бизнес-логики
     String? customerCode, // Код клиента (KUNNR_RG для Armtek)
@@ -121,19 +124,19 @@ abstract class SupplierBusinessConfig with _$SupplierBusinessConfig {
     String? contractNumber, // Номер договора (VBELN)
     String? deliveryTerms, // Условия доставки (INCOTERMS)
     String? organizationCode, // Код организации (VKORG для Armtek)
-    
+
     // Настройки поиска
     @Default(true) bool searchWithCross, // Искать с кроссами
     @Default(false) bool exactSearch, // Точный поиск
-    
+
     // Настройки заказов
     @Default(true) bool allowTestOrders, // Разрешить тестовые заказы
     String? defaultWarehouse, // Склад по умолчанию
-    
+
     // Списки данных специфичные для Armtek
     List<BrandItem>? brandList, // Список брендов
     List<StoreItem>? storeList, // Список складов
-    
+
     Map<String, dynamic>? additionalParams, // Дополнительные бизнес-параметры
   }) = _SupplierBusinessConfig;
 

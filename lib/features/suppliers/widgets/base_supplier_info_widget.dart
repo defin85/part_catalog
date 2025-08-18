@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 
 /// Данные для карточки информации
@@ -36,7 +37,8 @@ abstract class BaseSupplierInfoWidget extends StatefulWidget {
   BaseSupplierInfoWidgetState createState();
 }
 
-abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> extends State<T> {
+abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget>
+    extends State<T> {
   Object? _selectedItem;
   String _selectedItemType = '';
 
@@ -62,14 +64,16 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
         borderRadius: BorderRadius.circular(8),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final horizontalPadding = constraints.maxWidth < 50 ? 2.0 : (constraints.maxWidth < 100 ? 4.0 : 12.0);
-            final verticalPadding = constraints.maxWidth < 50 ? 2.0 : (constraints.maxWidth < 100 ? 3.0 : 8.0);
-            
+            final horizontalPadding = constraints.maxWidth < 50
+                ? 2.0
+                : (constraints.maxWidth < 100 ? 4.0 : 12.0);
+            final verticalPadding = constraints.maxWidth < 50
+                ? 2.0
+                : (constraints.maxWidth < 100 ? 3.0 : 8.0);
+
             return Container(
               padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding, 
-                vertical: verticalPadding
-              ),
+                  horizontal: horizontalPadding, vertical: verticalPadding),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: cardData.color.withValues(alpha: 0.3),
@@ -83,15 +87,18 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
                   LayoutBuilder(
                     builder: (context, constraints) {
                       if (constraints.maxWidth > 80) {
-                        final iconPadding = constraints.maxWidth < 120 ? 3.0 : 6.0;
-                        final iconSize = constraints.maxWidth < 120 ? 12.0 : 16.0;
+                        final iconPadding =
+                            constraints.maxWidth < 120 ? 3.0 : 6.0;
+                        final iconSize =
+                            constraints.maxWidth < 120 ? 12.0 : 16.0;
                         return Container(
                           padding: EdgeInsets.all(iconPadding),
                           decoration: BoxDecoration(
                             color: cardData.color.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(cardData.icon, color: cardData.color, size: iconSize),
+                          child: Icon(cardData.icon,
+                              color: cardData.color, size: iconSize),
                         );
                       } else {
                         return const SizedBox.shrink();
@@ -102,7 +109,8 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
                   LayoutBuilder(
                     builder: (context, constraints) {
                       if (constraints.maxWidth > 80) {
-                        return SizedBox(width: constraints.maxWidth < 120 ? 4 : 8);
+                        return SizedBox(
+                            width: constraints.maxWidth < 120 ? 4 : 8);
                       } else {
                         return const SizedBox.shrink();
                       }
@@ -120,9 +128,14 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
                             alignment: Alignment.centerLeft,
                             child: Text(
                               cardData.title,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
                               maxLines: 1,
                             ),
                           ),
@@ -130,19 +143,24 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
                         if (cardData.subtitle != null)
                           Text(
                             cardData.subtitle!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                              fontSize: 10,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant
+                                          .withValues(alpha: 0.7),
+                                      fontSize: 10,
+                                    ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         Text(
                           '${cardData.count}',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: cardData.color,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: cardData.color,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ],
                     ),
@@ -173,7 +191,7 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
     final t = Translations.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isLargeScreen = screenWidth >= 850;
-    
+
     if (isLargeScreen) {
       // Desktop layout - Master-Detail
       return Row(
@@ -189,15 +207,15 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
                   Text(
                     'Информация ${widget.supplierCode}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 16),
                   // Карточки информации
                   ...buildInfoCards(t).map((cardData) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: buildCompactInfoCard(cardData),
-                  )),
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: buildCompactInfoCard(cardData),
+                      )),
                 ],
               ),
             ),
@@ -217,7 +235,7 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
         length: 2,
         child: Column(
           children: [
-            TabBar(
+            const TabBar(
               tabs: [
                 Tab(text: 'Обзор'),
                 Tab(text: 'Детали'),
@@ -232,9 +250,9 @@ abstract class BaseSupplierInfoWidgetState<T extends BaseSupplierInfoWidget> ext
                     child: Column(
                       children: [
                         ...buildInfoCards(t).map((cardData) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: buildCompactInfoCard(cardData),
-                        )),
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: buildCompactInfoCard(cardData),
+                            )),
                       ],
                     ),
                   ),

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/database/database.dart';
 
 /// {@template database_error_recovery}
 /// Система восстановления после ошибок базы данных.
-/// 
+///
 /// Обеспечивает:
 /// - Автоматическое переподключение при потере соединения
 /// - Повторные попытки выполнения операций
@@ -42,7 +44,7 @@ class DatabaseErrorRecovery {
       } catch (e) {
         attempt++;
         lastException = e is Exception ? e : Exception(e.toString());
-        
+
         final opName = operationName ?? 'database operation';
         _logger.w(
           'Попытка $attempt/$maxRetries выполнения $opName не удалась: $e',
@@ -81,7 +83,7 @@ class DatabaseErrorRecovery {
   /// Проверяет, является ли ошибка восстанавливаемой
   bool _isRecoverableError(dynamic error) {
     final errorString = error.toString().toLowerCase();
-    
+
     // Ошибки соединения
     if (errorString.contains('database is locked') ||
         errorString.contains('database disk image is malformed') ||
@@ -126,15 +128,14 @@ class DatabaseErrorRecovery {
   Future<void> _attemptDatabaseRepair() async {
     try {
       _logger.i('Начинаем процедуру восстановления БД...');
-      
+
       // Создаем резервную копию перед восстановлением
       final backupPath = await _database.backupDatabase();
       _logger.i('Резервная копия создана: $backupPath');
-      
+
       // Пытаемся выполнить PRAGMA integrity_check
       await _database.customStatement('PRAGMA integrity_check');
       _logger.i('Проверка целостности БД завершена');
-      
     } catch (e) {
       _logger.e('Не удалось восстановить БД, требуется пересоздание', error: e);
       await _recreateDatabase();
@@ -145,15 +146,14 @@ class DatabaseErrorRecovery {
   Future<void> _recreateDatabase() async {
     try {
       _logger.i('Пересоздание БД с нуля...');
-      
+
       // Закрываем текущее соединение
       await _database.close();
-      
+
       // Сбрасываем БД (удаляем файл)
       await _database.resetDatabase();
-      
+
       _logger.i('БД успешно пересоздана');
-      
     } catch (e) {
       _logger.e('Критическая ошибка при пересоздании БД', error: e);
       rethrow;
@@ -177,21 +177,19 @@ class DatabaseErrorRecovery {
     try {
       // Проверяем соединение
       await _database.customSelect('SELECT 1').get();
-      
+
       // Проверяем целостность
-      final integrityResult = await _database
-          .customSelect('PRAGMA integrity_check')
-          .get();
-      
-      final isHealthy = integrityResult.isNotEmpty && 
+      final integrityResult =
+          await _database.customSelect('PRAGMA integrity_check').get();
+
+      final isHealthy = integrityResult.isNotEmpty &&
           integrityResult.first.data['integrity_check'] == 'ok';
-      
+
       // Проверяем размер БД
-      final sizeResult = await _database
-          .customSelect('PRAGMA page_count')
-          .get();
+      final sizeResult =
+          await _database.customSelect('PRAGMA page_count').get();
       final pageCount = sizeResult.first.data['page_count'] as int? ?? 0;
-      
+
       return DatabaseHealthStatus(
         isHealthy: isHealthy,
         canConnect: true,
@@ -199,7 +197,6 @@ class DatabaseErrorRecovery {
         databaseSizePages: pageCount,
         lastChecked: DateTime.now(),
       );
-      
     } catch (e) {
       _logger.e('Ошибка при проверке состояния БД', error: e);
       return DatabaseHealthStatus(
@@ -216,15 +213,15 @@ class DatabaseErrorRecovery {
   Future<void> performMaintenance() async {
     try {
       _logger.i('Начинаем профилактическое обслуживание БД...');
-      
+
       // VACUUM для дефрагментации
       await _database.customStatement('VACUUM');
       _logger.i('Дефрагментация БД завершена');
-      
+
       // ANALYZE для обновления статистики
       await _database.customStatement('ANALYZE');
       _logger.i('Обновление статистики БД завершено');
-      
+
       // Проверка целостности
       final healthStatus = await checkDatabaseHealth();
       if (!healthStatus.isHealthy) {
@@ -232,9 +229,8 @@ class DatabaseErrorRecovery {
           'БД не прошла проверку целостности: ${healthStatus.integrityCheck}',
         );
       }
-      
+
       _logger.i('Профилактическое обслуживание БД завершено успешно');
-      
     } catch (e) {
       _logger.e('Ошибка при профилактическом обслуживании БД', error: e);
       rethrow;
@@ -254,16 +250,16 @@ class DatabaseHealthStatus {
 
   /// БД исправна и готова к работе
   final bool isHealthy;
-  
+
   /// Возможно подключение к БД
   final bool canConnect;
-  
+
   /// Результат проверки целостности
   final String integrityCheck;
-  
+
   /// Размер БД в страницах
   final int databaseSizePages;
-  
+
   /// Время последней проверки
   final DateTime lastChecked;
 
@@ -282,31 +278,33 @@ class DatabaseHealthStatus {
 /// Исключение восстановления БД
 class DatabaseRecoveryException implements Exception {
   const DatabaseRecoveryException(this.message, [this.cause]);
-  
+
   final String message;
   final Exception? cause;
-  
+
   @override
-  String toString() => 'DatabaseRecoveryException: $message${cause != null ? ' (Cause: $cause)' : ''}';
+  String toString() =>
+      'DatabaseRecoveryException: $message${cause != null ? ' (Cause: $cause)' : ''}';
 }
 
 /// Исключение доступа к БД
 class DatabaseAccessException implements Exception {
   const DatabaseAccessException(this.message, [this.cause]);
-  
+
   final String message;
   final dynamic cause;
-  
+
   @override
-  String toString() => 'DatabaseAccessException: $message${cause != null ? ' (Cause: $cause)' : ''}';
+  String toString() =>
+      'DatabaseAccessException: $message${cause != null ? ' (Cause: $cause)' : ''}';
 }
 
 /// Исключение обслуживания БД
 class DatabaseMaintenanceException implements Exception {
   const DatabaseMaintenanceException(this.message);
-  
+
   final String message;
-  
+
   @override
   String toString() => 'DatabaseMaintenanceException: $message';
 }

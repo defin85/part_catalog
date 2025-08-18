@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/features/settings/armtek/widgets/armtek_info_master_detail.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/contact_tab_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/dogovor_item.dart';
@@ -17,7 +19,7 @@ void main() {
 
     setUp(() {
       // Создаем тестовые данные
-      testStructure = UserStructureRoot(
+      testStructure = const UserStructureRoot(
         kunag: '123456',
         sname: 'Test Organization',
         fname: 'Test Full Organization Name',
@@ -33,16 +35,23 @@ void main() {
               WeItem(kunnr: '1', werks: '001', sname: 'Грузополучатель 1'),
             ],
             zaTab: [
-              ZaItem(kunnr: '1', sname: 'Адрес доставки длинное название для теста'),
+              ZaItem(
+                  kunnr: '1',
+                  sname: 'Адрес доставки длинное название для теста'),
             ],
             exwTab: [
-              ExwItem(id: '99', name: 'Условия поставки с очень длинным названием'),
+              ExwItem(
+                  id: '99', name: 'Условия поставки с очень длинным названием'),
             ],
             dogovorTab: [
               DogovorItem(vbeln: '1', bstkd: 'Договор 1', defaultFlag: true),
             ],
             contactTab: [
-              ContactTabItem(parnr: '1', lname: 'Иванов', fname: 'Иван', defaultFlag: true),
+              ContactTabItem(
+                  parnr: '1',
+                  lname: 'Иванов',
+                  fname: 'Иван',
+                  defaultFlag: true),
               ContactTabItem(parnr: '2', lname: 'Петров', fname: 'Петр'),
             ],
           ),
@@ -51,7 +60,9 @@ void main() {
     });
 
     group('Text Overflow Tests', () {
-      testWidgets('should handle long text in compact info cards without ugly breaks', (tester) async {
+      testWidgets(
+          'should handle long text in compact info cards without ugly breaks',
+          (tester) async {
         // Создаем виджет с маленьким экраном для тестирования компактных карточек
         await tester.pumpWidget(
           TestHelpers.createTestApp(
@@ -70,15 +81,25 @@ void main() {
 
         // Проверяем, что текст отображается корректно в карточках (не в навигации)
         final gridView = find.byType(GridView);
-        expect(find.descendant(of: gridView, matching: find.text('Адреса доставки')), findsOneWidget);
-        expect(find.descendant(of: gridView, matching: find.text('Условия поставки')), findsOneWidget);
-        expect(find.descendant(of: gridView, matching: find.text('Грузополучатели')), findsOneWidget);
+        expect(
+            find.descendant(
+                of: gridView, matching: find.text('Адреса доставки')),
+            findsOneWidget);
+        expect(
+            find.descendant(
+                of: gridView, matching: find.text('Условия поставки')),
+            findsOneWidget);
+        expect(
+            find.descendant(
+                of: gridView, matching: find.text('Грузополучатели')),
+            findsOneWidget);
 
         // Проверяем отсутствие RenderFlex overflow ошибок
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should use FittedBox to scale text appropriately', (tester) async {
+      testWidgets('should use FittedBox to scale text appropriately',
+          (tester) async {
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             ArmtekInfoMasterDetail(structure: testStructure),
@@ -100,7 +121,8 @@ void main() {
     });
 
     group('Responsive Layout Tests', () {
-      testWidgets('should adapt grid layout based on screen width', (tester) async {
+      testWidgets('should adapt grid layout based on screen width',
+          (tester) async {
         // Тест для широкого экрана (3 колонки)
         await tester.pumpWidget(
           TestHelpers.createTestApp(
@@ -120,7 +142,8 @@ void main() {
 
         // Проверяем параметры сетки
         final grid = tester.widget<GridView>(gridView);
-        final delegate = grid.gridDelegate as SliverGridDelegateWithMaxCrossAxisExtent;
+        final delegate =
+            grid.gridDelegate as SliverGridDelegateWithMaxCrossAxisExtent;
         expect(delegate.maxCrossAxisExtent, 200);
         expect(delegate.childAspectRatio, 2.5);
       });
@@ -143,14 +166,15 @@ void main() {
       //     of: find.byType(ArmtekInfoMasterDetail),
       //     matching: find.byType(Row),
       //   ).evaluate().take(1); // Берем только первый уровень
-        
+
       //   // В мобильной версии используется SingleChildScrollView без Row с двумя панелями
-      //   expect(topLevelRows.isEmpty || 
-      //          !(topLevelRows.first.widget as Row).children.any((c) => c is Flexible), 
+      //   expect(topLevelRows.isEmpty ||
+      //          !(topLevelRows.first.widget as Row).children.any((c) => c is Flexible),
       //          isTrue);
       // });
 
-      testWidgets('should adjust card padding based on available width', (tester) async {
+      testWidgets('should adjust card padding based on available width',
+          (tester) async {
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             ArmtekInfoMasterDetail(structure: testStructure),
@@ -170,7 +194,8 @@ void main() {
     });
 
     group('Card Content Tests', () {
-      testWidgets('should display correct counts in info cards', (tester) async {
+      testWidgets('should display correct counts in info cards',
+          (tester) async {
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             ArmtekInfoMasterDetail(structure: testStructure),
@@ -190,7 +215,7 @@ void main() {
           matching: find.text('1'),
         );
         expect(oneInCards, findsNWidgets(4)); // 1 в каждой из первых 4 карточек
-        
+
         final twoInCards = find.descendant(
           of: find.byType(GridView),
           matching: find.text('2'),
@@ -215,13 +240,13 @@ void main() {
     group('Performance Tests', () {
       testWidgets('should render within performance threshold', (tester) async {
         final stopwatch = Stopwatch()..start();
-        
+
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             ArmtekInfoMasterDetail(structure: testStructure),
           ),
         );
-        
+
         await tester.pumpAndSettle();
         stopwatch.stop();
 
@@ -232,7 +257,7 @@ void main() {
 
     group('Edge Cases', () {
       testWidgets('should handle empty data gracefully', (tester) async {
-        final emptyStructure = UserStructureRoot(
+        final emptyStructure = const UserStructureRoot(
           kunag: '123456',
           sname: 'Empty Org',
         );
@@ -250,9 +275,10 @@ void main() {
       });
 
       testWidgets('should handle very long organization names', (tester) async {
-        final longNameStructure = UserStructureRoot(
+        final longNameStructure = const UserStructureRoot(
           kunag: '123456',
-          sname: 'Очень длинное название организации которое может не поместиться в интерфейс и должно корректно обрабатываться',
+          sname:
+              'Очень длинное название организации которое может не поместиться в интерфейс и должно корректно обрабатываться',
         );
 
         await tester.pumpWidget(

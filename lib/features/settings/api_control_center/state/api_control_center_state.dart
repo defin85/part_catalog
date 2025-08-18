@@ -1,6 +1,8 @@
-//import 'package:flutter/material.dart'; // Для IconData, если будете использовать
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
+
+//import 'package:flutter/material.dart'; // Для IconData, если будете использовать
 
 part 'api_control_center_state.freezed.dart';
 

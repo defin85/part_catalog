@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+
 import 'package:part_catalog/core/api/cache/api_cache.dart';
 import 'package:part_catalog/core/api/cache/memory_cache.dart';
 import 'package:part_catalog/core/api/exceptions.dart';
@@ -55,16 +56,19 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    final startTime = response.requestOptions.extra['request_start_time'] as DateTime?;
-    final duration = startTime != null ? DateTime.now().difference(startTime) : null;
+    final startTime =
+        response.requestOptions.extra['request_start_time'] as DateTime?;
+    final duration =
+        startTime != null ? DateTime.now().difference(startTime) : null;
 
-    _logger.i('← ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.uri}', 
-      metadata: {
-        'statusCode': response.statusCode,
-        'method': response.requestOptions.method,
-        'url': response.requestOptions.uri.toString(),
-        if (duration != null) 'duration': '${duration.inMilliseconds}ms',
-      });
+    _logger.i(
+        '← ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.uri}',
+        metadata: {
+          'statusCode': response.statusCode,
+          'method': response.requestOptions.method,
+          'url': response.requestOptions.uri.toString(),
+          if (duration != null) 'duration': '${duration.inMilliseconds}ms',
+        });
 
     if (logResponseHeaders && response.headers.map.isNotEmpty) {
       _logger.d('Response Headers:', metadata: {
@@ -86,15 +90,19 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    final startTime = err.requestOptions.extra['request_start_time'] as DateTime?;
-    final duration = startTime != null ? DateTime.now().difference(startTime) : null;
+    final startTime =
+        err.requestOptions.extra['request_start_time'] as DateTime?;
+    final duration =
+        startTime != null ? DateTime.now().difference(startTime) : null;
 
-    _logger.e('✗ ${err.requestOptions.method} ${err.requestOptions.uri}', 
+    _logger.e(
+      '✗ ${err.requestOptions.method} ${err.requestOptions.uri}',
       metadata: {
         'method': err.requestOptions.method,
         'url': err.requestOptions.uri.toString(),
         'errorType': err.type.toString(),
-        if (err.response?.statusCode != null) 'statusCode': err.response!.statusCode,
+        if (err.response?.statusCode != null)
+          'statusCode': err.response!.statusCode,
         if (duration != null) 'duration': '${duration.inMilliseconds}ms',
       },
       error: err.message,
@@ -114,7 +122,12 @@ class LoggingInterceptor extends Interceptor {
 
   Map<String, dynamic> _sanitizeHeaders(Map<String, dynamic> headers) {
     final sanitized = <String, dynamic>{};
-    const sensitiveHeaders = {'authorization', 'x-api-key', 'cookie', 'set-cookie'};
+    const sensitiveHeaders = {
+      'authorization',
+      'x-api-key',
+      'cookie',
+      'set-cookie'
+    };
 
     for (final entry in headers.entries) {
       final key = entry.key.toLowerCase();
@@ -130,7 +143,7 @@ class LoggingInterceptor extends Interceptor {
 
   String _formatData(dynamic data) {
     if (data == null) return '';
-    
+
     try {
       if (data is String) return data;
       if (data is Map || data is List) {
@@ -159,14 +172,15 @@ class CacheInterceptor extends Interceptor {
     ApiCache? cache,
     CacheConfig? config,
     ContextLogger? logger,
-  }) : _cache = cache ?? MemoryCache(config ?? const CacheConfig()),
+  })  : _cache = cache ?? MemoryCache(config ?? const CacheConfig()),
         _config = config ?? const CacheConfig(),
         _logger = logger ?? ContextLogger(context: 'CacheInterceptor') {
     _middleware = CacheMiddleware(cache: _cache, config: _config);
   }
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     // Кешируем только GET запросы
     if (options.method.toUpperCase() != 'GET' || !_config.enabled) {
       handler.next(options);
@@ -180,9 +194,10 @@ class CacheInterceptor extends Interceptor {
     }
 
     final cacheKey = _buildCacheKey(options);
-    
+
     try {
-      final cachedResponse = await _middleware.getCachedResponse<Map<String, dynamic>>(
+      final cachedResponse =
+          await _middleware.getCachedResponse<Map<String, dynamic>>(
         cacheKey,
         (json) => json,
       );
@@ -197,9 +212,8 @@ class CacheInterceptor extends Interceptor {
           data: cachedResponse['data'],
           statusCode: cachedResponse['statusCode'] ?? 200,
           statusMessage: cachedResponse['statusMessage'] ?? 'OK',
-          headers: Headers.fromMap(Map<String, List<String>>.from(
-            cachedResponse['headers'] ?? {}
-          )),
+          headers: Headers.fromMap(
+              Map<String, List<String>>.from(cachedResponse['headers'] ?? {})),
           requestOptions: options,
           extra: {'from_cache': true},
         );
@@ -223,7 +237,7 @@ class CacheInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) async {
     final cacheKey = response.requestOptions.extra['cache_key'] as String?;
-    
+
     if (cacheKey != null && _shouldCacheResponse(response)) {
       try {
         final cacheData = {
@@ -239,10 +253,11 @@ class CacheInterceptor extends Interceptor {
           (data) => data,
         );
 
-        _logger.d('Cached response for ${response.requestOptions.method} ${response.requestOptions.path}', 
-          metadata: {
-            'cacheKey': cacheKey,
-          });
+        _logger.d(
+            'Cached response for ${response.requestOptions.method} ${response.requestOptions.path}',
+            metadata: {
+              'cacheKey': cacheKey,
+            });
       } catch (e) {
         _logger.w('Failed to cache response', error: e);
       }
@@ -274,8 +289,9 @@ class CacheInterceptor extends Interceptor {
   }
 
   bool _hasNoCacheDirective(RequestOptions options) {
-    return options.headers['cache-control']?.toString().contains('no-cache') == true ||
-           options.extra['no_cache'] == true;
+    return options.headers['cache-control']?.toString().contains('no-cache') ==
+            true ||
+        options.extra['no_cache'] == true;
   }
 
   bool _shouldCacheResponse(Response response) {
@@ -286,8 +302,9 @@ class CacheInterceptor extends Interceptor {
 
     // Проверяем заголовки cache-control
     final cacheControl = response.headers.value('cache-control');
-    if (cacheControl != null && 
-        (cacheControl.contains('no-cache') || cacheControl.contains('no-store'))) {
+    if (cacheControl != null &&
+        (cacheControl.contains('no-cache') ||
+            cacheControl.contains('no-store'))) {
       return false;
     }
 
@@ -306,8 +323,9 @@ class ErrorHandlingInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     final apiException = ApiExceptionMapper.fromDioException(err);
-    
-    _logger.e('API Error: ${apiException.message}', 
+
+    _logger.e(
+      'API Error: ${apiException.message}',
       metadata: {
         'type': apiException.runtimeType.toString(),
         'statusCode': apiException.statusCode,
@@ -341,9 +359,9 @@ class HeadersInterceptor extends Interceptor {
     Map<String, String>? defaultHeaders,
     String Function()? getAuthToken,
     String Function()? getUserAgent,
-  }) : _defaultHeaders = defaultHeaders ?? {},
-       _getAuthToken = getAuthToken,
-       _getUserAgent = getUserAgent;
+  })  : _defaultHeaders = defaultHeaders ?? {},
+        _getAuthToken = getAuthToken,
+        _getUserAgent = getUserAgent;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -365,8 +383,10 @@ class HeadersInterceptor extends Interceptor {
     }
 
     // Добавляем стандартные заголовки если их нет
-    options.headers.putIfAbsent(HttpHeaders.acceptHeader, () => 'application/json');
-    options.headers.putIfAbsent(HttpHeaders.contentTypeHeader, () => 'application/json');
+    options.headers
+        .putIfAbsent(HttpHeaders.acceptHeader, () => 'application/json');
+    options.headers
+        .putIfAbsent(HttpHeaders.contentTypeHeader, () => 'application/json');
 
     handler.next(options);
   }
@@ -397,11 +417,13 @@ class MetricsInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    _recordMetrics(err.requestOptions, err.response?.statusCode ?? 0, isError: true);
+    _recordMetrics(err.requestOptions, err.response?.statusCode ?? 0,
+        isError: true);
     handler.next(err);
   }
 
-  void _recordMetrics(RequestOptions options, int statusCode, {bool isError = false}) {
+  void _recordMetrics(RequestOptions options, int statusCode,
+      {bool isError = false}) {
     final startTime = options.extra['metrics_start_time'] as DateTime?;
     if (startTime == null) return;
 
@@ -420,7 +442,8 @@ class MetricsInterceptor extends Interceptor {
     }
 
     // Логируем медленные запросы
-    if (duration.inMilliseconds > 5000) { // > 5 секунд
+    if (duration.inMilliseconds > 5000) {
+      // > 5 секунд
       _logger.w('Slow API request detected', metadata: {
         'endpoint': endpoint,
         'duration': '${duration.inMilliseconds}ms',
@@ -439,19 +462,27 @@ class MetricsInterceptor extends Interceptor {
       final totalErrors = _errorCounts[endpoint] ?? 0;
 
       times.sort();
-      final avgTime = times.isEmpty ? 0 : 
-          times.map((t) => t.inMilliseconds).reduce((a, b) => a + b) / times.length;
-      final medianTime = times.isEmpty ? 0 : times[times.length ~/ 2].inMilliseconds;
-      final p95Time = times.isEmpty ? 0 : times[(times.length * 0.95).floor()].inMilliseconds;
+      final avgTime = times.isEmpty
+          ? 0
+          : times.map((t) => t.inMilliseconds).reduce((a, b) => a + b) /
+              times.length;
+      final medianTime =
+          times.isEmpty ? 0 : times[times.length ~/ 2].inMilliseconds;
+      final p95Time = times.isEmpty
+          ? 0
+          : times[(times.length * 0.95).floor()].inMilliseconds;
 
       metrics[endpoint] = {
         'totalRequests': totalRequests,
         'totalErrors': totalErrors,
-        'errorRate': totalRequests > 0 ? (totalErrors / totalRequests * 100).toStringAsFixed(2) : '0.00',
+        'errorRate': totalRequests > 0
+            ? (totalErrors / totalRequests * 100).toStringAsFixed(2)
+            : '0.00',
         'avgResponseTime': '${avgTime.toStringAsFixed(0)}ms',
         'medianResponseTime': '${medianTime}ms',
         'p95ResponseTime': '${p95Time}ms',
-        'minResponseTime': '${times.isEmpty ? 0 : times.first.inMilliseconds}ms',
+        'minResponseTime':
+            '${times.isEmpty ? 0 : times.first.inMilliseconds}ms',
         'maxResponseTime': '${times.isEmpty ? 0 : times.last.inMilliseconds}ms',
       };
     }

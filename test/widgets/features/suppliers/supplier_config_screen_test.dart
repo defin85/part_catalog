@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/screens/supplier_config_screen.dart';
 
@@ -143,7 +145,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Находим и открываем выпадающий список
-        final dropdownFinder = find.byType(DropdownButtonFormField<AuthenticationType>);
+        final dropdownFinder =
+            find.byType(DropdownButtonFormField<AuthenticationType>);
         expect(dropdownFinder, findsOneWidget);
 
         await tester.tap(dropdownFinder);
@@ -173,7 +176,8 @@ void main() {
         expect(find.text('Получить список VKORG'), findsOneWidget);
       });
 
-      testWidgets('should show VKORG dropdown when list loaded', (tester) async {
+      testWidgets('should show VKORG dropdown when list loaded',
+          (tester) async {
         // Упрощенный тест без сложных overrides
         await tester.pumpWidget(
           TestHelpers.createTestApp(
@@ -187,7 +191,8 @@ void main() {
         expect(find.text('Получить список VKORG'), findsOneWidget);
       });
 
-      testWidgets('should have VKORG field for armtek supplier', (tester) async {
+      testWidgets('should have VKORG field for armtek supplier',
+          (tester) async {
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             const SupplierConfigScreen(supplierCode: 'armtek'),
@@ -248,7 +253,8 @@ void main() {
     });
 
     group('Тесты валидации формы', () {
-      testWidgets('should show validation errors for empty required fields', (tester) async {
+      testWidgets('should show validation errors for empty required fields',
+          (tester) async {
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             const SupplierConfigScreen(supplierCode: 'armtek'),
@@ -310,7 +316,8 @@ void main() {
         );
       });
 
-      testWidgets('should be responsive across different screen sizes', (tester) async {
+      testWidgets('should be responsive across different screen sizes',
+          (tester) async {
         await TestHelpers.testResponsiveness(
           tester,
           const SupplierConfigScreen(supplierCode: 'armtek'),
@@ -319,7 +326,8 @@ void main() {
     });
 
     group('Тесты состояний загрузки VKORG', () {
-      testWidgets('should show helper text when VKORG not loaded', (tester) async {
+      testWidgets('should show helper text when VKORG not loaded',
+          (tester) async {
         await tester.pumpWidget(
           TestHelpers.createTestApp(
             const SupplierConfigScreen(supplierCode: 'armtek'),
@@ -394,4 +402,3 @@ void main() {
     });
   });
 }
-

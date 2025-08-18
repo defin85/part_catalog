@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,13 +10,13 @@ import 'test_helpers.dart';
 abstract class BaseWidgetTest {
   /// Название виджета для отображения в тестах
   String get widgetName;
-  
+
   /// Создает экземпляр виджета для тестирования
   Widget createWidget({Map<String, dynamic>? props});
-  
+
   /// Переопределения провайдеров для тестирования
   List<Override> get providerOverrides => [];
-  
+
   /// Запускает все базовые тесты для виджета
   void runBaseTests() {
     group('$widgetName Base Tests', () {
@@ -24,7 +25,7 @@ abstract class BaseWidgetTest {
           createWidget(),
           overrides: providerOverrides,
         );
-        
+
         expect(find.byWidget(createWidget()), findsOneWidget);
       });
 
@@ -36,7 +37,8 @@ abstract class BaseWidgetTest {
         );
       });
 
-      testWidgets('should be responsive on different screen sizes', (tester) async {
+      testWidgets('should be responsive on different screen sizes',
+          (tester) async {
         await TestHelpers.testResponsiveness(
           tester,
           createWidget(),
@@ -58,14 +60,14 @@ abstract class BaseWidgetTest {
   void runStateTests() {
     group('$widgetName State Tests', () {
       final states = getTestStates();
-      
+
       for (final state in states) {
         testWidgets('should handle ${state.name} state', (tester) async {
           await tester.pumpTestApp(
             createWidget(props: state.props),
             overrides: [...providerOverrides, ...state.overrides],
           );
-          
+
           await state.verify(tester);
         });
       }
@@ -80,14 +82,14 @@ abstract class BaseWidgetTest {
   void runInteractionTests() {
     group('$widgetName Interaction Tests', () {
       final interactions = getTestInteractions();
-      
+
       for (final interaction in interactions) {
         testWidgets('should handle ${interaction.name}', (tester) async {
           await tester.pumpTestApp(
             createWidget(props: interaction.initialProps),
             overrides: [...providerOverrides, ...interaction.overrides],
           );
-          
+
           await interaction.perform(tester);
           await interaction.verify(tester);
         });
@@ -157,7 +159,7 @@ abstract class BaseScreenTest extends BaseWidgetTest {
           createWidget(),
           overrides: providerOverrides,
         );
-        
+
         // Тестируем навигацию назад если есть AppBar
         final appBarFinder = find.byType(AppBar);
         if (tester.any(appBarFinder)) {
@@ -183,7 +185,8 @@ abstract class BaseScreenTest extends BaseWidgetTest {
   /// Тесты состояний ошибок
   void runErrorTests() {
     group('$widgetName Error Tests', () {
-      testWidgets('should show error message when error occurs', (tester) async {
+      testWidgets('should show error message when error occurs',
+          (tester) async {
         // Переопределите в наследуемых классах если нужно
       });
     });
@@ -203,14 +206,14 @@ abstract class BaseFormTest extends BaseWidgetTest {
   void runValidationTests() {
     group('$widgetName Validation Tests', () {
       final validationTests = getValidationTests();
-      
+
       for (final test in validationTests) {
         testWidgets('should validate ${test.fieldName}', (tester) async {
           await tester.pumpTestApp(
             createWidget(),
             overrides: providerOverrides,
           );
-          
+
           await test.perform(tester);
           await test.verify(tester);
         });
@@ -229,7 +232,7 @@ abstract class BaseFormTest extends BaseWidgetTest {
           createWidget(),
           overrides: providerOverrides,
         );
-        
+
         await fillValidForm(tester);
         await submitForm(tester);
         await verifySuccessfulSubmission(tester);
@@ -240,7 +243,7 @@ abstract class BaseFormTest extends BaseWidgetTest {
           createWidget(),
           overrides: providerOverrides,
         );
-        
+
         await fillInvalidForm(tester);
         await submitForm(tester);
         await verifyFailedSubmission(tester);

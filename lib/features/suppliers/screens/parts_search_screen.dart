@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/core/document_status.dart';
 import 'package:part_catalog/features/documents/orders/models/order_model_composite.dart';
@@ -31,11 +33,11 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
     if (_formKey.currentState?.validate() ?? false) {
       final params = PartsSearchParams(
         articleNumber: _articleController.text.trim(),
-        brand: _brandController.text.trim().isEmpty 
-            ? null 
+        brand: _brandController.text.trim().isEmpty
+            ? null
             : _brandController.text.trim(),
       );
-      
+
       ref.read(partsSearchStateProvider.notifier).state = params;
     }
   }
@@ -50,7 +52,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
   Widget build(BuildContext context) {
     final t = context.t;
     final searchParams = ref.watch(partsSearchStateProvider);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(t.suppliers.partsSearch.screenTitle),
@@ -79,7 +81,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Поле артикула
                     TextFormField(
                       controller: _articleController,
@@ -99,7 +101,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
                       onFieldSubmitted: (_) => _performSearch(),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Поле бренда
                     TextFormField(
                       controller: _brandController,
@@ -113,7 +115,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
                       onFieldSubmitted: (_) => _performSearch(),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Кнопка поиска
                     ElevatedButton.icon(
                       onPressed: _performSearch,
@@ -125,7 +127,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
               ),
             ),
           ),
-          
+
           // Результаты поиска
           Expanded(
             child: _buildSearchResults(searchParams),
@@ -137,7 +139,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
 
   Widget _buildSearchResults(PartsSearchParams? searchParams) {
     final t = context.t;
-    
+
     if (searchParams == null) {
       return Center(
         child: Column(
@@ -152,8 +154,8 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
             Text(
               t.suppliers.partsSearch.enterArticleToSearch,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
           ],
         ),
@@ -178,15 +180,15 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
                 Text(
                   t.suppliers.partsSearch.noPartsFound,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t.suppliers.partsSearch.tryDifferentArticle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ],
             ),
@@ -204,7 +206,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
-            
+
             // Список результатов
             Expanded(
               child: ListView.separated(
@@ -237,15 +239,15 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
               Text(
                 t.suppliers.partsSearch.searchError,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
               ),
               const SizedBox(height: 8),
               Text(
                 error.toString(),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -262,7 +264,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
 
   void _showPartDetails(PartPriceModel part) {
     final t = context.t;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -276,28 +278,24 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
               _buildDetailRow(t.suppliers.partsSearch.brand, part.brand),
               if (part.name.isNotEmpty)
                 _buildDetailRow(t.suppliers.partsSearch.name, part.name),
+              _buildDetailRow(t.suppliers.partsSearch.price,
+                  '${part.price.toStringAsFixed(2)} ₽'),
               _buildDetailRow(
-                t.suppliers.partsSearch.price, 
-                '${part.price.toStringAsFixed(2)} ₽'
-              ),
+                  t.suppliers.partsSearch.quantity, part.quantity.toString()),
+              _buildDetailRow(t.suppliers.partsSearch.deliveryDays,
+                  t.suppliers.partsSearch.daysCount(days: part.deliveryDays)),
               _buildDetailRow(
-                t.suppliers.partsSearch.quantity, 
-                part.quantity.toString()
-              ),
-              _buildDetailRow(
-                t.suppliers.partsSearch.deliveryDays, 
-                t.suppliers.partsSearch.daysCount(days: part.deliveryDays)
-              ),
-              _buildDetailRow(t.suppliers.partsSearch.supplier, part.supplierName),
+                  t.suppliers.partsSearch.supplier, part.supplierName),
               if (part.originalArticle != null)
-                _buildDetailRow(t.suppliers.partsSearch.originalArticle, part.originalArticle!),
+                _buildDetailRow(t.suppliers.partsSearch.originalArticle,
+                    part.originalArticle!),
               if (part.comment != null && part.comment!.isNotEmpty)
                 _buildDetailRow(t.suppliers.partsSearch.comment, part.comment!),
               if (part.priceUpdatedAt != null)
                 _buildDetailRow(
-                  t.suppliers.partsSearch.priceUpdated, 
-                  MaterialLocalizations.of(context).formatCompactDate(part.priceUpdatedAt!)
-                ),
+                    t.suppliers.partsSearch.priceUpdated,
+                    MaterialLocalizations.of(context)
+                        .formatCompactDate(part.priceUpdatedAt!)),
             ],
           ),
         ),
@@ -340,19 +338,20 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
   void _addPartToOrder(PartPriceModel part) async {
     // Закрываем диалог с деталями
     Navigator.of(context).pop();
-    
+
     // Получаем список активных заказов
     final ordersAsync = ref.read(ordersListProvider);
-    
+
     ordersAsync.when(
       data: (orders) {
         // Фильтруем только незавершенные заказы
-        final activeOrders = orders.where((order) => 
-          !order.isDeleted && 
-          order.status != DocumentStatus.completed &&
-          order.status != DocumentStatus.cancelled
-        ).toList();
-        
+        final activeOrders = orders
+            .where((order) =>
+                !order.isDeleted &&
+                order.status != DocumentStatus.completed &&
+                order.status != DocumentStatus.cancelled)
+            .toList();
+
         if (activeOrders.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -367,7 +366,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
           );
           return;
         }
-        
+
         // Показываем диалог выбора заказа
         _showOrderSelectionDialog(activeOrders, part);
       },
@@ -383,7 +382,8 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
     );
   }
 
-  void _showOrderSelectionDialog(List<OrderModelComposite> orders, PartPriceModel part) {
+  void _showOrderSelectionDialog(
+      List<OrderModelComposite> orders, PartPriceModel part) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -422,9 +422,10 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
     );
   }
 
-  Future<void> _addPartToSelectedOrder(OrderModelComposite order, PartPriceModel part) async {
+  Future<void> _addPartToSelectedOrder(
+      OrderModelComposite order, PartPriceModel part) async {
     if (!mounted) return;
-    
+
     try {
       // Используем OrderService для добавления запчасти в заказ
       final orderService = ref.read(orderServiceProvider);
@@ -438,11 +439,12 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
         supplierName: part.supplierName,
         deliveryDays: part.deliveryDays,
       );
-      
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(t.suppliers.partsSearch.partAddedToOrder(orderName: order.displayName)),
+          content: Text(t.suppliers.partsSearch
+              .partAddedToOrder(orderName: order.displayName)),
           backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );

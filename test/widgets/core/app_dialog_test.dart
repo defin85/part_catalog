@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/core/widgets/app_dialog.dart';
 
 void main() {
@@ -29,11 +31,11 @@ void main() {
 
     testWidgets('should be an AlertDialog', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: AppDialog(
-              title: const Text('Title'),
-              content: const Text('Content'),
+              title: Text('Title'),
+              content: Text('Content'),
               actions: [],
             ),
           ),

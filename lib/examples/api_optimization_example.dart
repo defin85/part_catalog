@@ -30,12 +30,13 @@ class ArmtekApiExample {
 
       // 3. Выполнение health check
       final isHealthy = await armtekClient.performHealthCheck();
-      _logger.i('Health check результат: ${isHealthy ? "✅ Healthy" : "❌ Unhealthy"}');
+      _logger.i(
+          'Health check результат: ${isHealthy ? "✅ Healthy" : "❌ Unhealthy"}');
 
       // 4. Ping сервиса (с автоматическим кэшированием)
       _logger.i('Выполнение ping сервиса...');
       final pingResponse = await armtekClient.pingService();
-      
+
       if (pingResponse.status == 200) {
         _logger.i('✅ Ping успешен: IP ${pingResponse.responseData?.ip}');
       } else {
@@ -45,10 +46,11 @@ class ArmtekApiExample {
       // 5. Получение списка брендов (с кэшированием на 24 часа)
       _logger.i('Получение списка брендов...');
       final brandsResponse = await armtekClient.getBrandList('1000');
-      
+
       if (brandsResponse.status == 200) {
         final brands = brandsResponse.responseData ?? [];
-        _logger.i('✅ Получено ${brands.length} брендов (кэшировано на 24 часа)');
+        _logger
+            .i('✅ Получено ${brands.length} брендов (кэшировано на 24 часа)');
       }
 
       // 6. Поиск запчастей с retry логикой
@@ -57,7 +59,7 @@ class ArmtekApiExample {
         '1234567890',
         brand: 'BOSCH',
       );
-      
+
       _logger.i('✅ Найдено ${parts.length} предложений');
 
       // 7. Получение метрик производительности
@@ -65,7 +67,8 @@ class ArmtekApiExample {
       if (metrics != null) {
         _logger.i('📊 Метрики производительности:');
         metrics.forEach((endpoint, stats) {
-          _logger.i('  $endpoint: ${stats['avgResponseTime']} avg, ${stats['errorRate']}% errors');
+          _logger.i(
+              '  $endpoint: ${stats['avgResponseTime']} avg, ${stats['errorRate']}% errors');
         });
       }
 
@@ -79,9 +82,9 @@ class ArmtekApiExample {
       // 9. Освобождение ресурсов
       armtekClient.dispose();
       _logger.i('✅ Ресурсы освобождены');
-
     } catch (e, stackTrace) {
-      _logger.e('❌ Ошибка в примере Armtek API', error: e, stackTrace: stackTrace);
+      _logger.e('❌ Ошибка в примере Armtek API',
+          error: e, stackTrace: stackTrace);
     }
   }
 }
@@ -92,7 +95,8 @@ class PartsCatalogApiExample {
 
   /// Демонстрирует создание и использование оптимизированного клиента каталогов
   static Future<void> demonstratePartsCatalogUsage() async {
-    _logger.i('=== Пример использования оптимизированного Parts Catalog API ===');
+    _logger
+        .i('=== Пример использования оптимизированного Parts Catalog API ===');
 
     try {
       // 1. Создание клиента через фабрику
@@ -110,7 +114,8 @@ class PartsCatalogApiExample {
       // 3. Получение каталогов (кэшируется на 24 часа)
       _logger.i('Получение списка каталогов...');
       final catalogs = await catalogClient.getCatalogs();
-      _logger.i('✅ Получено ${catalogs.length} каталогов (кэшировано на 24 часа)');
+      _logger
+          .i('✅ Получено ${catalogs.length} каталогов (кэшировано на 24 часа)');
 
       // 4. Получение информации об автомобиле по VIN
       if (catalogs.isNotEmpty) {
@@ -136,9 +141,9 @@ class PartsCatalogApiExample {
       // 7. Освобождение ресурсов
       catalogClient.dispose();
       _logger.i('✅ Ресурсы освобождены');
-
     } catch (e, stackTrace) {
-      _logger.e('❌ Ошибка в примере Parts Catalog API', error: e, stackTrace: stackTrace);
+      _logger.e('❌ Ошибка в примере Parts Catalog API',
+          error: e, stackTrace: stackTrace);
     }
   }
 }
@@ -154,7 +159,7 @@ class ApiClientManagerExample {
     try {
       // 1. Создание менеджера
       final manager = ApiClientManager();
-      
+
       // 2. Инициализация с прямым подключением
       await manager.initialize(
         mode: ApiConnectionMode.direct,
@@ -203,9 +208,9 @@ class ApiClientManagerExample {
       // 9. Освобождение ресурсов
       manager.dispose();
       _logger.i('✅ Менеджер завершил работу');
-
     } catch (e, stackTrace) {
-      _logger.e('❌ Ошибка в примере ApiClientManager', error: e, stackTrace: stackTrace);
+      _logger.e('❌ Ошибка в примере ApiClientManager',
+          error: e, stackTrace: stackTrace);
     }
   }
 }
@@ -225,9 +230,10 @@ class ApiMonitoringExample {
 
       diagnostics.forEach((clientName, clientDiagnostics) {
         _logger.i('📋 Клиент: $clientName');
-        _logger.i('  Circuit Breaker: ${clientDiagnostics['circuitBreaker']?['state']}');
+        _logger.i(
+            '  Circuit Breaker: ${clientDiagnostics['circuitBreaker']?['state']}');
         _logger.i('  Базовый URL: ${clientDiagnostics['config']?['baseUrl']}');
-        
+
         final metrics = clientDiagnostics['metrics'];
         if (metrics != null) {
           _logger.i('  Метрики доступны: ${metrics.keys.length} endpoint(ов)');
@@ -245,17 +251,19 @@ class ApiMonitoringExample {
       _logger.i('  Время: ${healthReport['timestamp']}');
       _logger.i('  Всего клиентов: ${healthReport['summary']['totalClients']}');
       _logger.i('  Здоровых: ${healthReport['summary']['healthyClients']}');
-      _logger.i('  Открытых circuit breakers: ${healthReport['summary']['openCircuitBreakers']}');
+      _logger.i(
+          '  Открытых circuit breakers: ${healthReport['summary']['openCircuitBreakers']}');
 
       // 3. Получение статистики производительности
       final performanceStats = OptimizedApiClientFactory.getPerformanceStats();
       _logger.i('📊 Статистика производительности системы:');
       _logger.i('  Время создания отчета: ${performanceStats['timestamp']}');
-      _logger.i('  Всего активных клиентов: ${performanceStats['totalClients']}');
+      _logger
+          .i('  Всего активных клиентов: ${performanceStats['totalClients']}');
 
       // 4. Демонстрация экстренного управления
       _logger.i('🚨 Демонстрация экстренного управления:');
-      
+
       // Принудительное закрытие всех circuit breakers
       await OptimizedApiClientFactory.forceCloseAllCircuitBreakers();
       _logger.i('  ✅ Все circuit breakers принудительно закрыты');
@@ -267,9 +275,9 @@ class ApiMonitoringExample {
       // Сброс всех circuit breakers
       OptimizedApiClientFactory.resetAllCircuitBreakers();
       _logger.i('  🔄 Все circuit breakers сброшены');
-
     } catch (e, stackTrace) {
-      _logger.e('❌ Ошибка в примере мониторинга', error: e, stackTrace: stackTrace);
+      _logger.e('❌ Ошибка в примере мониторинга',
+          error: e, stackTrace: stackTrace);
     }
   }
 }
@@ -296,9 +304,9 @@ class ApiOptimizationExamples {
       await ApiMonitoringExample.demonstrateMonitoring();
 
       _logger.i('✅ Все примеры выполнены успешно');
-
     } catch (e, stackTrace) {
-      _logger.e('❌ Ошибка при выполнении примеров', error: e, stackTrace: stackTrace);
+      _logger.e('❌ Ошибка при выполнении примеров',
+          error: e, stackTrace: stackTrace);
     }
   }
 
@@ -317,12 +325,12 @@ class ApiOptimizationExamples {
       // Система автоматически выполнит несколько попыток,
       // а затем откроет circuit breaker
       await client.get('/test');
-
     } catch (e) {
       _logger.i('✅ Ошибка обработана корректно: ${e.toString()}');
-      
+
       // Проверяем состояние circuit breaker
-      final supplierClient = OptimizedApiClientFactory.getSupplierClient('armtek');
+      final supplierClient =
+          OptimizedApiClientFactory.getSupplierClient('armtek');
       if (supplierClient != null) {
         final status = supplierClient.getCircuitBreakerStatus();
         _logger.i('🔒 Circuit breaker состояние: ${status['state']}');
@@ -346,7 +354,7 @@ class ApiTestingUtils {
     );
 
     final futures = <Future>[];
-    
+
     for (int i = 0; i < requestCount; i++) {
       futures.add(
         client.get('/ws_ping/index').then(
@@ -360,7 +368,7 @@ class ApiTestingUtils {
     }
 
     await Future.wait(futures);
-    
+
     final metrics = client.getMetrics();
     _logger.i('📊 Результаты нагрузочного тестирования:');
     if (metrics != null) {
@@ -376,7 +384,7 @@ class ApiTestingUtils {
     _logger.i('💾 Демонстрация работы кеша');
 
     final client = OptimizedApiClientFactory.createSupplierClient(
-      supplierCode: 'armtek', 
+      supplierCode: 'armtek',
       baseUrl: 'http://ws.armtek.ru/api',
       connectionMode: ApiConnectionMode.direct,
     );

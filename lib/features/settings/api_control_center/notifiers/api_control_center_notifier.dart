@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:part_catalog/core/config/global_api_settings_service.dart';
 import 'package:part_catalog/core/database/daos/supplier_settings_dao.dart';
 import 'package:part_catalog/core/database/database.dart';

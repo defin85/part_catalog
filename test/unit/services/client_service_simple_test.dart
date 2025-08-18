@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 
 import '../../mocks/mock_services.mocks.dart';
@@ -13,7 +14,7 @@ void main() {
     setUp(() {
       mockDatabase = MockAppDatabase();
       mockClientsDao = MockClientsDao();
-      
+
       when(mockDatabase.clientsDao).thenReturn(mockClientsDao);
       clientService = ClientService(mockDatabase);
     });
@@ -75,8 +76,7 @@ void main() {
     test('should call searchClients', () async {
       // Arrange
       const query = 'test';
-      when(mockClientsDao.searchClients(query))
-          .thenAnswer((_) async => []);
+      when(mockClientsDao.searchClients(query)).thenAnswer((_) async => []);
 
       // Act
       await clientService.searchClients(query);
@@ -107,11 +107,13 @@ void main() {
           .thenAnswer((_) async => false);
 
       // Act
-      final result = await clientService.isCodeUnique(code, excludeUuid: excludeUuid);
+      final result =
+          await clientService.isCodeUnique(code, excludeUuid: excludeUuid);
 
       // Assert
       expect(result, isFalse);
-      verify(mockClientsDao.isCodeUnique(code, excludeUuid: excludeUuid)).called(1);
+      verify(mockClientsDao.isCodeUnique(code, excludeUuid: excludeUuid))
+          .called(1);
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:part_catalog/features/parts_catalog/models/groups_tree.dart';
 
 part 'groups_tree_response.freezed.dart';

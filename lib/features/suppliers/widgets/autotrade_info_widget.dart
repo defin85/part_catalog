@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/widgets/base_supplier_info_widget.dart';
 
@@ -10,20 +11,20 @@ class AutotradeInfoWidget extends BaseSupplierInfoWidget {
     super.key,
     this.autotradeData,
   }) : super(
-    supplierCode: 'autotrade',
-    supplierData: autotradeData,
-  );
+          supplierCode: 'autotrade',
+          supplierData: autotradeData,
+        );
 
   @override
   BaseSupplierInfoWidgetState createState() => _AutotradeInfoWidgetState();
 }
 
-class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInfoWidget> {
-  
+class _AutotradeInfoWidgetState
+    extends BaseSupplierInfoWidgetState<AutotradeInfoWidget> {
   @override
   List<InfoCardData> buildInfoCards(Translations t) {
     final cards = <InfoCardData>[];
-    
+
     // API статистика
     cards.add(InfoCardData(
       icon: Icons.api,
@@ -33,7 +34,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       subtitle: 'Информация об API',
       onTap: () => selectItem('api_stats', widget.autotradeData),
     ));
-    
+
     // Каталог запчастей
     cards.add(InfoCardData(
       icon: Icons.build,
@@ -43,7 +44,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       subtitle: 'Доступные запчасти',
       onTap: () => selectItem('parts_catalog', widget.autotradeData?['parts']),
     ));
-    
+
     // Производители
     cards.add(InfoCardData(
       icon: Icons.factory,
@@ -51,9 +52,10 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       count: widget.autotradeData?['manufacturersCount'] ?? 0,
       color: Colors.orange,
       subtitle: 'Доступные бренды',
-      onTap: () => selectItem('manufacturers', widget.autotradeData?['manufacturers']),
+      onTap: () =>
+          selectItem('manufacturers', widget.autotradeData?['manufacturers']),
     ));
-    
+
     // Настройки подключения
     cards.add(InfoCardData(
       icon: Icons.settings,
@@ -63,7 +65,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       subtitle: 'Параметры API',
       onTap: () => selectItem('settings', widget.autotradeData?['settings']),
     ));
-    
+
     return cards;
   }
 
@@ -84,7 +86,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
         return const Center(child: Text('Выберите элемент для просмотра'));
     }
   }
-  
+
   Widget _buildOverview(Translations t) {
     return Card(
       child: Padding(
@@ -94,7 +96,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
           children: [
             Row(
               children: [
-                Icon(Icons.store, size: 32, color: Colors.blue),
+                const Icon(Icons.store, size: 32, color: Colors.blue),
                 const SizedBox(width: 12),
                 Text(
                   'Autotrade API',
@@ -111,8 +113,8 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
             Text(
               'Специализация: каталог запчастей, поиск по VIN, кроссы.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
             const SizedBox(height: 16),
             _buildInfoRow('API версия', '2.0'),
@@ -124,7 +126,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       ),
     );
   }
-  
+
   Widget _buildApiStats(Translations t) {
     return Card(
       child: Padding(
@@ -134,7 +136,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
           children: [
             Row(
               children: [
-                Icon(Icons.analytics, size: 32, color: Colors.blue),
+                const Icon(Icons.analytics, size: 32, color: Colors.blue),
                 const SizedBox(width: 12),
                 Text(
                   'API статистика',
@@ -155,7 +157,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       ),
     );
   }
-  
+
   Widget _buildPartsCatalog(Object? parts, Translations t) {
     return Card(
       child: Padding(
@@ -165,7 +167,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
           children: [
             Row(
               children: [
-                Icon(Icons.build, size: 32, color: Colors.green),
+                const Icon(Icons.build, size: 32, color: Colors.green),
                 const SizedBox(width: 12),
                 Text(
                   'Каталог запчастей',
@@ -191,7 +193,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
                 },
               ),
             ] else ...[
-              Text('Каталог запчастей недоступен'),
+              const Text('Каталог запчастей недоступен'),
               const SizedBox(height: 8),
               Text(
                 'Для просмотра каталога необходимо загрузить данные через API.',
@@ -203,7 +205,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       ),
     );
   }
-  
+
   Widget _buildManufacturers(Object? manufacturers, Translations t) {
     return Card(
       child: Padding(
@@ -213,7 +215,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
           children: [
             Row(
               children: [
-                Icon(Icons.factory, size: 32, color: Colors.orange),
+                const Icon(Icons.factory, size: 32, color: Colors.orange),
                 const SizedBox(width: 12),
                 Text(
                   'Производители',
@@ -237,14 +239,22 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
               ),
             ] else ...[
               // Примеры производителей
-              Text('Популярные производители:'),
+              const Text('Популярные производители:'),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  'Bosch', 'Mann', 'Mahle', 'Febi', 'Lemforder',
-                  'SKF', 'Gates', 'Continental', 'Sachs', 'Bilstein'
+                  'Bosch',
+                  'Mann',
+                  'Mahle',
+                  'Febi',
+                  'Lemforder',
+                  'SKF',
+                  'Gates',
+                  'Continental',
+                  'Sachs',
+                  'Bilstein'
                 ].map((brand) {
                   return Chip(
                     label: Text(brand),
@@ -258,7 +268,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       ),
     );
   }
-  
+
   Widget _buildSettings(Object? settings, Translations t) {
     return Card(
       child: Padding(
@@ -268,7 +278,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
           children: [
             Row(
               children: [
-                Icon(Icons.settings, size: 32, color: Colors.purple),
+                const Icon(Icons.settings, size: 32, color: Colors.purple),
                 const SizedBox(width: 12),
                 Text(
                   'Настройки API',
@@ -298,10 +308,10 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
                     style: Theme.of(context).textTheme.titleSmall,
                   ),
                   const SizedBox(height: 8),
-                  Text('• Поддержка поиска по артикулу'),
-                  Text('• Поиск аналогов и кроссов'),
-                  Text('• Информация о наличии и ценах'),
-                  Text('• Возможность заказа через API'),
+                  const Text('• Поддержка поиска по артикулу'),
+                  const Text('• Поиск аналогов и кроссов'),
+                  const Text('• Информация о наличии и ценах'),
+                  const Text('• Возможность заказа через API'),
                 ],
               ),
             ),
@@ -310,7 +320,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       ),
     );
   }
-  
+
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -331,7 +341,7 @@ class _AutotradeInfoWidgetState extends BaseSupplierInfoWidgetState<AutotradeInf
       ),
     );
   }
-  
+
   Widget _buildStatCard(String title, String value, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),

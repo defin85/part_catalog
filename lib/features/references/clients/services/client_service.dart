@@ -1,18 +1,20 @@
 import 'package:logger/logger.dart';
+
 import 'package:part_catalog/core/database/daos/cars_dao.dart'; // Нужен для транзакции с машинами
 import 'package:part_catalog/core/database/daos/clients_dao.dart'; // Содержит ClientFullData
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/database/database_error_recovery.dart';
 import 'package:part_catalog/core/utils/error_handler.dart';
 import 'package:part_catalog/core/utils/log_messages.dart';
-// Логгер и сообщения
 import 'package:part_catalog/core/utils/logger_config.dart';
-// Импорт бизнес-модели (композитора)
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
-// Импорт интерфейса и других необходимых типов
 import 'package:part_catalog/features/references/clients/models/client_type.dart';
-// Импорт композитора для машин (предполагается, что он существует)
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
+
+// Логгер и сообщения
+// Импорт бизнес-модели (композитора)
+// Импорт интерфейса и других необходимых типов
+// Импорт композитора для машин (предполагается, что он существует)
 
 /// {@template client_service}
 /// Сервис для управления клиентами.
@@ -56,12 +58,13 @@ class ClientService {
   /// Получает клиента [ClientModelComposite] по UUID.
   Future<ClientModelComposite?> getClientByUuid(String uuid) async {
     _logger.i(LogMessages.clientGetByUuid.replaceAll('{uuid}', uuid));
-    
+
     return _errorRecovery.executeWithRetry(
       () async {
         final clientData = await _clientsDao.getClientByUuid(uuid);
         if (clientData == null) {
-          _logger.w(LogMessages.clientNotFoundByUuid.replaceAll('{uuid}', uuid));
+          _logger
+              .w(LogMessages.clientNotFoundByUuid.replaceAll('{uuid}', uuid));
           return null;
         }
         return _mapDataToComposite(clientData);
@@ -73,12 +76,13 @@ class ClientService {
   /// Получает клиента [ClientModelComposite] по коду.
   Future<ClientModelComposite?> getClientByCode(String code) async {
     _logger.i(LogMessages.clientGetByCode.replaceAll('{code}', code));
-    
+
     return ErrorHandler.executeWithLogging(
       operation: () async {
         final clientData = await _clientsDao.getClientByCode(code);
         if (clientData == null) {
-          _logger.w(LogMessages.clientNotFoundByCode.replaceAll('{code}', code));
+          _logger
+              .w(LogMessages.clientNotFoundByCode.replaceAll('{code}', code));
           return null;
         }
         return _mapDataToComposite(clientData);
@@ -146,11 +150,13 @@ class ClientService {
         // Можно сначала получить клиента, чтобы убедиться, что он существует
         final client = await getClientByUuid(uuid);
         if (client == null) {
-          _logger.logWarning(LogMessages.clientNotFoundForDelete.replaceAll('{uuid}', uuid));
+          _logger.logWarning(
+              LogMessages.clientNotFoundForDelete.replaceAll('{uuid}', uuid));
           return; // Клиент не найден или уже удален
         }
         if (client.isDeleted) {
-          _logger.logWarning(LogMessages.clientAlreadyDeleted.replaceAll('{uuid}', uuid));
+          _logger.logWarning(
+              LogMessages.clientAlreadyDeleted.replaceAll('{uuid}', uuid));
           return; // Уже удален
         }
         // Помечаем как удаленный и обновляем
@@ -166,7 +172,7 @@ class ClientService {
   Future<List<ClientModelComposite>> getAllClients(
       {bool includeDeleted = false}) async {
     _logger.i(LogMessages.clientGetAll(includeDeleted));
-    
+
     return _errorRecovery.executeWithRetry(
       () async {
         final clientDataList =
@@ -195,10 +201,11 @@ class ClientService {
       operation: () async {
         // Получаем текущие данные (DAO должен уметь получать удаленных для восстановления)
         // TODO: Убедиться, что getClientByUuid или специальный метод DAO может получить удаленного
-        final clientData = await _clientsDao
-            .getClientByUuid(uuid); // Предполагаем, что может вернуть удаленного
+        final clientData = await _clientsDao.getClientByUuid(
+            uuid); // Предполагаем, что может вернуть удаленного
         if (clientData == null) {
-          _logger.logWarning(LogMessages.clientNotFoundForRestore.replaceAll('{uuid}', uuid));
+          _logger.logWarning(
+              LogMessages.clientNotFoundForRestore.replaceAll('{uuid}', uuid));
           return;
         }
         final client = _mapDataToComposite(clientData);
@@ -254,7 +261,8 @@ class ClientService {
 
             // Вызываем DAO для вставки машины.
             // CarsDao.insertCar сам найдет int ID клиента по UUID из carSpecificWithClient.
-            await _carsDao.insertCar(carCoreWithModified, carSpecificWithClient);
+            await _carsDao.insertCar(
+                carCoreWithModified, carSpecificWithClient);
             _logger.d(LogMessages.clientCarAddedInTransaction
                 .replaceAll('{carUuid}', car.uuid)
                 .replaceAll('{clientUuid}', client.uuid));
@@ -272,7 +280,7 @@ class ClientService {
   /// Поиск клиентов [ClientModelComposite] по имени, коду или контактной информации.
   Future<List<ClientModelComposite>> searchClients(String query) async {
     _logger.i(LogMessages.clientSearching.replaceAll('{query}', query));
-    
+
     return ErrorHandler.executeWithLogging(
       operation: () async {
         final clientDataList = await _clientsDao.searchClients(query);
@@ -287,7 +295,7 @@ class ClientService {
   Future<bool> isCodeUnique(String code, {String? excludeUuid}) async {
     _logger
         .i(LogMessages.clientCheckingCodeUniqueness.replaceAll('{code}', code));
-    
+
     return ErrorHandler.executeWithLogging(
       operation: () async {
         return _clientsDao.isCodeUnique(code, excludeUuid: excludeUuid);

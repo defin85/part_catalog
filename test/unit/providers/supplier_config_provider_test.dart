@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 
@@ -32,7 +33,7 @@ void main() {
       final provider = supplierConfigFormProvider('test');
       final notifier = container.read(provider.notifier);
 
-      final testConfig = SupplierConfig(
+      final testConfig = const SupplierConfig(
         supplierCode: 'test',
         displayName: 'Test Supplier',
         isEnabled: true,
@@ -65,7 +66,7 @@ void main() {
       final notifier = container.read(provider.notifier);
 
       // Создаем базовую конфигурацию
-      final testConfig = SupplierConfig(
+      final testConfig = const SupplierConfig(
         supplierCode: 'test',
         displayName: 'Test Supplier',
         isEnabled: true,
@@ -108,7 +109,7 @@ void main() {
         expect(container.read(provider).validationErrors, isNotEmpty);
 
         // Обновляем конфигурацию
-        final testConfig = SupplierConfig(
+        final testConfig = const SupplierConfig(
           supplierCode: 'test',
           displayName: 'Test Supplier',
           isEnabled: true,

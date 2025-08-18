@@ -11,7 +11,6 @@ import 'package:part_catalog/features/suppliers/widgets/base_supplier_info_widge
 /// Фабрика для создания виджетов информации о поставщиках
 /// Каждый поставщик имеет свой специфический виджет с уникальной структурой данных
 class SupplierInfoWidgetFactory {
-  
   /// Создает виджет информации для указанного поставщика
   static Widget? createInfoWidget({
     required String supplierCode,
@@ -20,19 +19,19 @@ class SupplierInfoWidgetFactory {
     switch (supplierCode.toLowerCase()) {
       case 'armtek':
         return _createArmtekWidget(supplierData);
-      
+
       case 'autotrade':
         return _createAutotradeWidget(supplierData);
-      
+
       case 'exist':
         return _createExistWidget(supplierData);
-        
+
       default:
         // Для неизвестных поставщиков возвращаем базовый виджет
         return _createGenericWidget(supplierCode, supplierData);
     }
   }
-  
+
   /// Создает виджет для Armtek
   static Widget _createArmtekWidget(Map<String, dynamic> data) {
     try {
@@ -41,54 +40,64 @@ class SupplierInfoWidgetFactory {
       print('Structure exists: ${data.containsKey('structure')}');
       print('Structure type: ${data['structure']?.runtimeType}');
       print('Structure content: ${data['structure']}');
-      
+
       // Извлекаем структуру пользователя из переданных данных
       UserStructureRoot structure;
-      
+
       if (data['structure'] != null && data['structure'] is UserStructureRoot) {
         // Если это уже объект UserStructureRoot - используем напрямую
         structure = data['structure'] as UserStructureRoot;
-        print('Structure is UserStructureRoot object with ${structure.rgTab?.length ?? 0} payers');
+        print(
+            'Structure is UserStructureRoot object with ${structure.rgTab?.length ?? 0} payers');
       } else {
-        print('Creating empty structure - no valid UserStructureRoot object found');
+        print(
+            'Creating empty structure - no valid UserStructureRoot object found');
         print('Structure type: ${data['structure']?.runtimeType}');
-        structure = UserStructureRoot(rgTab: []);
+        structure = const UserStructureRoot(rgTab: []);
       }
-      
+
       // Извлекаем списки брендов и складов (если доступны)
       List<BrandItem>? brandList;
       List<StoreItem>? storeList;
-      
+
       if (data['brandList'] != null) {
         if (data['brandList'] is List<BrandItem>) {
           brandList = data['brandList'] as List<BrandItem>;
-          print('Brand list is already List<BrandItem> with ${brandList.length} items');
+          print(
+              'Brand list is already List<BrandItem> with ${brandList.length} items');
         } else if (data['brandList'] is List) {
           try {
-            brandList = (data['brandList'] as List).map((item) => BrandItem.fromJson(item)).toList();
-            print('Brand list converted from JSON with ${brandList.length} items');
+            brandList = (data['brandList'] as List)
+                .map((item) => BrandItem.fromJson(item))
+                .toList();
+            print(
+                'Brand list converted from JSON with ${brandList.length} items');
           } catch (e) {
             print('Failed to convert brand list from JSON: $e');
             brandList = null;
           }
         }
       }
-      
+
       if (data['storeList'] != null) {
         if (data['storeList'] is List<StoreItem>) {
           storeList = data['storeList'] as List<StoreItem>;
-          print('Store list is already List<StoreItem> with ${storeList.length} items');
+          print(
+              'Store list is already List<StoreItem> with ${storeList.length} items');
         } else if (data['storeList'] is List) {
           try {
-            storeList = (data['storeList'] as List).map((item) => StoreItem.fromJson(item)).toList();
-            print('Store list converted from JSON with ${storeList.length} items');
+            storeList = (data['storeList'] as List)
+                .map((item) => StoreItem.fromJson(item))
+                .toList();
+            print(
+                'Store list converted from JSON with ${storeList.length} items');
           } catch (e) {
             print('Failed to convert store list from JSON: $e');
             storeList = null;
           }
         }
       }
-      
+
       print('Creating ArmtekInfoMasterDetail widget...');
       return ArmtekInfoMasterDetail(
         structure: structure,
@@ -100,7 +109,7 @@ class SupplierInfoWidgetFactory {
       print('ERROR: Ошибка парсинга данных Armtek: $e');
       print('Stack trace: $stackTrace');
       print('Raw data: $data');
-      
+
       return GenericSupplierInfoWidget(
         supplierCode: 'armtek',
         supplierData: {
@@ -114,33 +123,35 @@ class SupplierInfoWidgetFactory {
       );
     }
   }
-  
+
   /// Создает виджет для Autotrade
   static Widget _createAutotradeWidget(Map<String, dynamic> data) {
     return AutotradeInfoWidget(
       autotradeData: data,
     );
   }
-  
+
   /// Создает виджет для Exist
   /// TODO: Реализовать после создания ExistInfoWidget
   static Widget _createExistWidget(Map<String, dynamic> data) {
     return _createGenericWidget('exist', data);
   }
-  
+
   /// Создает базовый виджет для неизвестных поставщиков
-  static Widget _createGenericWidget(String supplierCode, Map<String, dynamic> data) {
+  static Widget _createGenericWidget(
+      String supplierCode, Map<String, dynamic> data) {
     return GenericSupplierInfoWidget(
       supplierCode: supplierCode,
       supplierData: data,
     );
   }
-  
+
   /// Проверяет, поддерживается ли поставщик
   static bool isSupported(String supplierCode) {
-    return ['armtek', 'autotrade', 'exist'].contains(supplierCode.toLowerCase());
+    return ['armtek', 'autotrade', 'exist']
+        .contains(supplierCode.toLowerCase());
   }
-  
+
   /// Возвращает список поддерживаемых поставщиков
   static List<String> getSupportedSuppliers() {
     return ['armtek', 'autotrade', 'exist'];
@@ -156,15 +167,16 @@ class GenericSupplierInfoWidget extends BaseSupplierInfoWidget {
   });
 
   @override
-  BaseSupplierInfoWidgetState createState() => _GenericSupplierInfoWidgetState();
+  BaseSupplierInfoWidgetState createState() =>
+      _GenericSupplierInfoWidgetState();
 }
 
-class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<GenericSupplierInfoWidget> {
-  
+class _GenericSupplierInfoWidgetState
+    extends BaseSupplierInfoWidgetState<GenericSupplierInfoWidget> {
   @override
   List<InfoCardData> buildInfoCards(Translations t) {
     final cards = <InfoCardData>[];
-    
+
     // Базовая информация
     cards.add(InfoCardData(
       icon: Icons.info,
@@ -174,11 +186,11 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
       subtitle: 'Настройки API',
       onTap: () => selectItem('overview', widget.supplierData),
     ));
-    
+
     // Можно добавить анализ supplierData и создать карточки на основе найденных данных
     if (widget.supplierData != null) {
       final data = widget.supplierData!;
-      
+
       // Ищем массивы данных
       data.forEach((key, value) {
         if (value is List && value.isNotEmpty) {
@@ -192,7 +204,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
         }
       });
     }
-    
+
     return cards;
   }
 
@@ -211,7 +223,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.info_outline, size: 64, color: Colors.grey),
+                const Icon(Icons.info_outline, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
                 Text(
                   'Детали для $itemType',
@@ -228,7 +240,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
         }
     }
   }
-  
+
   Widget _buildOverview(Translations t) {
     return SingleChildScrollView(
       child: Card(
@@ -242,8 +254,8 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
-              
-              if (widget.supplierData != null && widget.supplierData!.containsKey('error')) ...[
+              if (widget.supplierData != null &&
+                  widget.supplierData!.containsKey('error')) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -260,62 +272,78 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
                           const SizedBox(width: 8),
                           Text(
                             'Ошибка загрузки данных',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.red.shade700,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: Colors.red.shade700,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        widget.supplierData!['error']?.toString() ?? 'Неизвестная ошибка',
+                        widget.supplierData!['error']?.toString() ??
+                            'Неизвестная ошибка',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.red.shade800,
-                        ),
+                              color: Colors.red.shade800,
+                            ),
                       ),
                       if (widget.supplierData!.containsKey('dataKeys')) ...[
                         const SizedBox(height: 12),
                         Text(
                           'Переданные ключи данных:',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          widget.supplierData!['dataKeys']?.toString() ?? 'Нет данных',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontFamily: 'monospace',
-                          ),
+                          widget.supplierData!['dataKeys']?.toString() ??
+                              'Нет данных',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                  ),
                         ),
                       ],
-                      if (widget.supplierData!.containsKey('structureType')) ...[
+                      if (widget.supplierData!
+                          .containsKey('structureType')) ...[
                         const SizedBox(height: 12),
                         Text(
                           'Тип структуры: ${widget.supplierData!['structureType']}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontFamily: 'monospace',
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontFamily: 'monospace',
+                                  ),
                         ),
                       ],
-                      if (widget.supplierData!.containsKey('structureContent')) ...[
+                      if (widget.supplierData!
+                          .containsKey('structureContent')) ...[
                         const SizedBox(height: 8),
                         Text(
                           'Содержимое структуры:',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                         const SizedBox(height: 4),
                         Container(
                           constraints: const BoxConstraints(maxHeight: 200),
                           child: SingleChildScrollView(
                             child: Text(
-                              widget.supplierData!['structureContent']?.toString() ?? 'Нет данных',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontFamily: 'monospace',
-                              ),
+                              widget.supplierData!['structureContent']
+                                      ?.toString() ??
+                                  'Нет данных',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    fontFamily: 'monospace',
+                                  ),
                             ),
                           ),
                         ),
@@ -333,11 +361,10 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
                 Text(
                   'Отображается базовая информация.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                 ),
               ],
-              
               if (widget.supplierData != null) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -345,10 +372,13 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                ...widget.supplierData!.keys.where((key) => key != 'error' && key != 'rawData').map((key) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
-                  child: Text('• $key: ${widget.supplierData![key]?.runtimeType}'),
-                )),
+                ...widget.supplierData!.keys
+                    .where((key) => key != 'error' && key != 'rawData')
+                    .map((key) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                              '• $key: ${widget.supplierData![key]?.runtimeType}'),
+                        )),
               ],
             ],
           ),
@@ -356,7 +386,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
       ),
     );
   }
-  
+
   Widget _buildGenericList(String title, List items, Translations t) {
     return Card(
       child: Padding(
@@ -388,7 +418,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
       ),
     );
   }
-  
+
   Widget _buildGenericMap(String title, Map map, Translations t) {
     return Card(
       child: Padding(
@@ -402,29 +432,29 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
             ),
             const SizedBox(height: 16),
             ...map.entries.map((entry) => Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 120,
-                    child: Text(
-                      '${entry.key}:',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        child: Text(
+                          '${entry.key}:',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(entry.value.toString()),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Text(entry.value.toString()),
-                  ),
-                ],
-              ),
-            )),
+                )),
           ],
         ),
       ),
     );
   }
-  
+
   IconData _getIconForKey(String key) {
     switch (key.toLowerCase()) {
       case 'brands':
@@ -443,7 +473,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
         return Icons.list;
     }
   }
-  
+
   String _getTitleForKey(String key) {
     switch (key.toLowerCase()) {
       case 'brands':
@@ -462,7 +492,7 @@ class _GenericSupplierInfoWidgetState extends BaseSupplierInfoWidgetState<Generi
         return key;
     }
   }
-  
+
   Color _getColorForKey(String key) {
     switch (key.toLowerCase()) {
       case 'brands':

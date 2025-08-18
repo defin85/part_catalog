@@ -48,9 +48,8 @@ extension EnhancedLoggerExtensions on Logger {
 
   /// Логирование входа в метод
   void logMethodEntry(String methodName, [Map<String, dynamic>? parameters]) {
-    final params = parameters?.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join(', ') ?? '';
+    final params =
+        parameters?.entries.map((e) => '${e.key}: ${e.value}').join(', ') ?? '';
     d('→ $methodName($params)');
   }
 
@@ -66,25 +65,28 @@ extension EnhancedLoggerExtensions on Logger {
 
   /// Логирование событий пользовательского интерфейса
   void logUIEvent(String eventName, [Map<String, dynamic>? details]) {
-    final detailsStr = details?.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join(', ') ?? '';
+    final detailsStr =
+        details?.entries.map((e) => '${e.key}: ${e.value}').join(', ') ?? '';
     d('UI Event: $eventName${detailsStr.isNotEmpty ? ' [$detailsStr]' : ''}');
   }
 
   /// Логирование сетевых запросов
-  void logNetworkRequest(String method, String url, [Map<String, dynamic>? headers]) {
+  void logNetworkRequest(String method, String url,
+      [Map<String, dynamic>? headers]) {
     i('→ $method $url${headers != null ? '\nHeaders: $headers' : ''}');
   }
 
   /// Логирование сетевых ответов
-  void logNetworkResponse(String method, String url, int statusCode, [dynamic body]) {
+  void logNetworkResponse(String method, String url, int statusCode,
+      [dynamic body]) {
     final level = statusCode >= 400 ? Level.warning : Level.info;
-    log(level, '← $method $url [$statusCode]${body != null ? '\nBody: $body' : ''}');
+    log(level,
+        '← $method $url [$statusCode]${body != null ? '\nBody: $body' : ''}');
   }
 
   /// Логирование операций с базой данных
-  void logDatabaseOperation(String operation, String table, [Map<String, dynamic>? data]) {
+  void logDatabaseOperation(String operation, String table,
+      [Map<String, dynamic>? data]) {
     d('DB: $operation on $table${data != null ? ' with data: $data' : ''}');
   }
 
@@ -110,9 +112,8 @@ extension EnhancedLoggerExtensions on Logger {
     dynamic error,
     StackTrace? stackTrace,
   }) {
-    final metaStr = metadata?.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join(', ') ?? '';
+    final metaStr =
+        metadata?.entries.map((e) => '${e.key}: ${e.value}').join(', ') ?? '';
     log(
       level,
       '$message${metaStr.isNotEmpty ? '\nMetadata: {$metaStr}' : ''}',

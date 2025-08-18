@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -67,7 +68,7 @@ void main() {
 
       testWidgets('should handle form validation basics', (tester) async {
         final formKey = GlobalKey<FormState>();
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -108,7 +109,7 @@ void main() {
 
       testWidgets('should handle dropdown selection', (tester) async {
         String? selectedValue;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -120,8 +121,10 @@ void main() {
                       labelText: 'VKORG',
                     ),
                     items: const [
-                      DropdownMenuItem(value: '4000', child: Text('4000 - Программа A')),
-                      DropdownMenuItem(value: '5000', child: Text('5000 - Программа B')),
+                      DropdownMenuItem(
+                          value: '4000', child: Text('4000 - Программа A')),
+                      DropdownMenuItem(
+                          value: '5000', child: Text('5000 - Программа B')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -137,19 +140,19 @@ void main() {
 
         // Тестируем выпадающий список
         expect(find.text('VKORG'), findsOneWidget);
-        
+
         await tester.tap(find.byType(DropdownButtonFormField<String>));
         await tester.pumpAndSettle();
-        
+
         await tester.tap(find.text('4000 - Программа A'));
         await tester.pumpAndSettle();
-        
+
         expect(find.text('4000 - Программа A'), findsOneWidget);
       });
 
       testWidgets('should handle switches and buttons', (tester) async {
         bool isEnabled = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -185,11 +188,11 @@ void main() {
         expect(find.text('Активен'), findsOneWidget);
         expect(find.text('Сохранить'), findsOneWidget);
         expect(find.text('Отмена'), findsOneWidget);
-        
+
         // Тестируем переключатель
         await tester.tap(find.byType(Switch));
         await tester.pump();
-        
+
         expect(isEnabled, true);
       });
     });
@@ -197,7 +200,7 @@ void main() {
     group('Тесты layout и responsive design', () {
       testWidgets('should not overflow on mobile screens', (tester) async {
         await tester.binding.setSurfaceSize(const Size(320, 568));
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -257,14 +260,14 @@ void main() {
 
       testWidgets('should handle different screen sizes', (tester) async {
         final screenSizes = [
-          const Size(375, 667),   // Mobile
-          const Size(768, 1024),  // Tablet
+          const Size(375, 667), // Mobile
+          const Size(768, 1024), // Tablet
           const Size(1920, 1080), // Desktop
         ];
 
         for (final size in screenSizes) {
           await tester.binding.setSurfaceSize(size);
-          
+
           await tester.pumpWidget(
             MaterialApp(
               home: Scaffold(
@@ -295,7 +298,7 @@ void main() {
     group('Тесты производительности', () {
       testWidgets('should render quickly', (tester) async {
         final stopwatch = Stopwatch()..start();
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -314,7 +317,7 @@ void main() {
             ),
           ),
         );
-        
+
         stopwatch.stop();
         expect(stopwatch.elapsedMilliseconds, lessThan(100));
         expect(find.byType(Card), findsNWidgets(10));

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/core/database/daos/clients_dao.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 
@@ -15,10 +16,10 @@ void main() {
     setUp(() {
       mockDatabase = MockAppDatabase();
       mockClientsDao = MockClientsDao();
-      
+
       // Настраиваем мок базы данных для возврата мок DAO
       when(mockDatabase.clientsDao).thenReturn(mockClientsDao);
-      
+
       clientService = ClientService(mockDatabase);
     });
 
@@ -39,7 +40,8 @@ void main() {
 
         // Assert
         expect(result.length, equals(1));
-        expect(result.first.displayName, equals(TestData.testClientPhysical.displayName));
+        expect(result.first.displayName,
+            equals(TestData.testClientPhysical.displayName));
         verify(mockClientsDao.getAllClients(includeDeleted: false)).called(1);
       });
 
@@ -81,12 +83,14 @@ void main() {
             .thenAnswer((_) async => mockClientData);
 
         // Act
-        final result = await clientService.getClientByUuid(TestData.testClientPhysical.uuid);
+        final result = await clientService
+            .getClientByUuid(TestData.testClientPhysical.uuid);
 
         // Assert
         expect(result, isNotNull);
         expect(result!.uuid, equals(TestData.testClientPhysical.uuid));
-        verify(mockClientsDao.getClientByUuid(TestData.testClientPhysical.uuid)).called(1);
+        verify(mockClientsDao.getClientByUuid(TestData.testClientPhysical.uuid))
+            .called(1);
       });
 
       test('should return null when client does not exist', () async {
@@ -108,8 +112,7 @@ void main() {
       test('should add client successfully', () async {
         // Arrange
         final clientToAdd = TestData.testClientPhysical;
-        when(mockClientsDao.insertClient(any, any))
-            .thenAnswer((_) async => 1);
+        when(mockClientsDao.insertClient(any, any)).thenAnswer((_) async => 1);
 
         // Act
         await clientService.addClient(clientToAdd);
@@ -199,7 +202,8 @@ void main() {
     });
 
     group('searchClients', () {
-      test('should return filtered clients when search query matches', () async {
+      test('should return filtered clients when search query matches',
+          () async {
         // Arrange
         const searchQuery = 'иван';
         final expectedResults = [
@@ -208,7 +212,7 @@ void main() {
             clientData: TestData.testClientPhysical.clientData,
           ),
         ];
-        
+
         when(mockClientsDao.searchClients(searchQuery))
             .thenAnswer((_) async => expectedResults);
 
@@ -268,7 +272,8 @@ void main() {
 
         // Assert
         expect(result, isTrue);
-        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: null)).called(1);
+        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: null))
+            .called(1);
       });
 
       test('should return false when code already exists', () async {
@@ -282,7 +287,8 @@ void main() {
 
         // Assert
         expect(result, isFalse);
-        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: null)).called(1);
+        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: null))
+            .called(1);
       });
 
       test('should exclude specified uuid when checking uniqueness', () async {
@@ -293,11 +299,13 @@ void main() {
             .thenAnswer((_) async => true);
 
         // Act
-        final result = await clientService.isCodeUnique(testCode, excludeUuid: excludeUuid);
+        final result = await clientService.isCodeUnique(testCode,
+            excludeUuid: excludeUuid);
 
         // Assert
         expect(result, isTrue);
-        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: excludeUuid)).called(1);
+        verify(mockClientsDao.isCodeUnique(testCode, excludeUuid: excludeUuid))
+            .called(1);
       });
     });
   });

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
@@ -24,17 +25,17 @@ class ApiClientFactory {
     switch (config.supplierCode.toLowerCase()) {
       case 'armtek':
         return _createArmtekClient(config, dio, baseUrl, useProxy);
-      
+
       case 'autotrade':
         // TODO: Реализовать AutotradeApiClient
         _logger.w('AutotradeApiClient not implemented yet');
         return null;
-      
+
       case 'autodoc':
         // TODO: Реализовать AutodocApiClient
         _logger.w('AutodocApiClient not implemented yet');
         return null;
-      
+
       default:
         _logger.e('Unknown supplier code: ${config.supplierCode}');
         return null;
@@ -49,14 +50,15 @@ class ApiClientFactory {
     bool useProxy,
   ) {
     final creds = config.apiConfig.credentials;
-    
+
     if (!useProxy && config.apiConfig.authType == AuthenticationType.basic) {
       // Прямое подключение с Basic Auth
       if (creds?.username == null || creds?.password == null) {
-        _logger.e('Username and password required for Armtek direct connection');
+        _logger
+            .e('Username and password required for Armtek direct connection');
         return null;
       }
-      
+
       return ArmtekApiClient(
         dio,
         baseUrl: baseUrl,
@@ -73,7 +75,7 @@ class ApiClientFactory {
         proxyAuthToken: creds?.token, // Если прокси требует токен
       );
     }
-    
+
     _logger.e('Invalid configuration for Armtek client');
     return null;
   }
@@ -81,18 +83,18 @@ class ApiClientFactory {
   /// Настроить Dio с параметрами из конфигурации
   static void configureDio(Dio dio, SupplierConfig config) {
     final apiConfig = config.apiConfig;
-    
+
     // Установить таймаут
     if (apiConfig.timeout != null) {
       dio.options.connectTimeout = apiConfig.timeout!;
       dio.options.receiveTimeout = apiConfig.timeout!;
     }
-    
+
     // Добавить дополнительные заголовки
     if (apiConfig.defaultHeaders != null) {
       dio.options.headers.addAll(apiConfig.defaultHeaders!);
     }
-    
+
     // Добавить интерсептор для повторных попыток
     if (apiConfig.retryAttempts != null && apiConfig.retryAttempts! > 0) {
       dio.interceptors.add(
@@ -107,7 +109,7 @@ class ApiClientFactory {
         ),
       );
     }
-    
+
     // Добавить интерсептор для отслеживания лимитов
     if (apiConfig.rateLimit?.trackUsage == true) {
       dio.interceptors.add(
@@ -138,15 +140,15 @@ class RetryInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     final attempt = err.requestOptions.extra['retryAttempt'] ?? 0;
-    
+
     if (attempt < retries && _shouldRetry(err)) {
       err.requestOptions.extra['retryAttempt'] = attempt + 1;
-      
+
       // Задержка перед повторной попыткой
       if (attempt < retryDelays.length) {
         await Future.delayed(retryDelays[attempt]);
       }
-      
+
       try {
         final response = await dio.fetch(err.requestOptions);
         handler.resolve(response);
@@ -160,8 +162,8 @@ class RetryInterceptor extends Interceptor {
 
   bool _shouldRetry(DioException err) {
     return err.type == DioExceptionType.connectionTimeout ||
-           err.type == DioExceptionType.receiveTimeout ||
-           (err.response?.statusCode ?? 0) >= 500;
+        err.type == DioExceptionType.receiveTimeout ||
+        (err.response?.statusCode ?? 0) >= 500;
   }
 }
 
@@ -184,7 +186,7 @@ class RateLimitInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     final tracker = _trackers[supplierCode]!;
-    
+
     if (!tracker.canMakeRequest()) {
       handler.reject(
         DioException(
@@ -195,7 +197,7 @@ class RateLimitInterceptor extends Interceptor {
       );
       return;
     }
-    
+
     tracker.recordRequest();
     handler.next(options);
   }
@@ -210,27 +212,29 @@ class RateLimitTracker {
 
   bool canMakeRequest() {
     _cleanOldRequests();
-    
+
     if (config.dailyLimit != null) {
-      final dailyCount = _requests.where(
-        (r) => r.isAfter(DateTime.now().subtract(const Duration(days: 1)))
-      ).length;
-      
+      final dailyCount = _requests
+          .where((r) =>
+              r.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+          .length;
+
       if (dailyCount >= config.dailyLimit!) {
         return false;
       }
     }
-    
+
     if (config.hourlyLimit != null) {
-      final hourlyCount = _requests.where(
-        (r) => r.isAfter(DateTime.now().subtract(const Duration(hours: 1)))
-      ).length;
-      
+      final hourlyCount = _requests
+          .where((r) =>
+              r.isAfter(DateTime.now().subtract(const Duration(hours: 1))))
+          .length;
+
       if (hourlyCount >= config.hourlyLimit!) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -245,14 +249,16 @@ class RateLimitTracker {
 
   Map<String, int> getUsageStats() {
     _cleanOldRequests();
-    
+
     return {
-      'daily': _requests.where(
-        (r) => r.isAfter(DateTime.now().subtract(const Duration(days: 1)))
-      ).length,
-      'hourly': _requests.where(
-        (r) => r.isAfter(DateTime.now().subtract(const Duration(hours: 1)))
-      ).length,
+      'daily': _requests
+          .where((r) =>
+              r.isAfter(DateTime.now().subtract(const Duration(days: 1))))
+          .length,
+      'hourly': _requests
+          .where((r) =>
+              r.isAfter(DateTime.now().subtract(const Duration(hours: 1))))
+          .length,
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
@@ -11,23 +12,23 @@ class ArmtekInfoMasterDetail extends BaseSupplierInfoWidget {
   final UserStructureRoot structure;
   final List<BrandItem>? brandList;
   final List<StoreItem>? storeList;
-  
+
   const ArmtekInfoMasterDetail({
     super.key,
     required this.structure,
     this.brandList,
     this.storeList,
   }) : super(
-    supplierCode: 'armtek',
-    supplierData: null, // Можем передать structure если нужно
-  );
+          supplierCode: 'armtek',
+          supplierData: null, // Можем передать structure если нужно
+        );
 
   @override
   BaseSupplierInfoWidgetState createState() => _ArmtekInfoMasterDetailState();
 }
 
-class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInfoMasterDetail> {
-  
+class _ArmtekInfoMasterDetailState
+    extends BaseSupplierInfoWidgetState<ArmtekInfoMasterDetail> {
   @override
   void initState() {
     super.initState();
@@ -38,62 +39,69 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
   @override
   List<InfoCardData> buildInfoCards(Translations t) {
     final cards = <InfoCardData>[];
-    
+
     // Плательщики
     cards.add(InfoCardData(
       icon: Icons.account_balance,
       title: 'Плательщики',
       count: widget.structure.rgTab?.length ?? 0,
       color: Colors.blue,
-      onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
-          ? () => selectItem('payer', widget.structure.rgTab!.first)
-          : null,
+      onTap:
+          widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
+              ? () => selectItem('payer', widget.structure.rgTab!.first)
+              : null,
     ));
-    
+
     // Контакты
     cards.add(InfoCardData(
       icon: Icons.contacts,
       title: 'Контакты',
       count: widget.structure.contactTab?.length ?? 0,
       color: Colors.green,
-      onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
+      onTap: widget.structure.contactTab != null &&
+              widget.structure.contactTab!.isNotEmpty
           ? () => selectItem('root_contacts', widget.structure.contactTab)
           : null,
     ));
-    
+
     // Договоры
     cards.add(InfoCardData(
       icon: Icons.description,
       title: 'Договоры',
       count: widget.structure.dogovorTab?.length ?? 0,
       color: Colors.orange,
-      onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
+      onTap: widget.structure.dogovorTab != null &&
+              widget.structure.dogovorTab!.isNotEmpty
           ? () => selectItem('root_contracts', widget.structure.dogovorTab)
           : null,
     ));
-    
+
     // Склады
     cards.add(InfoCardData(
       icon: Icons.warehouse,
       title: 'Склады',
       count: widget.storeList?.length ?? 0,
-      color: widget.storeList != null && widget.storeList!.isNotEmpty ? Colors.indigo : Colors.grey,
+      color: widget.storeList != null && widget.storeList!.isNotEmpty
+          ? Colors.indigo
+          : Colors.grey,
       onTap: widget.storeList != null && widget.storeList!.isNotEmpty
           ? () => selectItem('stores', widget.storeList)
           : null,
     ));
-    
+
     // Бренды
     cards.add(InfoCardData(
       icon: Icons.branding_watermark,
       title: 'Бренды',
       count: widget.brandList?.length ?? 0,
-      color: widget.brandList != null && widget.brandList!.isNotEmpty ? Colors.deepPurple : Colors.grey,
+      color: widget.brandList != null && widget.brandList!.isNotEmpty
+          ? Colors.deepPurple
+          : Colors.grey,
       onTap: widget.brandList != null && widget.brandList!.isNotEmpty
           ? () => selectItem('brands', widget.brandList)
           : null,
     ));
-    
+
     return cards;
   }
 
@@ -129,7 +137,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
     final screenWidth = MediaQuery.of(context).size.width;
     // Более строгие условия для desktop layout - нужно минимум 850px
     final isLargeScreen = screenWidth >= 850;
-    
+
     if (isLargeScreen) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +153,10 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                   Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withValues(alpha: 0.3),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(4),
                         topRight: Radius.circular(4),
@@ -153,16 +164,19 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.menu_book, 
-                          color: Theme.of(context).colorScheme.primary),
+                        Icon(Icons.menu_book,
+                            color: Theme.of(context).colorScheme.primary),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Навигация',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -191,8 +205,9 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                     ),
                     child: Row(
                       children: [
-                        Icon(_getDetailIcon(), 
-                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        Icon(_getDetailIcon(),
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -217,7 +232,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       return _buildMobileView(t);
     }
   }
-  
+
   Widget _buildNavigationTree(Translations t) {
     return ListView(
       padding: const EdgeInsets.all(8.0),
@@ -230,13 +245,14 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
           isSelected: selectedItemType == 'root',
           onTap: () => selectItem('root', widget.structure),
         ),
-        
+
         // Плательщики
-        if (widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty) ...[
+        if (widget.structure.rgTab != null &&
+            widget.structure.rgTab!.isNotEmpty) ...[
           const SizedBox(height: 8),
           _buildSectionHeader('Плательщики'),
-          ...widget.structure.rgTab!.map((rgItem) => 
-            _buildExpandableTreeItem(
+          ...widget.structure.rgTab!.map(
+            (rgItem) => _buildExpandableTreeItem(
               icon: Icons.account_balance,
               title: rgItem.sname ?? 'Без названия',
               subtitle: 'KUNNR: ${rgItem.kunnr}',
@@ -247,33 +263,37 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
             ),
           ),
         ],
-        
+
         // Контакты организации
-        if (widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty)
+        if (widget.structure.contactTab != null &&
+            widget.structure.contactTab!.isNotEmpty)
           _buildTreeItem(
             icon: Icons.contacts,
             title: 'Контакты организации',
             subtitle: '${widget.structure.contactTab!.length} контактов',
             isSelected: selectedItemType == 'root_contacts',
-            onTap: () => selectItem('root_contacts', widget.structure.contactTab),
+            onTap: () =>
+                selectItem('root_contacts', widget.structure.contactTab),
           ),
-          
+
         // Договоры организации
-        if (widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty)
+        if (widget.structure.dogovorTab != null &&
+            widget.structure.dogovorTab!.isNotEmpty)
           _buildTreeItem(
             icon: Icons.description,
             title: 'Договоры организации',
             subtitle: '${widget.structure.dogovorTab!.length} договоров',
             isSelected: selectedItemType == 'root_contracts',
-            onTap: () => selectItem('root_contracts', widget.structure.dogovorTab),
+            onTap: () =>
+                selectItem('root_contracts', widget.structure.dogovorTab),
           ),
       ],
     );
   }
-  
+
   List<Widget> _buildPayerSubItems(UserStructureItem payer, Translations t) {
     final items = <Widget>[];
-    
+
     // Грузополучатели
     if (payer.weTab != null && payer.weTab!.isNotEmpty) {
       items.add(_buildTreeSubItem(
@@ -283,7 +303,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: () => selectItem('we_tab', payer.weTab),
       ));
     }
-    
+
     // Адреса доставки
     if (payer.zaTab != null && payer.zaTab!.isNotEmpty) {
       items.add(_buildTreeSubItem(
@@ -293,7 +313,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: () => selectItem('za_tab', payer.zaTab),
       ));
     }
-    
+
     // Условия поставки
     if (payer.exwTab != null && payer.exwTab!.isNotEmpty) {
       items.add(_buildTreeSubItem(
@@ -303,7 +323,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: () => selectItem('exw_tab', payer.exwTab),
       ));
     }
-    
+
     // Договоры плательщика
     if (payer.dogovorTab != null && payer.dogovorTab!.isNotEmpty) {
       items.add(_buildTreeSubItem(
@@ -313,7 +333,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: () => selectItem('payer_contracts', payer.dogovorTab),
       ));
     }
-    
+
     // Контакты плательщика
     if (payer.contactTab != null && payer.contactTab!.isNotEmpty) {
       items.add(_buildTreeSubItem(
@@ -323,10 +343,10 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: () => selectItem('payer_contacts', payer.contactTab),
       ));
     }
-    
+
     return items;
   }
-  
+
   Widget _buildTreeItem({
     required IconData icon,
     required String title,
@@ -347,7 +367,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ),
     );
   }
-  
+
   Widget _buildExpandableTreeItem({
     required IconData icon,
     required String title,
@@ -369,18 +389,20 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         onExpansionChanged: (_) => onTap(),
-        children: children.length > 5 
-          ? children.take(5).toList() + [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text('...и еще', style: TextStyle(fontStyle: FontStyle.italic)),
-              )
-            ]
-          : children,
+        children: children.length > 5
+            ? children.take(5).toList() +
+                [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text('...и еще',
+                        style: TextStyle(fontStyle: FontStyle.italic)),
+                  )
+                ]
+            : children,
       ),
     );
   }
-  
+
   Widget _buildTreeSubItem({
     required IconData icon,
     required String title,
@@ -406,29 +428,30 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ),
     );
   }
-  
+
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-        ),
+              color: Theme.of(context).colorScheme.primary,
+            ),
       ),
     );
   }
-  
+
   Widget _buildDetailView(Translations t) {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 1200), // Ограничиваем максимальную ширину
+      constraints: const BoxConstraints(
+          maxWidth: 1200), // Ограничиваем максимальную ширину
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: _buildDetailContent(t),
       ),
     );
   }
-  
+
   Widget _buildDetailContent(Translations t) {
     switch (selectedItemType) {
       case 'root':
@@ -455,7 +478,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         return const Center(child: Text('Выберите элемент для просмотра'));
     }
   }
-  
+
   Widget _buildRootDetail(Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +492,10 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
               Container(
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.2),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(4),
                     topRight: Radius.circular(4),
@@ -477,16 +503,17 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, 
-                      color: Theme.of(context).colorScheme.primary),
+                    Icon(Icons.info_outline,
+                        color: Theme.of(context).colorScheme.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Основные данные',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -501,10 +528,14 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                     1: FlexColumnWidth(2),
                   },
                   children: [
-                    _buildInfoRow('Код клиента (KUNAG)', widget.structure.kunag ?? '-'),
-                    _buildInfoRow('Сбытовая организация (VKORG)', widget.structure.vkorg ?? '-'),
-                    _buildInfoRow('Краткое наименование', widget.structure.sname ?? '-'),
-                    _buildInfoRow('Полное наименование', widget.structure.fname ?? '-'),
+                    _buildInfoRow(
+                        'Код клиента (KUNAG)', widget.structure.kunag ?? '-'),
+                    _buildInfoRow('Сбытовая организация (VKORG)',
+                        widget.structure.vkorg ?? '-'),
+                    _buildInfoRow(
+                        'Краткое наименование', widget.structure.sname ?? '-'),
+                    _buildInfoRow(
+                        'Полное наименование', widget.structure.fname ?? '-'),
                     _buildInfoRow('Адрес', widget.structure.adress ?? '-'),
                     _buildInfoRow('Телефон', widget.structure.phone ?? '-'),
                   ],
@@ -518,8 +549,8 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         Text(
           'Сводная информация',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         // Сводная информация в виде сетки
@@ -538,7 +569,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
+
   Widget _buildPayerDetail(UserStructureItem payer, Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -635,11 +666,11 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                     : null,
               ),
             ];
-            
+
             return GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 200, // Максимальная ширина карточки
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
@@ -653,7 +684,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
+
   Widget _buildContactsTable(List contacts, Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,7 +712,9 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                 DataColumn(label: Text('ID')),
               ],
               rows: contacts.map((contact) {
-                final fullName = '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'.trim();
+                final fullName =
+                    '${contact.lname ?? ""} ${contact.fname ?? ""} ${contact.mname ?? ""}'
+                        .trim();
                 return DataRow(cells: [
                   DataCell(Text(fullName.isNotEmpty ? fullName : '-')),
                   DataCell(Text(contact.phone ?? '-')),
@@ -700,7 +733,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
+
   Widget _buildContractsTable(List contracts, Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -748,8 +781,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
-  
+
   Widget _buildAddressesTable(List addresses, Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -795,7 +827,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
+
   Widget _buildDeliveryTermsTable(List terms, Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -828,7 +860,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
+
   Widget _buildWeTable(List weItems, Translations t) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -876,8 +908,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
-  
+
   TableRow _buildInfoRow(String label, String value) {
     return TableRow(
       children: [
@@ -895,7 +926,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ],
     );
   }
-  
+
   Widget _buildMobileView(Translations t) {
     // Для мобильных устройств - упрощенная навигация
     return SingleChildScrollView(
@@ -907,44 +938,46 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       ),
     );
   }
-  
+
   List<Widget> _getSummaryCards() {
     final cards = <Widget>[];
-    
-    
+
     // Плательщики
     cards.add(_buildCompactInfoCard(
       icon: Icons.account_balance,
       title: 'Плательщики',
       count: widget.structure.rgTab?.length ?? 0,
       color: Colors.blue,
-      onTap: widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
-          ? () => selectItem('payer', widget.structure.rgTab!.first)
-          : null,
+      onTap:
+          widget.structure.rgTab != null && widget.structure.rgTab!.isNotEmpty
+              ? () => selectItem('payer', widget.structure.rgTab!.first)
+              : null,
     ));
-    
+
     // Контакты
     cards.add(_buildCompactInfoCard(
       icon: Icons.contacts,
       title: 'Контакты',
       count: widget.structure.contactTab?.length ?? 0,
       color: Colors.green,
-      onTap: widget.structure.contactTab != null && widget.structure.contactTab!.isNotEmpty
+      onTap: widget.structure.contactTab != null &&
+              widget.structure.contactTab!.isNotEmpty
           ? () => selectItem('root_contacts', widget.structure.contactTab)
           : null,
     ));
-    
+
     // Договоры
     cards.add(_buildCompactInfoCard(
       icon: Icons.description,
       title: 'Договоры',
       count: widget.structure.dogovorTab?.length ?? 0,
       color: Colors.orange,
-      onTap: widget.structure.dogovorTab != null && widget.structure.dogovorTab!.isNotEmpty
+      onTap: widget.structure.dogovorTab != null &&
+              widget.structure.dogovorTab!.isNotEmpty
           ? () => selectItem('root_contracts', widget.structure.dogovorTab)
           : null,
     ));
-    
+
     // Склады (если есть данные)
     if (widget.storeList != null && widget.storeList!.isNotEmpty) {
       cards.add(_buildCompactInfoCard(
@@ -964,7 +997,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: null,
       ));
     }
-    
+
     // Бренды (если есть данные)
     if (widget.brandList != null && widget.brandList!.isNotEmpty) {
       cards.add(_buildCompactInfoCard(
@@ -984,10 +1017,10 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         onTap: null,
       ));
     }
-    
+
     return cards;
   }
-  
+
   Widget _buildCompactInfoCard({
     required IconData icon,
     required String title,
@@ -1002,15 +1035,17 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         borderRadius: BorderRadius.circular(8),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Очень агрессивные отступы для узких экранов  
-            final horizontalPadding = constraints.maxWidth < 50 ? 2.0 : (constraints.maxWidth < 100 ? 4.0 : 12.0);
-            final verticalPadding = constraints.maxWidth < 50 ? 2.0 : (constraints.maxWidth < 100 ? 3.0 : 8.0);
-            
+            // Очень агрессивные отступы для узких экранов
+            final horizontalPadding = constraints.maxWidth < 50
+                ? 2.0
+                : (constraints.maxWidth < 100 ? 4.0 : 12.0);
+            final verticalPadding = constraints.maxWidth < 50
+                ? 2.0
+                : (constraints.maxWidth < 100 ? 3.0 : 8.0);
+
             return Container(
               padding: EdgeInsets.symmetric(
-                horizontal: horizontalPadding, 
-                vertical: verticalPadding
-              ),
+                  horizontal: horizontalPadding, vertical: verticalPadding),
               decoration: BoxDecoration(
                 border: Border.all(
                   color: color.withValues(alpha: 0.3),
@@ -1019,74 +1054,85 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
-                  children: [
-                    // Гибкая иконка - может исчезнуть на очень узких экранах
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        // Показываем иконку только если достаточно места (минимум 80px)
-                        if (constraints.maxWidth > 80) {
-                          final iconPadding = constraints.maxWidth < 120 ? 3.0 : 6.0;
-                          final iconSize = constraints.maxWidth < 120 ? 12.0 : 16.0;
-                          return Container(
-                            padding: EdgeInsets.all(iconPadding),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(icon, color: color, size: iconSize),
-                          );
-                        } else {
-                          return const SizedBox.shrink(); // Скрываем иконку на узких экранах
-                        }
-                      },
-                    ),
-                    // Адаптивный отступ
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.maxWidth > 80) {
-                          return SizedBox(width: constraints.maxWidth < 120 ? 4 : 8);
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      },
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Flexible(
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                title,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                ),
-                                maxLines: 1,
-                              ),
+                children: [
+                  // Гибкая иконка - может исчезнуть на очень узких экранах
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Показываем иконку только если достаточно места (минимум 80px)
+                      if (constraints.maxWidth > 80) {
+                        final iconPadding =
+                            constraints.maxWidth < 120 ? 3.0 : 6.0;
+                        final iconSize =
+                            constraints.maxWidth < 120 ? 12.0 : 16.0;
+                        return Container(
+                          padding: EdgeInsets.all(iconPadding),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(icon, color: color, size: iconSize),
+                        );
+                      } else {
+                        return const SizedBox
+                            .shrink(); // Скрываем иконку на узких экранах
+                      }
+                    },
+                  ),
+                  // Адаптивный отступ
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 80) {
+                        return SizedBox(
+                            width: constraints.maxWidth < 120 ? 4 : 8);
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    },
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                              maxLines: 1,
                             ),
                           ),
-                          Text(
-                            '$count',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith( // Еще меньше для компактности
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        Text(
+                          '$count',
+                          style:
+                              Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    // Еще меньше для компактности
+                                    color: color,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
             );
           },
         ),
       ),
     );
   }
-  
+
   IconData _getDetailIcon() {
     switch (selectedItemType) {
       case 'root':
@@ -1113,7 +1159,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         return Icons.info;
     }
   }
-  
+
   String _getDetailTitle() {
     switch (selectedItemType) {
       case 'root':
@@ -1140,7 +1186,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         return 'Детальная информация';
     }
   }
-  
+
   Widget _buildStoresTable(List<StoreItem> stores, Translations t) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1158,27 +1204,28 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 400, // Фиксированная высота для избежания unbounded constraints
+          height:
+              400, // Фиксированная высота для избежания unbounded constraints
           child: Card(
-            child: stores.length > 50 
-              ? _buildLazyStoresTable(stores)
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('Ключ')),
-                      DataColumn(label: Text('Код склада')),
-                      DataColumn(label: Text('Наименование склада')),
-                    ],
-                    rows: stores.map((store) {
-                      return DataRow(cells: [
-                        DataCell(Text(store.keyzak)),
-                        DataCell(Text(store.sklCode)),
-                        DataCell(Text(store.sklName)),
-                      ]);
-                    }).toList(),
+            child: stores.length > 50
+                ? _buildLazyStoresTable(stores)
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text('Ключ')),
+                        DataColumn(label: Text('Код склада')),
+                        DataColumn(label: Text('Наименование склада')),
+                      ],
+                      rows: stores.map((store) {
+                        return DataRow(cells: [
+                          DataCell(Text(store.keyzak)),
+                          DataCell(Text(store.sklCode)),
+                          DataCell(Text(store.sklName)),
+                        ]);
+                      }).toList(),
+                    ),
                   ),
-                ),
           ),
         ),
       ],
@@ -1202,14 +1249,23 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
             ),
             child: const Row(
               children: [
-                Expanded(flex: 2, child: Text('Ключ', style: TextStyle(fontWeight: FontWeight.bold))),
-                Expanded(flex: 2, child: Text('Код склада', style: TextStyle(fontWeight: FontWeight.bold))),
-                Expanded(flex: 4, child: Text('Наименование склада', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(
+                    flex: 2,
+                    child: Text('Ключ',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(
+                    flex: 2,
+                    child: Text('Код склада',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(
+                    flex: 4,
+                    child: Text('Наименование склада',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
           );
         }
-        
+
         final store = stores[index - 1];
         return Container(
           padding: const EdgeInsets.all(12),
@@ -1232,7 +1288,7 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
       },
     );
   }
-  
+
   Widget _buildBrandsTable(List<BrandItem> brands, Translations t) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1250,25 +1306,26 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 400, // Фиксированная высота для избежания unbounded constraints
+          height:
+              400, // Фиксированная высота для избежания unbounded constraints
           child: Card(
-            child: brands.length > 50 
-              ? _buildLazyBrandsTable(brands)
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('Код бренда')),
-                      DataColumn(label: Text('Наименование')),
-                    ],
-                    rows: brands.map((brand) {
-                      return DataRow(cells: [
-                        DataCell(Text(brand.brand)),
-                        DataCell(Text(brand.brandName)),
-                      ]);
-                    }).toList(),
+            child: brands.length > 50
+                ? _buildLazyBrandsTable(brands)
+                : SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text('Код бренда')),
+                        DataColumn(label: Text('Наименование')),
+                      ],
+                      rows: brands.map((brand) {
+                        return DataRow(cells: [
+                          DataCell(Text(brand.brand)),
+                          DataCell(Text(brand.brandName)),
+                        ]);
+                      }).toList(),
+                    ),
                   ),
-                ),
           ),
         ),
       ],
@@ -1292,13 +1349,19 @@ class _ArmtekInfoMasterDetailState extends BaseSupplierInfoWidgetState<ArmtekInf
             ),
             child: const Row(
               children: [
-                Expanded(flex: 2, child: Text('Код бренда', style: TextStyle(fontWeight: FontWeight.bold))),
-                Expanded(flex: 3, child: Text('Наименование', style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(
+                    flex: 2,
+                    child: Text('Код бренда',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
+                Expanded(
+                    flex: 3,
+                    child: Text('Наименование',
+                        style: TextStyle(fontWeight: FontWeight.bold))),
               ],
             ),
           );
         }
-        
+
         final brand = brands[index - 1];
         return Container(
           padding: const EdgeInsets.all(12),

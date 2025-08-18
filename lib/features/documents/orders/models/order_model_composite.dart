@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 import 'package:part_catalog/core/utils/composite_utils.dart';
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/document_specific_data.dart';
@@ -6,7 +8,6 @@ import 'package:part_catalog/features/core/entity_core_data.dart';
 import 'package:part_catalog/features/core/i_document_entity.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/documents/orders/models/order_specific_data.dart';
-import 'package:uuid/uuid.dart';
 
 class OrderModelComposite implements IDocumentEntity {
   final EntityCoreData coreData;
@@ -100,9 +101,9 @@ class OrderModelComposite implements IDocumentEntity {
         orderData.description,
       ],
     );
-    
+
     if (baseContains) return true;
-    
+
     // Дополнительно проверяем элементы документа
     if (query.isNotEmpty) {
       final lowerQuery = query.toLowerCase();
@@ -110,7 +111,7 @@ class OrderModelComposite implements IDocumentEntity {
         if (item.containsSearchText(lowerQuery)) return true;
       }
     }
-    
+
     return false;
   }
 
@@ -145,34 +146,35 @@ class OrderModelComposite implements IDocumentEntity {
 
   // Методы для проверки возможности выполнения операций
   bool get canEdit => DocumentCompositeUtils.canEdit(
-    isPosted: isPosted,
-    status: status,
-  );
+        isPosted: isPosted,
+        status: status,
+      );
 
   bool get canPost => DocumentCompositeUtils.canPost(
-    isPosted: isPosted,
-    status: status,
-  );
+        isPosted: isPosted,
+        status: status,
+      );
 
   bool get canUnpost => DocumentCompositeUtils.canUnpost(
-    isPosted: isPosted,
-    status: status,
-  );
+        isPosted: isPosted,
+        status: status,
+      );
 
   bool get canCancel => DocumentCompositeUtils.canCancel(
-    status: status,
-  );
+        status: status,
+      );
 
   bool get isOverdue => DocumentCompositeUtils.isOverdue(
-    scheduledDate: scheduledDate,
-    status: status,
-  );
+        scheduledDate: scheduledDate,
+        status: status,
+      );
 
   bool get isActive => DocumentCompositeUtils.isActive(status);
 
   bool get isFinished => DocumentCompositeUtils.isFinished(status);
 
-  int? get daysUntilScheduled => DocumentCompositeUtils.getDaysUntilScheduled(scheduledDate);
+  int? get daysUntilScheduled =>
+      DocumentCompositeUtils.getDaysUntilScheduled(scheduledDate);
 
   @override
   OrderModelComposite withStatus(DocumentStatus newStatus) {
@@ -185,8 +187,10 @@ class OrderModelComposite implements IDocumentEntity {
   OrderModelComposite withAddedItem(IDocumentItemEntity item,
       {BaseItemType? itemType}) {
     final type = itemType ?? item.itemType;
-    final updatedItemsMap = Map<BaseItemType, List<IDocumentItemEntity>>.from(itemsMap);
-    final currentList = List<IDocumentItemEntity>.from(updatedItemsMap[type] ?? []);
+    final updatedItemsMap =
+        Map<BaseItemType, List<IDocumentItemEntity>>.from(itemsMap);
+    final currentList =
+        List<IDocumentItemEntity>.from(updatedItemsMap[type] ?? []);
     if (currentList.any((existing) => existing.uuid == item.uuid)) {
       return this;
     }
@@ -201,7 +205,8 @@ class OrderModelComposite implements IDocumentEntity {
   OrderModelComposite withUpdatedItem(IDocumentItemEntity item,
       {BaseItemType? itemType}) {
     final type = itemType ?? item.itemType;
-    final updatedItemsMap = Map<BaseItemType, List<IDocumentItemEntity>>.from(itemsMap);
+    final updatedItemsMap =
+        Map<BaseItemType, List<IDocumentItemEntity>>.from(itemsMap);
     final currentList = updatedItemsMap[type];
     if (currentList == null) return this;
     final index = currentList.indexWhere((i) => i.uuid == item.uuid);
@@ -216,7 +221,8 @@ class OrderModelComposite implements IDocumentEntity {
 
   @override
   OrderModelComposite withRemovedItem(String itemId, {BaseItemType? itemType}) {
-    final updatedItemsMap = Map<BaseItemType, List<IDocumentItemEntity>>.from(itemsMap);
+    final updatedItemsMap =
+        Map<BaseItemType, List<IDocumentItemEntity>>.from(itemsMap);
     bool itemRemoved = false;
     if (itemType != null) {
       final currentList = updatedItemsMap[itemType];
@@ -276,7 +282,8 @@ class OrderModelComposite implements IDocumentEntity {
     );
   }
 
-  OrderModelComposite withItems(Map<BaseItemType, List<IDocumentItemEntity>> itemsMap) {
+  OrderModelComposite withItems(
+      Map<BaseItemType, List<IDocumentItemEntity>> itemsMap) {
     return copyWith(
       itemsMap: Map.unmodifiable(itemsMap),
     );
@@ -315,10 +322,13 @@ class OrderModelComposite implements IDocumentEntity {
     Map<BaseItemType, List<IDocumentItemEntity>>? itemsMap,
   }) {
     // Если есть изменения в данных (кроме coreData), обновляем дату модификации
-    final bool hasChanges = docData != null || orderData != null || itemsMap != null;
-    final EntityCoreData finalCoreData = coreData ?? 
-        (hasChanges ? CompositeUtils.ensureModifiedDate(this.coreData) : this.coreData);
-    
+    final bool hasChanges =
+        docData != null || orderData != null || itemsMap != null;
+    final EntityCoreData finalCoreData = coreData ??
+        (hasChanges
+            ? CompositeUtils.ensureModifiedDate(this.coreData)
+            : this.coreData);
+
     return OrderModelComposite(
       coreData: finalCoreData,
       docData: docData ?? this.docData,

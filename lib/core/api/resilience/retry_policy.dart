@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+
 import 'package:part_catalog/core/api/exceptions.dart';
 import 'package:part_catalog/core/utils/context_logger.dart';
 
@@ -53,16 +54,28 @@ class RetryConfig {
     maxDelay: Duration(seconds: 20),
     backoffMultiplier: 2.0,
     useJitter: true,
-    retryableStatusCodes: {408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524},
+    retryableStatusCodes: {
+      408,
+      429,
+      500,
+      502,
+      503,
+      504,
+      520,
+      521,
+      522,
+      523,
+      524
+    },
   );
 }
 
 /// Стратегии задержки между попытками
 enum BackoffStrategy {
-  fixed,        // Фиксированная задержка
-  linear,       // Линейное увеличение
-  exponential,  // Экспоненциальное увеличение
-  fibonacci,    // Последовательность Фибоначчи
+  fixed, // Фиксированная задержка
+  linear, // Линейное увеличение
+  exponential, // Экспоненциальное увеличение
+  fibonacci, // Последовательность Фибоначчи
 }
 
 /// Калькулятор задержек для повторных попыток
@@ -96,12 +109,15 @@ class DelayCalculator {
         break;
       case BackoffStrategy.exponential:
         baseDelay = Duration(
-          milliseconds: (initialDelay.inMilliseconds * pow(multiplier, attemptNumber - 1)).round(),
+          milliseconds:
+              (initialDelay.inMilliseconds * pow(multiplier, attemptNumber - 1))
+                  .round(),
         );
         break;
       case BackoffStrategy.fibonacci:
         baseDelay = Duration(
-          milliseconds: (initialDelay.inMilliseconds * _fibonacci(attemptNumber)).round(),
+          milliseconds:
+              (initialDelay.inMilliseconds * _fibonacci(attemptNumber)).round(),
         );
         break;
     }
@@ -116,7 +132,9 @@ class DelayCalculator {
       final jitterAmount = baseDelay.inMilliseconds * 0.1; // 10% jitter
       final jitter = (_random.nextDouble() - 0.5) * 2 * jitterAmount;
       baseDelay = Duration(
-        milliseconds: (baseDelay.inMilliseconds + jitter).round().clamp(0, maxDelay.inMilliseconds),
+        milliseconds: (baseDelay.inMilliseconds + jitter)
+            .round()
+            .clamp(0, maxDelay.inMilliseconds),
       );
     }
 
@@ -126,7 +144,7 @@ class DelayCalculator {
   int _fibonacci(int n) {
     if (n <= 1) return 1;
     if (n == 2) return 2;
-    
+
     int a = 1, b = 2;
     for (int i = 3; i <= n; i++) {
       int temp = a + b;
@@ -147,14 +165,14 @@ class RetryPolicy {
     required this.config,
     BackoffStrategy backoffStrategy = BackoffStrategy.exponential,
     ContextLogger? logger,
-  }) : _delayCalculator = DelayCalculator(
-         strategy: backoffStrategy,
-         initialDelay: config.initialDelay,
-         maxDelay: config.maxDelay,
-         multiplier: config.backoffMultiplier,
-         useJitter: config.useJitter,
-       ),
-       _logger = logger ?? ContextLogger(context: 'RetryPolicy');
+  })  : _delayCalculator = DelayCalculator(
+          strategy: backoffStrategy,
+          initialDelay: config.initialDelay,
+          maxDelay: config.maxDelay,
+          multiplier: config.backoffMultiplier,
+          useJitter: config.useJitter,
+        ),
+        _logger = logger ?? ContextLogger(context: 'RetryPolicy');
 
   /// Выполняет операцию с повторными попытками
   Future<T> execute<T>(
@@ -167,15 +185,15 @@ class RetryPolicy {
 
     for (int attempt = 1; attempt <= config.maxAttempts; attempt++) {
       try {
-        _logger.d('Executing $opName (attempt $attempt/${config.maxAttempts})', 
-          metadata: {
-            'attempt': attempt,
-            'maxAttempts': config.maxAttempts,
-            ...?metadata,
-          });
+        _logger.d('Executing $opName (attempt $attempt/${config.maxAttempts})',
+            metadata: {
+              'attempt': attempt,
+              'maxAttempts': config.maxAttempts,
+              ...?metadata,
+            });
 
         final result = await operation();
-        
+
         if (attempt > 1) {
           _logger.i('$opName succeeded after $attempt attempts', metadata: {
             'attempt': attempt,
@@ -187,13 +205,16 @@ class RetryPolicy {
         return result;
       } catch (e) {
         lastException = e;
-        
+
         if (attempt == config.maxAttempts || !_shouldRetry(e)) {
-          _logger.e('$opName failed permanently', 
+          _logger.e(
+            '$opName failed permanently',
             metadata: {
               'attempt': attempt,
               'maxAttempts': config.maxAttempts,
-              'reason': _shouldRetry(e) ? 'max_attempts_reached' : 'non_retryable_error',
+              'reason': _shouldRetry(e)
+                  ? 'max_attempts_reached'
+                  : 'non_retryable_error',
               ...?metadata,
             },
             error: e,
@@ -202,8 +223,9 @@ class RetryPolicy {
         }
 
         final delay = _delayCalculator.calculateDelay(attempt);
-        
-        _logger.w('$opName failed, retrying in ${delay.inMilliseconds}ms', 
+
+        _logger.w(
+          '$opName failed, retrying in ${delay.inMilliseconds}ms',
           metadata: {
             'attempt': attempt,
             'nextAttempt': attempt + 1,
@@ -296,8 +318,8 @@ class RetryInterceptor extends Interceptor {
   RetryInterceptor({
     required RetryPolicy retryPolicy,
     ContextLogger? logger,
-  }) : _retryPolicy = retryPolicy,
-       _logger = logger ?? ContextLogger(context: 'RetryInterceptor');
+  })  : _retryPolicy = retryPolicy,
+        _logger = logger ?? ContextLogger(context: 'RetryInterceptor');
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
@@ -308,8 +330,9 @@ class RetryInterceptor extends Interceptor {
     }
 
     // Извлекаем информацию о попытке
-    final currentAttempt = (err.requestOptions.extra['retry_attempt'] as int?) ?? 1;
-    
+    final currentAttempt =
+        (err.requestOptions.extra['retry_attempt'] as int?) ?? 1;
+
     if (currentAttempt >= _retryPolicy.config.maxAttempts) {
       handler.next(err);
       return;
@@ -318,13 +341,14 @@ class RetryInterceptor extends Interceptor {
     final nextAttempt = currentAttempt + 1;
     final delay = _retryPolicy._delayCalculator.calculateDelay(nextAttempt);
 
-    _logger.w('Retrying request ${err.requestOptions.method} ${err.requestOptions.path}', 
-      metadata: {
-        'attempt': nextAttempt,
-        'maxAttempts': _retryPolicy.config.maxAttempts,
-        'delayMs': delay.inMilliseconds,
-        'error': err.message,
-      });
+    _logger.w(
+        'Retrying request ${err.requestOptions.method} ${err.requestOptions.path}',
+        metadata: {
+          'attempt': nextAttempt,
+          'maxAttempts': _retryPolicy.config.maxAttempts,
+          'delayMs': delay.inMilliseconds,
+          'error': err.message,
+        });
 
     await Future.delayed(delay);
 
@@ -368,26 +392,26 @@ class AdaptiveRetryPolicy extends RetryPolicy {
     Map<String, dynamic>? metadata,
   }) async {
     final endpoint = metadata?['endpoint'] as String?;
-    
+
     // Адаптируем конфигурацию на основе статистики
     if (endpoint != null) {
       _adaptConfigForEndpoint(endpoint);
     }
 
     final startTime = DateTime.now();
-    
+
     try {
       final result = await super.execute(
         operation,
         operationName: operationName,
         metadata: metadata,
       );
-      
+
       // Записываем успешную попытку
       if (endpoint != null) {
         _recordSuccess(endpoint, DateTime.now().difference(startTime));
       }
-      
+
       return result;
     } catch (e) {
       // Записываем неудачную попытку
@@ -403,7 +427,8 @@ class AdaptiveRetryPolicy extends RetryPolicy {
     if (stats == null) return;
 
     // Увеличиваем количество попыток для ненадежных endpoint'ов
-    if (stats.errorRate > 0.3) { // Если error rate > 30%
+    if (stats.errorRate > 0.3) {
+      // Если error rate > 30%
       // Временно увеличиваем maxAttempts
       // Это требует создания нового config, так как текущий immutable
     }
@@ -451,17 +476,19 @@ class _EndpointStats {
 
   Duration get averageResponseTime {
     if (_responseTimes.isEmpty) return Duration.zero;
-    final totalMs = _responseTimes.map((d) => d.inMilliseconds).reduce((a, b) => a + b);
+    final totalMs =
+        _responseTimes.map((d) => d.inMilliseconds).reduce((a, b) => a + b);
     return Duration(milliseconds: totalMs ~/ _responseTimes.length);
   }
 
   void cleanup(DateTime cutoff) {
     _successTimes.removeWhere((time) => time.isBefore(cutoff));
     _failureTimes.removeWhere((time) => time.isBefore(cutoff));
-    
+
     // Для response times нам нужно сохранить соответствие с success times
     if (_responseTimes.length > _successTimes.length) {
-      _responseTimes.removeRange(0, _responseTimes.length - _successTimes.length);
+      _responseTimes.removeRange(
+          0, _responseTimes.length - _successTimes.length);
     }
   }
 }

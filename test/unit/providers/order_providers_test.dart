@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
 
@@ -30,9 +31,11 @@ void main() {
       container.dispose();
     });
 
-    test('ordersListProvider returns a list of orders from the service', () async {
+    test('ordersListProvider returns a list of orders from the service',
+        () async {
       // Arrange
-      when(mockOrderService.watchOrders()).thenAnswer((_) => Stream.value(testOrders));
+      when(mockOrderService.watchOrders())
+          .thenAnswer((_) => Stream.value(testOrders));
 
       // Act
       final result = await container.read(ordersListProvider.future);
@@ -45,7 +48,8 @@ void main() {
     test('ordersListProvider handles errors from the service', () {
       // Arrange
       final error = Exception('Failed to fetch orders');
-      when(mockOrderService.watchOrders()).thenAnswer((_) => Stream.error(error));
+      when(mockOrderService.watchOrders())
+          .thenAnswer((_) => Stream.error(error));
 
       // Act & Assert
       expect(
@@ -54,13 +58,15 @@ void main() {
       );
     });
 
-    test('orderDetailsStreamProvider returns a single order from the service', () async {
+    test('orderDetailsStreamProvider returns a single order from the service',
+        () async {
       // Arrange
       when(mockOrderService.watchOrderByUuid(testOrder.uuid))
           .thenAnswer((_) => Stream.value(testOrder));
 
       // Act
-      final result = await container.read(orderDetailsStreamProvider(testOrder.uuid).future);
+      final result = await container
+          .read(orderDetailsStreamProvider(testOrder.uuid).future);
 
       // Assert
       expect(result, testOrder);

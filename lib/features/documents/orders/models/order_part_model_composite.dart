@@ -1,9 +1,10 @@
+import 'package:uuid/uuid.dart';
+
 import 'package:part_catalog/features/core/base_item_type.dart';
 import 'package:part_catalog/features/core/document_item_specific_data.dart';
 import 'package:part_catalog/features/core/i_document_item_entity.dart';
 import 'package:part_catalog/features/core/item_core_data.dart';
 import 'package:part_catalog/features/documents/orders/models/part_specific_data.dart';
-import 'package:uuid/uuid.dart';
 
 class OrderPartModelComposite implements IDocumentItemEntity {
   final ItemCoreData coreData;
@@ -120,8 +121,10 @@ class OrderPartModelComposite implements IDocumentItemEntity {
   factory OrderPartModelComposite.fromJson(Map<String, dynamic> json) {
     return OrderPartModelComposite(
       coreData: ItemCoreData.fromJson(json['coreData'] as Map<String, dynamic>),
-      docItemData: DocumentItemSpecificData.fromJson(json['docItemData'] as Map<String, dynamic>),
-      partData: PartSpecificData.fromJson(json['partData'] as Map<String, dynamic>),
+      docItemData: DocumentItemSpecificData.fromJson(
+          json['docItemData'] as Map<String, dynamic>),
+      partData:
+          PartSpecificData.fromJson(json['partData'] as Map<String, dynamic>),
     );
   }
 
