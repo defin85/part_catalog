@@ -228,8 +228,8 @@ class ApiClientManager {
   }
 
   /// Получает статистику производительности всех клиентов
-  Map<String, dynamic> getPerformanceStats() {
-    return OptimizedApiClientFactory.getPerformanceStats();
+  Future<Map<String, dynamic>> getPerformanceStats() async {
+    return await OptimizedApiClientFactory.getPerformanceStats();
   }
 
   /// Выполняет health check для всех оптимизированных клиентов
@@ -239,8 +239,8 @@ class ApiClientManager {
   }
 
   /// Получает отчет о состоянии API
-  Map<String, dynamic> generateHealthReport() {
-    return OptimizedApiClientFactory.generateHealthReport();
+  Future<Map<String, dynamic>> generateHealthReport() async {
+    return await OptimizedApiClientFactory.generateHealthReport();
   }
 
   /// Сбрасывает все circuit breakers
@@ -262,8 +262,8 @@ class ApiClientManager {
   }
 
   /// Получает диагностику всех клиентов
-  Map<String, Map<String, dynamic>> getAllDiagnostics() {
-    return OptimizedApiClientFactory.getAllDiagnostics();
+  Future<Map<String, Map<String, dynamic>>> getAllDiagnostics() async {
+    return await OptimizedApiClientFactory.getAllDiagnostics();
   }
 
   /// Освобождает ресурсы при уничтожении менеджера

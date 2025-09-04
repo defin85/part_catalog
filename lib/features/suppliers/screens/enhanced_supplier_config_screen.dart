@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/core/widgets/custom_text_form_field.dart';
 import 'package:part_catalog/core/widgets/section_title.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/providers/optimized_api_providers.dart';
+import 'package:part_catalog/features/suppliers/widgets/supplier_info_widget_factory.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 
 /// Улучшенный экран настройки поставщика с поддержкой оптимизированной системы
@@ -16,10 +19,12 @@ class EnhancedSupplierConfigScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<EnhancedSupplierConfigScreen> createState() => _EnhancedSupplierConfigScreenState();
+  ConsumerState<EnhancedSupplierConfigScreen> createState() =>
+      _EnhancedSupplierConfigScreenState();
 }
 
-class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierConfigScreen>
+class _EnhancedSupplierConfigScreenState
+    extends ConsumerState<EnhancedSupplierConfigScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _displayNameController;
@@ -29,19 +34,20 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
   late final TextEditingController _apiKeyController;
   late final TextEditingController _vkorgController;
   late final TextEditingController _customerCodeController;
-  
+
   late final TabController _tabController;
-  
+
   AuthenticationType _selectedAuthType = AuthenticationType.basic;
   bool _useProxy = false;
   bool _isEnabled = true;
   bool _useOptimizedSystem = true;
+  bool _hasChanges = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    
+
     _displayNameController = TextEditingController();
     _baseUrlController = TextEditingController();
     _usernameController = TextEditingController();
@@ -49,14 +55,28 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
     _apiKeyController = TextEditingController();
     _vkorgController = TextEditingController();
     _customerCodeController = TextEditingController();
-    
+
+    // Отслеживаем изменения в полях ввода
+    for (final c in [
+      _displayNameController,
+      _baseUrlController,
+      _usernameController,
+      _passwordController,
+      _apiKeyController,
+      _vkorgController,
+      _customerCodeController,
+    ]) {
+      c.addListener(_markChanged);
+    }
+
     // Загрузить существующую конфигурацию если есть
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (widget.supplierCode != null) {
         await _loadExistingConfig();
-        
+
         // Установить дефолтный URL для Armtek если пустой
-        if (widget.supplierCode == 'armtek' && _baseUrlController.text.isEmpty) {
+        if (widget.supplierCode == 'armtek' &&
+            _baseUrlController.text.isEmpty) {
           _baseUrlController.text = 'http://ws.armtek.ru/api';
         }
       }
@@ -65,7 +85,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
 
   Future<void> _loadExistingConfig() async {
     try {
-      final config = await ref.read(supplierConfigProvider(widget.supplierCode!).future);
+      final config =
+          await ref.read(supplierConfigProvider(widget.supplierCode!).future);
       if (config != null && mounted) {
         setState(() {
           _displayNameController.text = config.displayName;
@@ -74,7 +95,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
           _useProxy = config.apiConfig.proxyUrl != null;
           _isEnabled = config.isEnabled;
         });
-        
+
         final creds = config.apiConfig.credentials;
         if (creds != null) {
           _usernameController.text = creds.username ?? '';
@@ -82,15 +103,19 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
           _apiKeyController.text = creds.apiKey ?? '';
           _vkorgController.text = creds.additionalParams?['VKORG'] ?? '';
         }
-        
+
         final businessConfig = config.businessConfig;
         if (businessConfig != null) {
           _customerCodeController.text = businessConfig.customerCode ?? '';
         }
-        
+
         // Обновить форму провайдера
-        ref.read(supplierConfigFormProvider(widget.supplierCode).notifier)
+        ref
+            .read(supplierConfigFormProvider(widget.supplierCode).notifier)
             .updateConfig(config);
+
+        // Сброс признака изменений после загрузки
+        _hasChanges = false;
       }
     } catch (e) {
       // Логируем ошибку, но не показываем пользователю если просто нет конфигурации
@@ -113,26 +138,29 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
 
   @override
   Widget build(BuildContext context) {
-    final formState = ref.watch(supplierConfigFormProvider(widget.supplierCode));
+    final formState =
+        ref.watch(supplierConfigFormProvider(widget.supplierCode));
     final isOptimizedEnabledAsync = ref.watch(isOptimizedSystemEnabledProvider);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.supplierCode != null 
+            Text(widget.supplierCode != null
                 ? 'Настройка ${widget.supplierCode}'
                 : 'Новый поставщик'),
             Consumer(
               builder: (context, ref, child) {
                 return isOptimizedEnabledAsync.when(
-                  data: (isOptimizedEnabled) => isOptimizedEnabled && _useOptimizedSystem
-                    ? const Text(
-                        '🚀 Оптимизированная система',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-                      )
-                    : const SizedBox.shrink(),
+                  data: (isOptimizedEnabled) =>
+                      isOptimizedEnabled && _useOptimizedSystem
+                          ? const Text(
+                              '🚀 Оптимизированная система',
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.normal),
+                            )
+                          : const SizedBox.shrink(),
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
                 );
@@ -140,6 +168,12 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: _onCancelPressed,
+            child: const Text('Отмена'),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -153,7 +187,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
         controller: _tabController,
         children: [
           isOptimizedEnabledAsync.when(
-            data: (isOptimizedEnabled) => _buildConfigTab(formState, isOptimizedEnabled),
+            data: (isOptimizedEnabled) =>
+                _buildConfigTab(formState, isOptimizedEnabled),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) => Center(child: Text('Ошибка: $error')),
           ),
@@ -195,10 +230,14 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                     ),
                     const SizedBox(height: 8),
                     SwitchListTile(
-                      title: const Text('Использовать оптимизированную систему'),
+                      title:
+                          const Text('Использовать оптимизированную систему'),
                       subtitle: const Text('Рекомендуется для продакшена'),
                       value: _useOptimizedSystem,
-                      onChanged: (value) => setState(() => _useOptimizedSystem = value),
+                      onChanged: (value) => setState(() {
+                        _useOptimizedSystem = value;
+                        _hasChanges = true;
+                      }),
                     ),
                   ],
                 ),
@@ -206,44 +245,44 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
             ),
             const SizedBox(height: 16),
           ],
-          
+
           // Основная информация
           SectionTitle(title: 'Основная информация'),
           const SizedBox(height: 8),
-          
+
           CustomTextFormField(
             controller: _displayNameController,
             labelText: 'Название поставщика',
-            validator: (value) => value?.isEmpty ?? true 
-                ? 'Введите название' 
-                : null,
+            validator: (value) =>
+                value?.isEmpty ?? true ? 'Введите название' : null,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           SwitchListTile(
             title: const Text('Активен'),
             subtitle: const Text('Включить поставщика в поиск'),
             value: _isEnabled,
-            onChanged: (value) => setState(() => _isEnabled = value),
+            onChanged: (value) => setState(() {
+              _isEnabled = value;
+              _hasChanges = true;
+            }),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Настройки API
           SectionTitle(title: 'Настройки API'),
           const SizedBox(height: 8),
-          
+
           CustomTextFormField(
             controller: _baseUrlController,
             labelText: 'URL API',
-            validator: (value) => value?.isEmpty ?? true 
-                ? 'Введите URL' 
-                : null,
+            validator: (value) => value?.isEmpty ?? true ? 'Введите URL' : null,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Тип аутентификации
           DropdownButtonFormField<AuthenticationType>(
             value: _selectedAuthType,
@@ -259,50 +298,113 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
             }).toList(),
             onChanged: (value) {
               if (value != null) {
-                setState(() => _selectedAuthType = value);
+                setState(() {
+                  _selectedAuthType = value;
+                  _hasChanges = true;
+                });
               }
             },
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Поля аутентификации в зависимости от типа
           ..._buildAuthFields(),
-          
+
           const SizedBox(height: 16),
-          
+
           SwitchListTile(
             title: const Text('Использовать прокси'),
             subtitle: const Text('Подключение через прокси-сервер'),
             value: _useProxy,
-            onChanged: (value) => setState(() => _useProxy = value),
+            onChanged: (value) => setState(() {
+              _useProxy = value;
+              _hasChanges = true;
+            }),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
+          // Armtek: дополнительные действия и детали
+          if (widget.supplierCode == 'armtek') ...[
+            const SectionTitle(title: 'Armtek: данные и детали'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _updateFormConfig();
+                      ref
+                          .read(supplierConfigFormProvider(widget.supplierCode)
+                              .notifier)
+                          .loadUserInfo();
+                    },
+                    icon: const Icon(Icons.person_search),
+                    label: const Text('Загрузить пользователя'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _updateFormConfig();
+                      ref
+                          .read(supplierConfigFormProvider(widget.supplierCode)
+                              .notifier)
+                          .loadBrandList();
+                    },
+                    icon: const Icon(Icons.branding_watermark),
+                    label: const Text('Загрузить бренды'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _updateFormConfig();
+                      ref
+                          .read(supplierConfigFormProvider(widget.supplierCode)
+                              .notifier)
+                          .loadStoreList();
+                    },
+                    icon: const Icon(Icons.warehouse),
+                    label: const Text('Загрузить склады'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: ElevatedButton.icon(
+                onPressed: () => _showDetailedSupplierInfo(context, formState),
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Показать детальную информацию'),
+              ),
+            ),
+          ],
+
           // Бизнес-параметры
           if (widget.supplierCode == 'armtek') ...[
             SectionTitle(title: 'Параметры Armtek'),
             const SizedBox(height: 8),
-            
             CustomTextFormField(
               controller: _vkorgController,
               labelText: 'VKORG (Код организации)',
-              validator: (value) => value?.isEmpty ?? true 
-                  ? 'Введите VKORG' 
-                  : null,
+              validator: (value) =>
+                  value?.isEmpty ?? true ? 'Введите VKORG' : null,
             ),
-            
             const SizedBox(height: 16),
           ],
-          
+
           CustomTextFormField(
             controller: _customerCodeController,
             labelText: 'Код клиента',
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Ошибки валидации
           if (formState.validationErrors.isNotEmpty) ...[
             Container(
@@ -323,24 +425,24 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
             ),
             const SizedBox(height: 16),
           ],
-          
+
           // Кнопки действий
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: formState.isTesting ? null : _testConnection,
-                  icon: formState.isTesting 
+                  icon: formState.isTesting
                       ? const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.wifi_tethering),
-                  label: Text(formState.isTesting 
-                      ? 'Проверка...' 
-                      : _useOptimizedSystem 
-                          ? 'Health Check' 
+                  label: Text(formState.isTesting
+                      ? 'Проверка...'
+                      : _useOptimizedSystem
+                          ? 'Health Check'
                           : 'Проверить подключение'),
                 ),
               ),
@@ -348,7 +450,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: formState.isLoading ? null : _saveConfig,
-                  icon: formState.isLoading 
+                  icon: formState.isLoading
                       ? const SizedBox(
                           width: 16,
                           height: 16,
@@ -360,7 +462,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
               ),
             ],
           ),
-          
+
           // Сообщение об ошибке
           if (formState.error != null) ...[
             const SizedBox(height: 16),
@@ -372,6 +474,86 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
         ],
       ),
     );
+  }
+
+  void _markChanged() {
+    if (!_hasChanges) {
+      setState(() {
+        _hasChanges = true;
+      });
+    }
+  }
+
+  Future<void> _onCancelPressed() async {
+    if (!_hasChanges) {
+      context.go(AppRoutes.apiControlCenter);
+      return;
+    }
+
+    final shouldDiscard = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Выйти без сохранения?'),
+            content: const Text(
+                'Изменения не будут сохранены. Вы уверены, что хотите выйти?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Отмена'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: const Text('Выйти'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (shouldDiscard && mounted) {
+      context.go(AppRoutes.apiControlCenter);
+    }
+  }
+
+  void _showDetailedSupplierInfo(BuildContext context, dynamic formState) {
+    if (widget.supplierCode == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Код поставщика не указан')),
+      );
+      return;
+    }
+
+    final supplierData = <String, dynamic>{
+      'structure': formState.userInfo?.structure,
+      'ftpData': formState.userInfo?.ftpData,
+      'brandList': formState.config?.businessConfig?.brandList,
+      'storeList': formState.config?.businessConfig?.storeList,
+    };
+
+    final infoWidget = SupplierInfoWidgetFactory.createInfoWidget(
+      supplierCode: widget.supplierCode!,
+      supplierData: supplierData,
+    );
+
+    if (infoWidget != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(
+              title: Text('Информация ${widget.supplierCode}'),
+            ),
+            body: infoWidget,
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Виджет для ${widget.supplierCode} не найден')),
+      );
+    }
   }
 
   Widget _buildMonitoringTab() {
@@ -394,8 +576,9 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
 
     return Consumer(
       builder: (context, ref, child) {
-        final healthStatusAsync = ref.watch(supplierHealthStatusProvider(widget.supplierCode!));
-        
+        final healthStatusAsync =
+            ref.watch(supplierHealthStatusProvider(widget.supplierCode!));
+
         return RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(supplierHealthStatusProvider(widget.supplierCode!));
@@ -423,7 +606,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                       const SizedBox(height: 16),
                       healthStatusAsync.when(
                         data: (status) => _buildHealthStatus(status),
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (error, stack) => Text(
                           'Ошибка: $error',
                           style: const TextStyle(color: Colors.red),
@@ -433,9 +617,9 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Circuit Breaker статус
               Card(
                 child: Padding(
@@ -455,8 +639,10 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                       ),
                       const SizedBox(height: 16),
                       healthStatusAsync.when(
-                        data: (status) => _buildCircuitBreakerStatus(status['circuit_breaker']),
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        data: (status) => _buildCircuitBreakerStatus(
+                            status['circuit_breaker']),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (error, stack) => Text(
                           'Ошибка: $error',
                           style: const TextStyle(color: Colors.red),
@@ -466,9 +652,9 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Кнопки управления
               Row(
                 children: [
@@ -516,8 +702,9 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
 
     return Consumer(
       builder: (context, ref, child) {
-        final healthStatusAsync = ref.watch(supplierHealthStatusProvider(widget.supplierCode!));
-        
+        final healthStatusAsync =
+            ref.watch(supplierHealthStatusProvider(widget.supplierCode!));
+
         return RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(supplierHealthStatusProvider(widget.supplierCode!));
@@ -545,7 +732,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                       const SizedBox(height: 16),
                       healthStatusAsync.when(
                         data: (status) => _buildMetrics(status['metrics']),
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (error, stack) => Text(
                           'Ошибка: $error',
                           style: const TextStyle(color: Colors.red),
@@ -555,9 +743,9 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Статистика кеша
               Card(
                 child: Padding(
@@ -578,7 +766,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
                       const SizedBox(height: 16),
                       healthStatusAsync.when(
                         data: (status) => _buildCacheStats(status['cache']),
-                        loading: () => const Center(child: CircularProgressIndicator()),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
                         error: (error, stack) => Text(
                           'Ошибка: $error',
                           style: const TextStyle(color: Colors.red),
@@ -598,7 +787,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
   Widget _buildHealthStatus(Map<String, dynamic> status) {
     final isHealthy = status['healthy'] as bool? ?? false;
     final statusText = status['status'] as String? ?? 'unknown';
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -620,8 +809,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
         ),
         const SizedBox(height: 8),
         Text('Статус: $statusText'),
-        if (status['message'] != null)
-          Text('Сообщение: ${status['message']}'),
+        if (status['message'] != null) Text('Сообщение: ${status['message']}'),
         Text('Последняя проверка: ${status['timestamp']}'),
       ],
     );
@@ -631,13 +819,13 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
     if (cbStatus == null) {
       return const Text('Информация недоступна');
     }
-    
+
     final state = cbStatus['state'] as String? ?? 'UNKNOWN';
     final failureCount = cbStatus['failureCount'] as int? ?? 0;
-    
+
     Color stateColor;
     IconData stateIcon;
-    
+
     switch (state) {
       case 'CLOSED':
         stateColor = Colors.green;
@@ -655,7 +843,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
         stateColor = Colors.grey;
         stateIcon = Icons.help;
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -682,13 +870,13 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
     if (metrics == null || metrics.isEmpty) {
       return const Text('Метрики недоступны');
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: metrics.entries.map((entry) {
         final endpoint = entry.key;
         final stats = entry.value as Map<String, dynamic>;
-        
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Column(
@@ -712,7 +900,7 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
     if (cacheStats == null) {
       return const Text('Статистика кеша недоступна');
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -730,9 +918,8 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
           CustomTextFormField(
             controller: _usernameController,
             labelText: 'Логин',
-            validator: (value) => value?.isEmpty ?? true 
-                ? 'Введите логин' 
-                : null,
+            validator: (value) =>
+                value?.isEmpty ?? true ? 'Введите логин' : null,
           ),
           const SizedBox(height: 16),
           TextFormField(
@@ -742,28 +929,26 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
               border: OutlineInputBorder(),
             ),
             obscureText: true,
-            validator: (value) => value?.isEmpty ?? true 
-                ? 'Введите пароль' 
-                : null,
+            validator: (value) =>
+                value?.isEmpty ?? true ? 'Введите пароль' : null,
           ),
         ];
-        
+
       case AuthenticationType.apiKey:
         return [
           CustomTextFormField(
             controller: _apiKeyController,
             labelText: 'API ключ',
-            validator: (value) => value?.isEmpty ?? true 
-                ? 'Введите API ключ' 
-                : null,
+            validator: (value) =>
+                value?.isEmpty ?? true ? 'Введите API ключ' : null,
           ),
         ];
-        
+
       default:
         return [];
     }
   }
-  
+
   String _getAuthTypeName(AuthenticationType type) {
     switch (type) {
       case AuthenticationType.none:
@@ -780,51 +965,64 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
         return 'Другой';
     }
   }
-  
+
   void _updateFormConfig() {
     final config = SupplierConfig(
-      supplierCode: widget.supplierCode ?? _displayNameController.text.toLowerCase().replaceAll(' ', '_'),
+      supplierCode: widget.supplierCode ??
+          _displayNameController.text.toLowerCase().replaceAll(' ', '_'),
       displayName: _displayNameController.text,
       isEnabled: _isEnabled,
       apiConfig: SupplierApiConfig(
         baseUrl: _baseUrlController.text,
         authType: _selectedAuthType,
         credentials: SupplierCredentials(
-          username: _usernameController.text.isNotEmpty ? _usernameController.text : null,
-          password: _passwordController.text.isNotEmpty ? _passwordController.text : null,
-          apiKey: _apiKeyController.text.isNotEmpty ? _apiKeyController.text : null,
-          additionalParams: _vkorgController.text.isNotEmpty 
-              ? {'VKORG': _vkorgController.text} 
+          username: _usernameController.text.isNotEmpty
+              ? _usernameController.text
+              : null,
+          password: _passwordController.text.isNotEmpty
+              ? _passwordController.text
+              : null,
+          apiKey:
+              _apiKeyController.text.isNotEmpty ? _apiKeyController.text : null,
+          additionalParams: _vkorgController.text.isNotEmpty
+              ? {'VKORG': _vkorgController.text}
               : null,
         ),
-        proxyUrl: _useProxy ? 'http://proxy.example.com' : null, // TODO: Добавить поле для прокси
+        proxyUrl: _useProxy
+            ? 'http://proxy.example.com'
+            : null, // TODO: Добавить поле для прокси
       ),
       businessConfig: SupplierBusinessConfig(
-        customerCode: _customerCodeController.text.isNotEmpty ? _customerCodeController.text : null,
-        organizationCode: _vkorgController.text.isNotEmpty ? _vkorgController.text : null,
+        customerCode: _customerCodeController.text.isNotEmpty
+            ? _customerCodeController.text
+            : null,
+        organizationCode:
+            _vkorgController.text.isNotEmpty ? _vkorgController.text : null,
       ),
     );
-    
-    ref.read(supplierConfigFormProvider(widget.supplierCode).notifier)
+
+    ref
+        .read(supplierConfigFormProvider(widget.supplierCode).notifier)
         .updateConfig(config);
   }
-  
+
   Future<void> _testConnection() async {
     if (_formKey.currentState?.validate() ?? false) {
       _updateFormConfig();
-      
+
       if (_useOptimizedSystem && widget.supplierCode != null) {
         // Используем оптимизированную систему для тестирования
         try {
-          final notifier = ref.read(optimizedArmtekClientProvider(widget.supplierCode!).notifier);
+          final notifier = ref.read(
+              optimizedArmtekClientProvider(widget.supplierCode!).notifier);
           final success = await notifier.performHealthCheck();
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(success 
-                  ? '✅ Health check успешен' 
-                  : '❌ Health check неудачен'),
+                content: Text(success
+                    ? '✅ Health check успешен'
+                    : '❌ Health check неудачен'),
                 backgroundColor: success ? Colors.green : Colors.red,
               ),
             );
@@ -841,42 +1039,47 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
         }
       } else {
         // Используем старую систему
-        await ref.read(supplierConfigFormProvider(widget.supplierCode).notifier)
+        await ref
+            .read(supplierConfigFormProvider(widget.supplierCode).notifier)
             .testConnection();
       }
     }
   }
-  
+
   Future<void> _saveConfig() async {
     if (_formKey.currentState?.validate() ?? false) {
       _updateFormConfig();
-      
-      final success = await ref.read(supplierConfigFormProvider(widget.supplierCode).notifier)
+
+      final success = await ref
+          .read(supplierConfigFormProvider(widget.supplierCode).notifier)
           .save();
-          
-      if (success && mounted) {
+
+      if (!mounted) return;
+
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_useOptimizedSystem 
-              ? '🚀 Конфигурация сохранена (оптимизированная система)'
-              : '✅ Конфигурация сохранена'),
+            content: Text(_useOptimizedSystem
+                ? '🚀 Конфигурация сохранена (оптимизированная система)'
+                : '✅ Конфигурация сохранена'),
           ),
         );
-        Navigator.of(context).pop();
+        context.go(AppRoutes.apiControlCenter);
       }
     }
   }
 
   Future<void> _resetCircuitBreaker() async {
     try {
-      final notifier = ref.read(optimizedArmtekClientProvider(widget.supplierCode!).notifier);
+      final notifier = ref
+          .read(optimizedArmtekClientProvider(widget.supplierCode!).notifier);
       await notifier.resetCircuitBreaker();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('🔄 Circuit breaker сброшен')),
         );
-        
+
         // Обновляем данные
         ref.invalidate(supplierHealthStatusProvider(widget.supplierCode!));
       }
@@ -891,14 +1094,15 @@ class _EnhancedSupplierConfigScreenState extends ConsumerState<EnhancedSupplierC
 
   Future<void> _clearCache() async {
     try {
-      final notifier = ref.read(optimizedArmtekClientProvider(widget.supplierCode!).notifier);
+      final notifier = ref
+          .read(optimizedArmtekClientProvider(widget.supplierCode!).notifier);
       await notifier.clearCache();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('🗑️ Кеш очищен')),
         );
-        
+
         // Обновляем данные
         ref.invalidate(supplierHealthStatusProvider(widget.supplierCode!));
       }

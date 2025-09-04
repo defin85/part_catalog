@@ -186,12 +186,10 @@ class ResilientApiClient {
     // Добавляем логирование
     if (config.enableLogging) {
       interceptors.add(LoggingInterceptor(
-        logger: logger,
         logRequestHeaders: config.logRequestHeaders,
         logRequestBody: config.logRequestBody,
         logResponseHeaders: config.logResponseHeaders,
         logResponseBody: config.logResponseBody,
-        maxBodyLogLength: config.maxBodyLogLength,
       ));
     }
 
@@ -351,17 +349,17 @@ class ResilientApiClient {
   }
 
   /// Получает статус circuit breaker
-  Map<String, dynamic> getCircuitBreakerStatus() {
+  Future<Map<String, dynamic>> getCircuitBreakerStatus() async {
     return _circuitBreaker.getStatus();
   }
 
   /// Получает метрики производительности
-  Map<String, dynamic>? getMetrics() {
+  Future<Map<String, dynamic>?> getMetrics() async {
     return _metricsInterceptor?.getMetrics();
   }
 
   /// Получает статистику кеша
-  Map<String, dynamic>? getCacheStats() {
+  Future<Map<String, dynamic>?> getCacheStats() async {
     final cache = _cache;
     if (cache is MemoryCache) {
       return cache.getStats();
@@ -412,7 +410,12 @@ class ResilientApiClient {
   }
 
   /// Получает полную диагностическую информацию
-  Map<String, dynamic> getDiagnostics() {
+  Future<Map<String, dynamic>> getDiagnostics() async {
+    final results = await Future.wait([
+      getCircuitBreakerStatus(),
+      getMetrics(),
+      getCacheStats(),
+    ]);
     return {
       'config': {
         'baseUrl': config.baseUrl,
@@ -421,9 +424,9 @@ class ResilientApiClient {
         'enableLogging': config.enableLogging,
         'enableMetrics': config.enableMetrics,
       },
-      'circuitBreaker': getCircuitBreakerStatus(),
-      'metrics': getMetrics(),
-      'cache': getCacheStats(),
+      'circuitBreaker': results[0],
+      'metrics': results[1],
+      'cache': results[2],
       'timestamp': DateTime.now().toIso8601String(),
     };
   }
@@ -475,11 +478,11 @@ class ResilientApiClientManager {
   }
 
   /// Получает диагностику всех clients
-  Map<String, Map<String, dynamic>> getAllDiagnostics() {
+  Future<Map<String, Map<String, dynamic>>> getAllDiagnostics() async {
     final result = <String, Map<String, dynamic>>{};
 
     for (final entry in _clients.entries) {
-      result[entry.key] = entry.value.getDiagnostics();
+      result[entry.key] = await entry.value.getDiagnostics();
     }
 
     return result;

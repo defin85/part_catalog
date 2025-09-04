@@ -169,7 +169,14 @@ class SupplierConfigService {
       if (setting.additionalConfig != null &&
           setting.additionalConfig!.isNotEmpty) {
         _logger.d('Parsing additionalConfig JSON...');
-        _logger.d('Raw additionalConfig: ${setting.additionalConfig}');
+        final raw = setting.additionalConfig!;
+        final len = raw.length;
+        final previewLen = len > 1000 ? 1000 : len;
+        _logger.d('Raw additionalConfig length: $len');
+        if (previewLen > 0) {
+          _logger.d(
+              'Raw additionalConfig preview: ${raw.substring(0, previewLen)}${len > previewLen ? ' ... [truncated ${len - previewLen} chars]' : ''}');
+        }
         try {
           additionalConfig =
               json.decode(setting.additionalConfig!) as Map<String, dynamic>;

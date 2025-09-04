@@ -10,12 +10,12 @@ import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/order_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/ping_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/price_status_response.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/search_result.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_vkorg.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
+import 'package:part_catalog/features/suppliers/utils/user_friendly_exception.dart';
 
 const String armtekBaseUrl = "http://ws.armtek.ru/api";
 
@@ -24,14 +24,23 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   final ResilientApiClient _resilientClient;
   final _logger = AppLoggers.suppliers;
   final String? _vkorg;
+  final String? _kunnrRg;
+  final bool _searchWithCross;
+  final bool _exactSearch;
   // final String? _username; // Сохранено для будущего использования
   // final String? _password; // Сохранено для будущего использования
 
   OptimizedArmtekApiClient._({
     required ResilientApiClient resilientClient,
     String? vkorg,
+    String? kunnrRg,
+    bool searchWithCross = true,
+    bool exactSearch = false,
   })  : _resilientClient = resilientClient,
-        _vkorg = vkorg;
+        _vkorg = vkorg,
+        _kunnrRg = kunnrRg,
+        _searchWithCross = searchWithCross,
+        _exactSearch = exactSearch;
 
   /// Фабричный метод для создания оптимизированного Armtek API клиента
   static Future<OptimizedArmtekApiClient> create({
@@ -39,8 +48,11 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
     String? username,
     String? password,
     String? vkorg,
+    String? kunnrRg,
     String? proxyUrl,
     String? proxyAuthToken,
+    bool searchWithCross = true,
+    bool exactSearch = false,
   }) async {
     final resilientClient = OptimizedApiClientFactory.createSupplierClient(
       supplierCode: 'armtek',
@@ -56,8 +68,9 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
     return OptimizedArmtekApiClient._(
       resilientClient: resilientClient,
       vkorg: vkorg,
-      // username: username,
-      // password: password,
+      kunnrRg: kunnrRg,
+      searchWithCross: searchWithCross,
+      exactSearch: exactSearch,
     );
   }
 
@@ -71,13 +84,14 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   String get baseUrl => _resilientClient.config.baseUrl;
 
   /// Получает статистику производительности
-  Map<String, dynamic>? getMetrics() => _resilientClient.getMetrics();
+  Future<Map<String, dynamic>?> getMetrics() => _resilientClient.getMetrics();
 
   /// Получает статистику кеша
-  Map<String, dynamic>? getCacheStats() => _resilientClient.getCacheStats();
+  Future<Map<String, dynamic>?> getCacheStats() =>
+      _resilientClient.getCacheStats();
 
   /// Получает статус circuit breaker
-  Map<String, dynamic> getCircuitBreakerStatus() =>
+  Future<Map<String, dynamic>> getCircuitBreakerStatus() =>
       _resilientClient.getCircuitBreakerStatus();
 
   /// Выполняет health check
@@ -112,82 +126,8 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   @override
   Future<List<PartPriceModel>> getPricesByArticle(String articleNumber,
       {String? brand}) async {
-    if (_vkorg == null) {
-      throw Exception('VKORG not configured for Armtek API client');
-    }
-
-    _logger.i(
-        'Поиск цен на запчасть: $articleNumber (бренд: ${brand ?? "любой"})');
-
-    try {
-      final response = await _resilientClient.post(
-        '/ws_search/getPrice',
-        data: {
-          'VKORG': _vkorg,
-          'PIN': articleNumber,
-          if (brand != null) 'BRAND': brand,
-          'format': 'json',
-        },
-      );
-
-      final data = response.data;
-      if (data is! Map<String, dynamic>) {
-        _logger.w('Неожиданный формат ответа от Armtek API');
-        return [];
-      }
-
-      final status = data['STATUS'] as int? ?? 500;
-      if (status != 200) {
-        _logger.w('Armtek API вернул ошибку: $status');
-        return [];
-      }
-
-      final respData = data['RESP'] as List<dynamic>? ?? [];
-      _logger.i(
-          'Получено ${respData.length} предложений для артикула $articleNumber');
-
-      return respData.map<PartPriceModel>((item) {
-        if (item is Map<String, dynamic>) {
-          final searchResult = SearchResult.fromJson(item);
-          return PartPriceModel(
-            article: searchResult.articleNumber ?? articleNumber,
-            brand: searchResult.brand ?? brand ?? '',
-            name: searchResult.name ?? '',
-            price: searchResult.price ?? 0.0,
-            quantity: searchResult.quantity ?? 0,
-            deliveryDays: searchResult.deliveryTime ?? 0,
-            supplierName: supplierName,
-            originalArticle:
-                searchResult.additionalData?['originalNumber'] as String?,
-            comment: searchResult.additionalData?['comment'] as String?,
-            priceUpdatedAt:
-                _parseDateTime(searchResult.additionalData?['priceDate']),
-            additionalProperties: {
-              'store': searchResult.additionalData?['store'],
-              'availability': searchResult.additionalData?['availability'],
-              'manager': searchResult.additionalData?['manager'],
-              'currency': searchResult.additionalData?['currency'] ?? 'RUB',
-              'supplier': searchResult.supplier,
-            },
-          );
-        }
-        return PartPriceModel(
-          article: articleNumber,
-          brand: brand ?? '',
-          name: '',
-          price: 0.0,
-          quantity: 0,
-          deliveryDays: 0,
-          supplierName: supplierName,
-        );
-      }).toList();
-    } catch (e, stackTrace) {
-      _logger.e(
-          'Ошибка при получении цен от Armtek для артикула $articleNumber',
-          error: e,
-          stackTrace: stackTrace);
-      rethrow;
-    }
+    // Для соответствия документации используем /ws_search/search
+    return searchPartsByArticle(articleNumber, brand: brand);
   }
 
   /// Проверяет доступность сервиса Armtek
@@ -420,20 +360,42 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   Future<List<PartPriceModel>> searchPartsByArticle(String articleNumber,
       {String? brand}) async {
     if (_vkorg == null) {
-      throw Exception('VKORG not configured for Armtek API client');
+      throw UserFriendlyException(
+        'Armtek: не настроен VKORG. Откройте настройки поставщика и укажите организацию (VKORG).',
+        details: 'VKORG not configured for Armtek API client',
+      );
+    }
+    if ((_kunnrRg ?? '').isEmpty) {
+      throw UserFriendlyException(
+        'Armtek: не указан код покупателя (KUNNR). Укажите корректный KUNNR_RG в настройках поставщика.',
+        details: 'KUNNR_RG (customerCode) not configured for Armtek',
+      );
     }
 
-    _logger.i('Поиск запчастей: $articleNumber (бренд: ${brand ?? "любой"})');
+    // Определяем тип поиска: 2 — с кроссами, 1 — точный, null — по умолчанию
+    String? queryType;
+    if (_searchWithCross) {
+      queryType = '2';
+    } else if (_exactSearch) {
+      queryType = '1';
+    }
+
+    _logger.i(
+        'Armtek search: PIN=$articleNumber, BRAND=${brand ?? "-"}, VKORG=$_vkorg, KUNNR_RG=$_kunnrRg, QUERY_TYPE=${queryType ?? "-"}');
 
     try {
+      final payload = <String, dynamic>{
+        'VKORG': _vkorg,
+        'KUNNR_RG': _kunnrRg,
+        'PIN': articleNumber,
+        if (brand != null && brand.isNotEmpty) 'BRAND': brand,
+        if (queryType != null) 'QUERY_TYPE': queryType,
+        'format': 'json',
+      };
+
       final response = await _resilientClient.post(
         '/ws_search/search',
-        data: {
-          'VKORG': _vkorg,
-          'PIN': articleNumber,
-          if (brand != null) 'BRAND': brand,
-          'format': 'json',
-        },
+        data: payload,
       );
 
       final data = response.data;
@@ -442,10 +404,33 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         return [];
       }
 
+      // Обработка бизнес-сообщений Armtek (MESSAGES)
+      final messages = (data['MESSAGES'] as List? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .toList();
+
       final status = data['STATUS'] as int? ?? 500;
       if (status != 200) {
         _logger.w('Armtek search API вернул ошибку: $status');
         return [];
+      }
+
+      // Если есть сообщения об ошибке (TYPE == 'E'), формируем понятное сообщение для пользователя
+      final errorMsgs = messages
+          .where((m) => (m['TYPE']?.toString().toUpperCase() ?? '') == 'E')
+          .map((m) => m['TEXT']?.toString() ?? '')
+          .where((text) => text.isNotEmpty)
+          .toList();
+
+      if (errorMsgs.isNotEmpty) {
+        final combined = errorMsgs.join('\n');
+        // Дополнительные подсказки по известным кейсам
+        String hint = '';
+        if (combined.contains('Покупатель не может быть установлен')) {
+          hint =
+              '\nПодсказка: проверьте соответствие VKORG и KUNNR в настройках поставщика.';
+        }
+        throw UserFriendlyException('Armtek: $combined$hint');
       }
 
       final respData = data['RESP'] as List<dynamic>? ?? [];
@@ -454,26 +439,58 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
 
       return respData.map<PartPriceModel>((item) {
         if (item is Map<String, dynamic>) {
-          final searchResult = SearchResult.fromJson(item);
+          // Пытаемся извлечь поля согласно Armtek ServiceSearch
+          final pin =
+              (item['PIN'] ?? articleNumber)?.toString() ?? articleNumber;
+          final itemBrand = (item['BRAND'] ?? brand ?? '').toString();
+          final name = (item['NAME'] ?? '').toString();
+          final priceRaw = item['PRICE'];
+          final price = priceRaw is num
+              ? priceRaw.toDouble()
+              : double.tryParse(priceRaw?.toString() ?? '') ?? 0.0;
+          final rvalueRaw = item['RVALUE'];
+          final quantity = rvalueRaw is num
+              ? rvalueRaw.toInt()
+              : int.tryParse(rvalueRaw?.toString() ?? '') ?? 0;
+          // DELIVERY_DAY или расчет из DLVDT (yyyyMMddHHmmss)
+          int deliveryDays = 0;
+          final ddayRaw = item['DELIVERY_DAY'];
+          if (ddayRaw != null) {
+            deliveryDays = ddayRaw is num
+                ? ddayRaw.toInt()
+                : int.tryParse(ddayRaw.toString()) ?? 0;
+          } else if (item['DLVDT'] != null) {
+            final s = item['DLVDT'].toString();
+            DateTime? dt;
+            try {
+              // Simple parse: yyyyMMddHHmmss
+              dt = DateTime.parse(
+                  '${s.substring(0, 4)}-${s.substring(4, 6)}-${s.substring(6, 8)}');
+              final diff = dt.difference(DateTime.now()).inDays;
+              deliveryDays = diff < 0 ? 0 : diff;
+            } catch (_) {}
+          }
+
           return PartPriceModel(
-            article: searchResult.articleNumber ?? articleNumber,
-            brand: searchResult.brand ?? brand ?? '',
-            name: searchResult.name ?? '',
-            price: searchResult.price ?? 0.0,
-            quantity: searchResult.quantity ?? 0,
-            deliveryDays: searchResult.deliveryTime ?? 0,
+            article: pin,
+            brand: itemBrand,
+            name: name,
+            price: price,
+            quantity: quantity,
+            deliveryDays: deliveryDays,
             supplierName: supplierName,
-            originalArticle:
-                searchResult.additionalData?['originalNumber'] as String?,
-            comment: searchResult.additionalData?['comment'] as String?,
-            priceUpdatedAt:
-                _parseDateTime(searchResult.additionalData?['priceDate']),
+            originalArticle: null,
+            comment: null,
+            priceUpdatedAt: null,
             additionalProperties: {
-              'store': searchResult.additionalData?['store'],
-              'availability': searchResult.additionalData?['availability'],
-              'manager': searchResult.additionalData?['manager'],
-              'currency': searchResult.additionalData?['currency'] ?? 'RUB',
-              'supplier': searchResult.supplier,
+              'WAERS': item['WAERS'],
+              'KEYZAK': item['KEYZAK'],
+              'PARNR': item['PARNR'],
+              'RDPRF': item['RDPRF'],
+              'MINBM': item['MINBM'],
+              'RETDAYS': item['RETDAYS'],
+              'ANALOG': item['ANALOG'],
+              'DLVDT': item['DLVDT'],
             },
           );
         }
@@ -547,12 +564,6 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
   }
 
   // Вспомогательные методы
-
-  DateTime? _parseDateTime(dynamic value) {
-    if (value == null) return null;
-    if (value is String) return DateTime.tryParse(value);
-    return null;
-  }
 
   ArmtekResponseWrapper<T> _parseArmtekResponse<T>(
     dynamic responseData,

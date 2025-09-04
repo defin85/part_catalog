@@ -25,7 +25,7 @@ class ArmtekApiExample {
       _logger.i('✅ Оптимизированный Armtek клиент создан успешно');
 
       // 2. Проверка состояния клиента
-      final circuitBreakerStatus = armtekClient.getCircuitBreakerStatus();
+      final circuitBreakerStatus = await armtekClient.getCircuitBreakerStatus();
       _logger.i('Circuit breaker состояние: ${circuitBreakerStatus['state']}');
 
       // 3. Выполнение health check
@@ -63,17 +63,17 @@ class ArmtekApiExample {
       _logger.i('✅ Найдено ${parts.length} предложений');
 
       // 7. Получение метрик производительности
-      final metrics = armtekClient.getMetrics();
+      final metrics = await armtekClient.getMetrics();
       if (metrics != null) {
         _logger.i('📊 Метрики производительности:');
         metrics.forEach((endpoint, stats) {
           _logger.i(
-              '  $endpoint: ${stats['avgResponseTime']} avg, ${stats['errorRate']}% errors');
+              '  $endpoint: ${stats['avgResponseTime']}ms avg, ${stats['errorRate']}% errors');
         });
       }
 
       // 8. Получение статистики кеша
-      final cacheStats = armtekClient.getCacheStats();
+      final cacheStats = await armtekClient.getCacheStats();
       if (cacheStats != null) {
         _logger.i('💾 Статистика кэша: ${cacheStats['hitRate']}% hit rate, '
             '${cacheStats['itemCount']} элементов');
@@ -125,7 +125,7 @@ class PartsCatalogApiExample {
       }
 
       // 5. Получение статистики производительности
-      final metrics = catalogClient.getMetrics();
+      final metrics = await catalogClient.getMetrics();
       if (metrics != null) {
         _logger.i('📊 Метрики Parts Catalog:');
         metrics.forEach((endpoint, stats) {
@@ -183,7 +183,7 @@ class ApiClientManagerExample {
       }
 
       // 5. Получение отчета о состоянии всех API
-      final healthReport = manager.generateHealthReport();
+      final healthReport = await manager.generateHealthReport();
       _logger.i('📋 Отчет о состоянии API:');
       _logger.i('  Всего клиентов: ${healthReport['summary']['totalClients']}');
       _logger.i('  Здоровых: ${healthReport['summary']['healthyClients']}');
@@ -197,7 +197,7 @@ class ApiClientManagerExample {
       });
 
       // 7. Получение статистики производительности
-      final performanceStats = manager.getPerformanceStats();
+      final performanceStats = await manager.getPerformanceStats();
       _logger.i('📊 Статистика производительности:');
       _logger.i('  Всего клиентов: ${performanceStats['totalClients']}');
 
@@ -225,7 +225,7 @@ class ApiMonitoringExample {
 
     try {
       // 1. Получение общей диагностики всех клиентов
-      final diagnostics = OptimizedApiClientFactory.getAllDiagnostics();
+      final diagnostics = await OptimizedApiClientFactory.getAllDiagnostics();
       _logger.i('🔍 Диагностика системы:');
 
       diagnostics.forEach((clientName, clientDiagnostics) {
@@ -235,18 +235,19 @@ class ApiMonitoringExample {
         _logger.i('  Базовый URL: ${clientDiagnostics['config']?['baseUrl']}');
 
         final metrics = clientDiagnostics['metrics'];
-        if (metrics != null) {
+        if (metrics != null && metrics is Map) {
           _logger.i('  Метрики доступны: ${metrics.keys.length} endpoint(ов)');
         }
 
         final cache = clientDiagnostics['cache'];
-        if (cache != null) {
+        if (cache != null && cache is Map) {
           _logger.i('  Кэш: ${cache['hitRate']}% hit rate');
         }
       });
 
       // 2. Создание отчета о состоянии
-      final healthReport = OptimizedApiClientFactory.generateHealthReport();
+      final healthReport =
+          await OptimizedApiClientFactory.generateHealthReport();
       _logger.i('📋 Отчет о состоянии системы:');
       _logger.i('  Время: ${healthReport['timestamp']}');
       _logger.i('  Всего клиентов: ${healthReport['summary']['totalClients']}');
@@ -255,7 +256,8 @@ class ApiMonitoringExample {
           '  Открытых circuit breakers: ${healthReport['summary']['openCircuitBreakers']}');
 
       // 3. Получение статистики производительности
-      final performanceStats = OptimizedApiClientFactory.getPerformanceStats();
+      final performanceStats =
+          await OptimizedApiClientFactory.getPerformanceStats();
       _logger.i('📊 Статистика производительности системы:');
       _logger.i('  Время создания отчета: ${performanceStats['timestamp']}');
       _logger
@@ -332,7 +334,7 @@ class ApiOptimizationExamples {
       final supplierClient =
           OptimizedApiClientFactory.getSupplierClient('armtek');
       if (supplierClient != null) {
-        final status = supplierClient.getCircuitBreakerStatus();
+        final status = await supplierClient.getCircuitBreakerStatus();
         _logger.i('🔒 Circuit breaker состояние: ${status['state']}');
       }
     }
@@ -369,7 +371,7 @@ class ApiTestingUtils {
 
     await Future.wait(futures);
 
-    final metrics = client.getMetrics();
+    final metrics = await client.getMetrics();
     _logger.i('📊 Результаты нагрузочного тестирования:');
     if (metrics != null) {
       metrics.forEach((endpoint, stats) {
@@ -403,9 +405,9 @@ class ApiTestingUtils {
     final duration2 = DateTime.now().difference(start2);
     _logger.i('⏱️ Время второго запроса: ${duration2.inMilliseconds}ms');
 
-    final cacheStats = client.getCacheStats();
+    final cacheStats = await client.getCacheStats();
     if (cacheStats != null) {
-      _logger.i('💾 Статистика кеша: ${cacheStats['hitRate']}% hit rate');
+      _logger.i('💾 Статистика кэша: ${cacheStats['hitRate']}% hit rate');
     }
   }
 }

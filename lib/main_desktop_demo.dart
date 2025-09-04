@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() {
+import 'package:part_catalog/core/utils/file_logger.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FileLogger.init();
   runApp(
     const ProviderScope(
       child: PartCatalogDesktopDemo(),

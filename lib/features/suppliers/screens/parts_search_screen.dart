@@ -8,7 +8,11 @@ import 'package:part_catalog/features/documents/orders/models/order_model_compos
 import 'package:part_catalog/features/documents/orders/providers/order_providers.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
+import 'package:part_catalog/features/suppliers/providers/optimized_api_providers.dart';
+import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 import 'package:part_catalog/features/suppliers/widgets/part_price_list_item.dart';
+import 'package:part_catalog/features/suppliers/utils/connection_error_handler.dart';
+import 'package:part_catalog/features/suppliers/utils/user_friendly_exception.dart';
 
 class PartsSearchScreen extends ConsumerStatefulWidget {
   const PartsSearchScreen({super.key});
@@ -21,12 +25,27 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
   final TextEditingController _articleController = TextEditingController();
   final TextEditingController _brandController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _didInitFromProvider = false;
 
   @override
   void dispose() {
     _articleController.dispose();
     _brandController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // При возврате на экран восстанавливаем значения полей из провайдера
+    if (!_didInitFromProvider) {
+      final params = ref.read(partsSearchStateProvider);
+      if (params != null) {
+        _articleController.text = params.articleNumber;
+        _brandController.text = params.brand ?? '';
+      }
+      _didInitFromProvider = true;
+    }
   }
 
   void _performSearch() {
@@ -52,6 +71,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
   Widget build(BuildContext context) {
     final t = context.t;
     final searchParams = ref.watch(partsSearchStateProvider);
+    final supplierConfigsAsync = ref.watch(supplierConfigsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -66,6 +86,33 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
       ),
       body: Column(
         children: [
+          if (supplierConfigsAsync.isLoading)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
+              child: Material(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Загрузка конфигураций поставщиков…',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           // Форма поиска
           Card(
             margin: const EdgeInsets.all(16),
@@ -162,7 +209,12 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
       );
     }
 
-    final searchResultsAsync = ref.watch(partsSearchProvider(searchParams));
+    final optimizedParams = OptimizedPartsSearchParams(
+      articleNumber: searchParams.articleNumber,
+      brand: searchParams.brand,
+    );
+    final searchResultsAsync =
+        ref.watch(optimizedPartsSearchProvider(optimizedParams));
 
     return searchResultsAsync.when(
       data: (parts) {
@@ -226,6 +278,10 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) {
+        // Преобразуем ошибку в понятное пользователю сообщение
+        final readable = error is UserFriendlyException
+            ? error.toString()
+            : ConnectionErrorHandler.getReadableErrorMessage(error);
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -244,7 +300,7 @@ class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                error.toString(),
+                readable,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:part_catalog/core/api/cache/api_cache.dart';
 import 'package:part_catalog/core/api/resilience/circuit_breaker.dart';
 import 'package:part_catalog/core/api/resilience/retry_policy.dart';
@@ -38,9 +40,9 @@ class OptimizedApiClientFactory {
       case ApiConnectionMode.direct:
         effectiveBaseUrl = baseUrl;
         if (username != null && password != null) {
-          // Будет добавлен через HeadersInterceptor
-          headers['x-api-username'] = username;
-          headers['x-api-password'] = password;
+          // Добавляем Basic Auth для прямого подключения
+          final basic = base64Encode(utf8.encode('$username:$password'));
+          headers['Authorization'] = 'Basic $basic';
         }
         break;
 
@@ -250,8 +252,8 @@ class OptimizedApiClientFactory {
   }
 
   /// Получает диагностику всех клиентов
-  static Map<String, Map<String, dynamic>> getAllDiagnostics() {
-    return clientManager.getAllDiagnostics();
+  static Future<Map<String, Map<String, dynamic>>> getAllDiagnostics() async {
+    return await clientManager.getAllDiagnostics();
   }
 
   /// Сбрасывает все circuit breakers
@@ -302,8 +304,8 @@ class OptimizedApiClientFactory {
   }
 
   /// Получает статистику производительности
-  static Map<String, dynamic> getPerformanceStats() {
-    final diagnostics = getAllDiagnostics();
+  static Future<Map<String, dynamic>> getPerformanceStats() async {
+    final diagnostics = await getAllDiagnostics();
     final stats = <String, dynamic>{
       'totalClients': diagnostics.length,
       'timestamp': DateTime.now().toIso8601String(),
@@ -325,8 +327,8 @@ class OptimizedApiClientFactory {
   }
 
   /// Создает отчет о состоянии API
-  static Map<String, dynamic> generateHealthReport() {
-    final diagnostics = getAllDiagnostics();
+  static Future<Map<String, dynamic>> generateHealthReport() async {
+    final diagnostics = await getAllDiagnostics();
     final report = <String, dynamic>{
       'timestamp': DateTime.now().toIso8601String(),
       'summary': <String, dynamic>{

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -26,11 +28,18 @@ class SupplierConfigs extends _$SupplierConfigs {
 
   @override
   Future<List<SupplierConfig>> build() async {
+    // Делаем провайдер долгоживущим, чтобы не перезагружать конфиги при каждом входе в экран
+    ref.keepAlive();
     _service = ref.watch(supplierConfigServiceProvider);
 
-    // Принудительно перезагружаем конфигурации из базы
-    await _service.reloadConfigs();
+    // Не перезагружаем из БД без необходимости: если кэш уже есть — используем его
+    final cached = _service.getAllConfigs();
+    if (cached.isNotEmpty) {
+      return cached;
+    }
 
+    // Иначе — одна инициализирующая загрузка
+    await _service.reloadConfigs();
     return _service.getAllConfigs();
   }
 
@@ -378,6 +387,10 @@ class SupplierConfigForm extends _$SupplierConfigForm {
 
   /// Загрузить список брендов для Armtek
   Future<void> loadBrandList() async {
+    File('debug_trace.log').writeAsStringSync(
+      '‼️ TRACE: loadBrandList called!\n${StackTrace.current}\n\n',
+      mode: FileMode.append,
+    );
     if (state.config == null) {
       state = state.copyWith(
         error: 'Сначала настройте базовые параметры подключения',
@@ -500,14 +513,7 @@ class SupplierConfigForm extends _$SupplierConfigForm {
 
   /// Загрузить список складов для Armtek
   Future<void> loadStoreList() async {
-    print('=== НАЧАЛО loadStoreList ===');
-    print('state.config: ${state.config != null}');
-    print('state.config.businessConfig: ${state.config?.businessConfig}');
-    print(
-        'state.config.businessConfig.brandList: ${state.config?.businessConfig?.brandList?.length ?? 0}');
-    print(
-        'state.config.businessConfig.storeList: ${state.config?.businessConfig?.storeList?.length ?? 0}');
-
+    debugPrint('‼️ TRACE: loadStoreList called!\n${StackTrace.current}');
     if (state.config == null) {
       state = state.copyWith(
         error: 'Сначала настройте базовые параметры подключения',
@@ -569,17 +575,6 @@ class SupplierConfigForm extends _$SupplierConfigForm {
         final currentStateBusinessConfig =
             currentStateConfig.businessConfig ?? const SupplierBusinessConfig();
 
-        print('=== ДЕБАГ МЕРЖИНГА СКЛАДОВ ===');
-        print('currentStateConfig не null: ${currentStateConfig != null}');
-        print(
-            'currentStateBusinessConfig не null: ${currentStateBusinessConfig != null}');
-        print(
-            'currentStateBusinessConfig.brandList: ${currentStateBusinessConfig.brandList}');
-        print(
-            'currentStateBusinessConfig.storeList: ${currentStateBusinessConfig.storeList}');
-        print(
-            'Мержинг складов: существующие бренды=${currentStateBusinessConfig.brandList?.length ?? 0}, новые склады=${response.responseData?.length ?? 0}');
-
         final updatedConfig = currentStateConfig.copyWith(
           businessConfig: currentStateBusinessConfig.copyWith(
             storeList: response.responseData,
@@ -588,31 +583,12 @@ class SupplierConfigForm extends _$SupplierConfigForm {
           ),
         );
 
-        print(
-            'После мержинга: бренды=${updatedConfig.businessConfig?.brandList?.length ?? 0}, склады=${updatedConfig.businessConfig?.storeList?.length ?? 0}');
-
         // Обновляем только состояние в памяти (БД не трогаем)
         state = state.copyWith(
           config: updatedConfig,
           isLoadingStoreList: false,
           error: null,
         );
-
-        print('=== ПОСЛЕ ОБНОВЛЕНИЯ STATE В loadStoreList ===');
-        print(
-            'state.config.businessConfig.brandList: ${state.config?.businessConfig?.brandList?.length ?? 0}');
-        print(
-            'state.config.businessConfig.storeList: ${state.config?.businessConfig?.storeList?.length ?? 0}');
-
-        // Автоматически сохраняем обновленную конфигурацию в БД
-        try {
-          final service = ref.read(supplierConfigServiceProvider);
-          await service.saveConfig(updatedConfig);
-          print('Склады автоматически сохранены в БД');
-        } catch (e) {
-          print('Ошибка сохранения складов в БД: $e');
-          // Не прерываем выполнение, данные остаются в памяти
-        }
       } else {
         final errorMessage = response.messages?.isNotEmpty == true
             ? response.messages!.first.text

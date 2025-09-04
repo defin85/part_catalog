@@ -29,6 +29,51 @@
 *   **Структура успешного ответа (`RESP`, array - предположительно):**
     *   Массив объектов, представляющих найденные в ассортименте позиции. Точная структура полей не указана в предоставленном контексте, но вероятно включает `PIN`, `BRAND`, `NAME`.
 
+curl --location 'http://ws.armtek.ru/api/ws_search/assortment_search' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Basic MUVHT1JfTUFaQUxPVkBNQUlMLlJVOkNuOEpqR0BTV3hpMlRQbQ==' \
+--data '{
+    "VKORG": 4000,
+    "PIN": "1192095F0A"
+}'
+
+{
+    "STATUS": 200,
+    "MESSAGES": [],
+    "RESP": [
+        {
+            "PIN": "1192095F0A",
+            "BRAND": "NISSAN",
+            "NAME": "ремень поликлин.!\\ Nissan Almera/Primera 1.5-1.8 99>"
+        },
+        {
+            "PIN": "1192095F0A",
+            "BRAND": "DONGIL",
+            "NAME": "Ремень приводной (6pk1113)"
+        },
+        {
+            "PIN": "1192095F0A",
+            "BRAND": "AMD",
+            "NAME": "Ремень 6PK1110 поликлиновой, генератора 11920-95F0A/AMD.BL168 AMD"
+        },
+        {
+            "PIN": "1192095F0A",
+            "BRAND": "INFINITI",
+            "NAME": "РЕМЕНЬ ПРИВОДНОЙ КОМПРЕССОРА КОНД (B10RS)"
+        },
+        {
+            "PIN": "11920-95F0A",
+            "BRAND": "DATSUN",
+            "NAME": "Ремень поликлиновый AVANTECH"
+        },
+        {
+            "PIN": "1192095F0A",
+            "BRAND": "LADA",
+            "NAME": "РЕМЕНЬ ПРИВОДНОЙ, С ДЛИННОЙ НАРУЖНОЙ ОКР"
+        }
+    ]
+}
+
 ---
 
 ## 2. Метод `search`
@@ -57,4 +102,73 @@
         *   `RDPRF` (string, max 10): Кратность (минимальное количество для заказа).
         *   *...и другие поля, такие как вес, объем, страна происхождения, информация о производителе и т.д.*
 
+curl --location 'http://ws.armtek.ru/api/ws_search/search' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Basic MUVHT1JfTUFaQUxPVkBNQUlMLlJVOkNuOEpqR0BTV3hpMlRQbQ==' \
+--data '{
+    "VKORG": 4000,
+    "KUNNR_RG": 43247459,
+    "PIN": "1987948437"
+}'
+
+{
+    "STATUS": 200,
+    "MESSAGES": [],
+    "RESP": [
+        {
+            "ARTID": "17218",
+            "PARNR": "0",
+            "KEYZAK": "MOV0007276",
+            "RVALUE": "2",
+            "RDPRF": "1",
+            "MINBM": "1.000",
+            "RETDAYS": "30",
+            "VENSL": "100.0",
+            "PRICE": "394.00",
+            "WAERS": "RUB",
+            "DLVDT": "20250819190000",
+            "WRNTDT": "",
+            "ANALOG": "X",
+            "PIN": "06-01100-SX",
+            "BRAND": "STELLOX",
+            "NAME": "ремень поликлиновой! 6PK1100\\ Peugeot 306/405, Citroen ZX 1.6-2.0 91>"
+        },
+        {
+            "ARTID": "644345",
+            "PARNR": "0",
+            "KEYZAK": "MOV0007276",
+            "RVALUE": "2",
+            "RDPRF": "1",
+            "MINBM": "1.000",
+            "RETDAYS": "30",
+            "VENSL": "100.0",
+            "PRICE": "1033.00",
+            "WAERS": "RUB",
+            "DLVDT": "20250819190000",
+            "WRNTDT": "",
+            "ANALOG": "",
+            "PIN": "1 987 948 437",
+            "BRAND": "BOSCH",
+            "NAME": "ремень поликлиновой! 6PK1100\\ Peugeot 405, Citroen ZX 1.6-2.0 91>"
+        },
+        {
+            "ARTID": "51542105",
+            "PARNR": "0",
+            "KEYZAK": "MOV0007276",
+            "RVALUE": "1",
+            "RDPRF": "1",
+            "MINBM": "1.000",
+            "RETDAYS": "30",
+            "VENSL": "100.0",
+            "PRICE": "524.00",
+            "WAERS": "RUB",
+            "DLVDT": "20250819190000",
+            "WRNTDT": "",
+            "ANALOG": "X",
+            "PIN": "Z22598",
+            "BRAND": "ZENTPARTS",
+            "NAME": "ремень поликлиновой! 6PK1100\\ Peugeot 306/405, Citroen ZX 1.6-2.0 91>"
+        }
+    ]
+}    
 ---

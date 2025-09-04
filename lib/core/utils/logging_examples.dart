@@ -8,7 +8,6 @@ import 'package:part_catalog/core/utils/logger_config.dart';
 
 // ignore_for_file: unused_local_variable, avoid_print
 
-
 /// Примеры использования оптимизированной системы логирования
 class LoggingExamples {
   /// 1. Базовое использование Logger с extension методами

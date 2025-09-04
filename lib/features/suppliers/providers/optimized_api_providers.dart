@@ -1,14 +1,16 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
 import 'package:part_catalog/core/config/global_api_settings_service.dart';
+import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/optimized_armtek_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
+import 'package:part_catalog/features/suppliers/utils/user_friendly_exception.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 
 part 'optimized_api_providers.g.dart';
@@ -31,28 +33,38 @@ ApiClientManager optimizedApiClientManager(Ref ref) {
 class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   @override
   Future<OptimizedArmtekApiClient?> build(String supplierCode) async {
+    // Не даём провайдеру схлопываться во время загрузки/использования
+    ref.keepAlive();
     // Получаем конфигурацию поставщика
-    final config = await ref.watch(supplierConfigProvider(supplierCode).future);
+    final configAsync = ref.watch(supplierConfigProvider(supplierCode));
 
-    if (config == null || !config.isEnabled || supplierCode != 'armtek') {
-      return null;
-    }
-
-    try {
-      // Создаем оптимизированный клиент
-      return await OptimizedArmtekApiClient.create(
-        connectionMode:
-            config.apiConfig.connectionMode ?? ApiConnectionMode.direct,
-        username: config.apiConfig.credentials?.username,
-        password: config.apiConfig.credentials?.password,
-        vkorg: config.apiConfig.credentials?.additionalParams?['VKORG'],
-        proxyUrl: config.apiConfig.proxyUrl,
-        proxyAuthToken: config.apiConfig.proxyAuthToken,
-      );
-    } catch (e) {
-      // Логируем ошибку и возвращаем null
-      return null;
-    }
+    return configAsync.when(
+      data: (config) {
+        if (config == null || !config.isEnabled || supplierCode != 'armtek') {
+          return null;
+        }
+        try {
+          // Создаем оптимизированный клиент
+          return OptimizedArmtekApiClient.create(
+            connectionMode:
+                config.apiConfig.connectionMode ?? ApiConnectionMode.direct,
+            username: config.apiConfig.credentials?.username,
+            password: config.apiConfig.credentials?.password,
+            vkorg: config.apiConfig.credentials?.additionalParams?['VKORG'],
+            kunnrRg: config.businessConfig?.customerCode,
+            proxyUrl: config.apiConfig.proxyUrl,
+            proxyAuthToken: config.apiConfig.proxyAuthToken,
+            searchWithCross: config.businessConfig?.searchWithCross ?? true,
+            exactSearch: config.businessConfig?.exactSearch ?? false,
+          );
+        } catch (e) {
+          // Логируем ошибку и возвращаем null
+          return null;
+        }
+      },
+      loading: () => null,
+      error: (err, stack) => null,
+    );
   }
 
   /// Проверяет подключение к API
@@ -107,8 +119,16 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
 /// Провайдер для поиска запчастей с использованием оптимизированных клиентов
 @riverpod
 class OptimizedPartsSearch extends _$OptimizedPartsSearch {
+  final _logger = AppLoggers.suppliers;
+
   @override
   Future<List<PartPriceModel>> build(OptimizedPartsSearchParams params) async {
+    // Сохраняем инстанс провайдера между переходами экранов,
+    // чтобы при возврате не выполнять запрос заново
+    ref.keepAlive();
+    _logger.i(
+        'Optimized search started for article: ${params.articleNumber}, brand: ${params.brand}');
+
     if (params.articleNumber.isEmpty) {
       return [];
     }
@@ -117,7 +137,7 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
         await ref.watch(isOptimizedSystemEnabledProvider.future);
 
     if (!isOptimizedEnabled) {
-      // Fallback к старой системе
+      _logger.w('Optimized system is disabled. Falling back to legacy search.');
       return _searchWithLegacySystem(params);
     }
 
@@ -128,16 +148,19 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
   Future<List<PartPriceModel>> _searchWithOptimizedSystem(
     OptimizedPartsSearchParams params,
   ) async {
-    final results = <PartPriceModel>[];
+    // Дожидаемся загрузки конфигураций из БД и фильтруем включённых поставщиков
+    final allConfigs = await ref.watch(supplierConfigsProvider.future);
+    final configs = allConfigs.where((c) => c.isEnabled).toList();
+    _logger
+        .d('Searching with ${configs.length} enabled suppliers (after load).');
 
-    // Получаем активные конфигурации поставщиков
-    final configs = ref.read(enabledSupplierConfigsProvider);
-
-    for (final config in configs) {
+    final searchFutures =
+        configs.map<Future<List<PartPriceModel>>>((config) async {
+      _logger.d('Querying supplier: ${config.supplierCode}');
       try {
         switch (config.supplierCode) {
           case 'armtek':
-            final client = await ref.read(
+            final client = await ref.watch(
               optimizedArmtekClientProvider(config.supplierCode).future,
             );
 
@@ -146,23 +169,41 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
                 params.articleNumber,
                 brand: params.brand,
               );
-              results.addAll(prices);
+              _logger.d(
+                  'Found ${prices.length} offers from ${config.supplierCode}');
+              return prices;
+            } else {
+              _logger.w(
+                  'Optimized client for ${config.supplierCode} is null. Skipping search.');
             }
             break;
 
           // TODO: Добавить другие поставщики
           default:
-            // Пропускаем неизвестных поставщиков
+            _logger.w(
+                'No search implementation for supplier: ${config.supplierCode}');
             break;
         }
-      } catch (e) {
-        // Логируем ошибку но продолжаем с другими поставщиками
-        continue;
+      } catch (e, stackTrace) {
+        // Для дружественных пользователю ошибок пробрасываем дальше, чтобы UI показал их
+        if (e is UserFriendlyException) {
+          rethrow;
+        }
+        _logger.e(
+          'Failed to get prices from supplier: ${config.supplierCode}',
+          error: e,
+          stackTrace: stackTrace,
+        );
       }
-    }
+      return <PartPriceModel>[]; // Return empty list on error or if no client
+    }).toList();
+
+    final resultsOfLists = await Future.wait(searchFutures);
+    final results = resultsOfLists.expand((list) => list).toList();
 
     // Сортируем по цене
     results.sort((a, b) => a.price.compareTo(b.price));
+    _logger.i('Search finished. Found ${results.length} total offers.');
 
     return results;
   }
@@ -171,6 +212,7 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
   Future<List<PartPriceModel>> _searchWithLegacySystem(
     OptimizedPartsSearchParams params,
   ) async {
+    _logger.d('Executing legacy search...');
     // Используем существующий провайдер
     final legacyParams = PartsSearchParams(
       articleNumber: params.articleNumber,
@@ -213,8 +255,8 @@ class OptimizedPartsSearchParams {
   @override
   int get hashCode =>
       articleNumber.hashCode ^
-      brand.hashCode ^
-      supplierCodes.hashCode ^
+      (brand?.hashCode ?? 0) ^
+      (supplierCodes?.hashCode ?? 0) ^
       useCache.hashCode;
 }
 
@@ -237,7 +279,8 @@ class SystemDiagnostics extends _$SystemDiagnostics {
     final diagnostics = <String, dynamic>{};
 
     // Получаем диагностику от фабрики
-    final factoryDiagnostics = OptimizedApiClientFactory.getAllDiagnostics();
+    final factoryDiagnostics =
+        await OptimizedApiClientFactory.getAllDiagnostics();
     diagnostics.addAll(factoryDiagnostics);
 
     // Добавляем информацию о статусе системы
@@ -289,41 +332,38 @@ Future<Map<String, dynamic>> supplierHealthStatus(
   Ref ref,
   String supplierCode,
 ) async {
-  switch (supplierCode) {
-    case 'armtek':
-      final client = await ref.read(
-        optimizedArmtekClientProvider(supplierCode).future,
-      );
+  final client = await ref.watch(
+    optimizedArmtekClientProvider(supplierCode).future,
+  );
 
-      if (client == null) {
-        return {
-          'status': 'unavailable',
-          'healthy': false,
-          'message': 'Client not configured or disabled',
-          'timestamp': DateTime.now().toIso8601String(),
-        };
-      }
-
-      final isHealthy = await client.performHealthCheck();
-      final metrics = client.getMetrics();
-      final cacheStats = client.getCacheStats();
-      final circuitBreakerStatus = client.getCircuitBreakerStatus();
-
-      return {
-        'status': isHealthy ? 'healthy' : 'unhealthy',
-        'healthy': isHealthy,
-        'metrics': metrics,
-        'cache': cacheStats,
-        'circuit_breaker': circuitBreakerStatus,
-        'timestamp': DateTime.now().toIso8601String(),
-      };
-
-    default:
-      return {
-        'status': 'unknown',
-        'healthy': false,
-        'message': 'Unknown supplier: $supplierCode',
-        'timestamp': DateTime.now().toIso8601String(),
-      };
+  if (client == null) {
+    return {
+      'status': 'unavailable',
+      'healthy': false,
+      'message': 'Client not configured or disabled',
+      'timestamp': DateTime.now().toIso8601String(),
+    };
   }
+
+  // Запускаем все проверки параллельно
+  final results = await Future.wait([
+    client.performHealthCheck(),
+    client.getMetrics(),
+    client.getCacheStats(),
+    client.getCircuitBreakerStatus(),
+  ]);
+
+  final isHealthy = results[0] as bool;
+  final metrics = results[1] as Map<String, dynamic>?;
+  final cacheStats = results[2] as Map<String, dynamic>?;
+  final circuitBreakerStatus = results[3] as Map<String, dynamic>;
+
+  return {
+    'status': isHealthy ? 'healthy' : 'unhealthy',
+    'healthy': isHealthy,
+    'metrics': metrics,
+    'cache': cacheStats,
+    'circuit_breaker': circuitBreakerStatus,
+    'timestamp': DateTime.now().toIso8601String(),
+  };
 }

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-#!/usr/bin/env dart
+// #!/usr/bin/env dart
 
 
 /// Скрипт для запуска всех тестов с детальной отчетностью

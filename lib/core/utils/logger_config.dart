@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart'; // Импортируем для kReleaseMode
 
 import 'package:logger/logger.dart';
+import 'package:part_catalog/core/utils/file_logger.dart';
+import 'package:part_catalog/core/logging/in_memory_log_output.dart';
+import 'package:part_catalog/core/logging/app_log_store.dart';
 
 // import 'package:firebase_crashlytics/firebase_crashlytics.dart'; // Раскомментируйте, если используете Crashlytics
 
@@ -95,9 +98,18 @@ class AppLoggers {
   );
 
   static final Logger suppliers = Logger(
+    // Для поиска запчастей перенаправляем вывод в файл
     printer: _createPrettyPrinter(
-        methodCount: 1, dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart),
+      methodCount: 1,
+      colors: false, // без ANSI-кодов в файле
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
+    ),
     level: _defaultLogLevel,
+    output: MultiOutput([
+      ConsoleOutput(),
+      NamedFileLogOutput('parts_search.log'),
+      InMemoryLogOutput(appLogStore),
+    ]),
   );
 
   static final Logger orders = Logger(

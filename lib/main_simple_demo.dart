@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:part_catalog/core/utils/file_logger.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FileLogger.init();
   runApp(const PartCatalogSimpleDemo());
 }
 

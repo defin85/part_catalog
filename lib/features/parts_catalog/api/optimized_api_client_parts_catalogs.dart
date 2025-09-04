@@ -53,13 +53,14 @@ class OptimizedApiClientPartsCatalogs {
   String get baseUrl => _resilientClient.config.baseUrl;
 
   /// Получает статистику производительности
-  Map<String, dynamic>? getMetrics() => _resilientClient.getMetrics();
+  Future<Map<String, dynamic>?> getMetrics() => _resilientClient.getMetrics();
 
   /// Получает статистику кеша
-  Map<String, dynamic>? getCacheStats() => _resilientClient.getCacheStats();
+  Future<Map<String, dynamic>?> getCacheStats() =>
+      _resilientClient.getCacheStats();
 
   /// Получает статус circuit breaker
-  Map<String, dynamic> getCircuitBreakerStatus() =>
+  Future<Map<String, dynamic>> getCircuitBreakerStatus() =>
       _resilientClient.getCircuitBreakerStatus();
 
   /// Выполняет health check

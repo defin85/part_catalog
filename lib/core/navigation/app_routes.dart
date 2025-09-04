@@ -5,5 +5,6 @@ class AppRoutes {
   static const String partsSearch = '/parts-search';
   static const String apiControlCenter = '/api-control-center';
   static const String supplierConfig = '/supplier-config';
+  static const String logs = '/logs';
   // Добавьте другие маршруты
 }

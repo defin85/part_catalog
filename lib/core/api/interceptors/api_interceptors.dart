@@ -7,49 +7,45 @@ import 'package:part_catalog/core/api/cache/api_cache.dart';
 import 'package:part_catalog/core/api/cache/memory_cache.dart';
 import 'package:part_catalog/core/api/exceptions.dart';
 import 'package:part_catalog/core/utils/context_logger.dart';
+import 'package:part_catalog/core/utils/file_logger.dart';
 
 /// Интерсептор для логирования API запросов и ответов
 class LoggingInterceptor extends Interceptor {
-  final ContextLogger _logger;
   final bool logRequestHeaders;
   final bool logRequestBody;
   final bool logResponseHeaders;
   final bool logResponseBody;
-  final int maxBodyLogLength;
 
   LoggingInterceptor({
-    ContextLogger? logger,
-    this.logRequestHeaders = false,
-    this.logRequestBody = true,
-    this.logResponseHeaders = false,
-    this.logResponseBody = true,
-    this.maxBodyLogLength = 1000,
-  }) : _logger = logger ?? ContextLogger(context: 'ApiClient');
+    this.logRequestHeaders = true, // Включаем по умолчанию для записи в файл
+    this.logRequestBody = true, // Включаем по умолчанию для записи в файл
+    this.logResponseHeaders = true, // Включаем по умолчанию для записи в файл
+    this.logResponseBody = true, // Включаем по умолчанию для записи в файл
+  });
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final startTime = DateTime.now();
     options.extra['request_start_time'] = startTime;
 
-    _logger.i('→ ${options.method} ${options.uri}', metadata: {
-      'method': options.method,
-      'url': options.uri.toString(),
-    });
+    final summary = '→ ${options.method} ${options.uri}';
+    // _logger.i(summary); // Убираем вывод в консоль
+
+    final details = StringBuffer(summary);
 
     if (logRequestHeaders && options.headers.isNotEmpty) {
-      _logger.d('Request Headers:', metadata: {
-        'headers': _sanitizeHeaders(options.headers),
-      });
+      details.write('\nRequest Headers:\n');
+      details.write(_formatData(_sanitizeHeaders(options.headers)));
     }
 
     if (logRequestBody && options.data != null) {
       final bodyStr = _formatData(options.data);
       if (bodyStr.isNotEmpty) {
-        _logger.d('Request Body:', metadata: {
-          'body': _truncateString(bodyStr, maxBodyLogLength),
-        });
+        details.write('\nRequest Body:\n');
+        details.write(bodyStr);
       }
     }
+    FileLogger.write(details.toString());
 
     handler.next(options);
   }
@@ -61,29 +57,25 @@ class LoggingInterceptor extends Interceptor {
     final duration =
         startTime != null ? DateTime.now().difference(startTime) : null;
 
-    _logger.i(
-        '← ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.uri}',
-        metadata: {
-          'statusCode': response.statusCode,
-          'method': response.requestOptions.method,
-          'url': response.requestOptions.uri.toString(),
-          if (duration != null) 'duration': '${duration.inMilliseconds}ms',
-        });
+    final summary =
+        '← ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.uri} (${duration?.inMilliseconds}ms)';
+    // _logger.i(summary); // Убираем вывод в консоль
+
+    final details = StringBuffer(summary);
 
     if (logResponseHeaders && response.headers.map.isNotEmpty) {
-      _logger.d('Response Headers:', metadata: {
-        'headers': response.headers.map,
-      });
+      details.write('\nResponse Headers:\n');
+      details.write(_formatData(response.headers.map));
     }
 
     if (logResponseBody && response.data != null) {
       final bodyStr = _formatData(response.data);
       if (bodyStr.isNotEmpty) {
-        _logger.d('Response Body:', metadata: {
-          'body': _truncateString(bodyStr, maxBodyLogLength),
-        });
+        details.write('\nResponse Body:\n');
+        details.write(bodyStr);
       }
     }
+    FileLogger.write(details.toString());
 
     handler.next(response);
   }
@@ -95,27 +87,21 @@ class LoggingInterceptor extends Interceptor {
     final duration =
         startTime != null ? DateTime.now().difference(startTime) : null;
 
-    _logger.e(
-      '✗ ${err.requestOptions.method} ${err.requestOptions.uri}',
-      metadata: {
-        'method': err.requestOptions.method,
-        'url': err.requestOptions.uri.toString(),
-        'errorType': err.type.toString(),
-        if (err.response?.statusCode != null)
-          'statusCode': err.response!.statusCode,
-        if (duration != null) 'duration': '${duration.inMilliseconds}ms',
-      },
-      error: err.message,
-    );
+    final summary =
+        '✗ ${err.requestOptions.method} ${err.requestOptions.uri} (${duration?.inMilliseconds}ms)';
+    // _logger.e(summary, error: err.message); // Убираем вывод в консоль
+
+    final details = StringBuffer(summary);
+    details.write('\nError: ${err.message}');
 
     if (err.response?.data != null) {
       final errorBody = _formatData(err.response!.data);
       if (errorBody.isNotEmpty) {
-        _logger.e('Error Response:', metadata: {
-          'body': _truncateString(errorBody, maxBodyLogLength),
-        });
+        details.write('\nError Response Body:\n');
+        details.write(errorBody);
       }
     }
+    FileLogger.write(details.toString());
 
     handler.next(err);
   }
@@ -153,11 +139,6 @@ class LoggingInterceptor extends Interceptor {
     } catch (e) {
       return '[Unable to format data: $e]';
     }
-  }
-
-  String _truncateString(String str, int maxLength) {
-    if (str.length <= maxLength) return str;
-    return '${str.substring(0, maxLength)}... [truncated ${str.length - maxLength} chars]';
   }
 }
 

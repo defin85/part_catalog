@@ -51,6 +51,12 @@ class HomeScreen extends ConsumerWidget {
               labelKey: () => t.settings.apiControlCenter
                   .screenTitle // Убедитесь, что эта строка локализации существует
             ),
+            (
+              route: AppRoutes.logs,
+              icon: Icons.event_note_outlined,
+              selectedIcon: Icons.event_note,
+              labelKey: () => 'Журнал',
+            ),
             // Добавьте другие основные разделы здесь
           ];
 

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
 
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
@@ -14,6 +13,8 @@ import 'package:part_catalog/core/observers/provider_observer.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/widgets/language_switcher.dart';
 import 'package:part_catalog/debug/db_check.dart';
+import 'package:part_catalog/core/utils/file_logger.dart';
+import 'package:part_catalog/core/logging/app_logger.dart';
 
 // Используем slang для локализации
 
@@ -23,17 +24,22 @@ void main() {
     // Загружаем переменные окружения
     await dotenv.load();
     WidgetsFlutterBinding.ensureInitialized();
+    // Инициализируем файловый логгер (путь к папке приложения)
+    await FileLogger.init();
 
     // Настраиваем FlutterError для перехвата ошибок Flutter
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
-      final logger = Logger(); // Используем стандартный логгер
+      final logger = appLogger; // Используем общий AppLogger
       logger.e(
         'Flutter error: ${details.exception}',
         error: details.exception,
         stackTrace: details.stack,
       );
     };
+
+    // Перехват debugPrint, чтобы сообщения попадали в журнал
+    AppLogger.hookDebugPrint();
 
     // Инициализация Slang (устанавливаем локаль устройства по умолчанию)
     LocaleSettings.useDeviceLocale();
@@ -58,7 +64,7 @@ void main() {
     );
   }, (error, stackTrace) {
     // Ловим все необработанные исключения в зоне
-    final logger = Logger(); // Используем стандартный логгер
+    final logger = appLogger; // Используем общий AppLogger
     logger.e(
       'Unhandled error',
       error: error,
