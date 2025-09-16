@@ -285,7 +285,7 @@ class _EnhancedSupplierConfigScreenState
 
           // Тип аутентификации
           DropdownButtonFormField<AuthenticationType>(
-            value: _selectedAuthType,
+            initialValue: _selectedAuthType,
             decoration: const InputDecoration(
               labelText: 'Тип аутентификации',
               border: OutlineInputBorder(),

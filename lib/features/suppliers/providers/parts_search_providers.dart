@@ -3,30 +3,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
-import 'package:part_catalog/features/suppliers/services/suppliers_service.dart';
+import 'package:part_catalog/features/suppliers/services/parts_price_service.dart';
 
 /// Провайдер для ApiClientManager
 final apiClientManagerProvider = Provider<ApiClientManager>((ref) {
   return locator<ApiClientManager>();
 });
 
-/// Провайдер для SuppliersService
-final suppliersServiceProvider = Provider<SuppliersService>((ref) {
-  return locator<SuppliersService>();
+/// Провайдер для PartsPriceService
+final partsPriceServiceProvider = Provider<PartsPriceService>((ref) {
+  return locator<PartsPriceService>();
 });
 
 /// Провайдер для поиска запчастей
 final partsSearchProvider =
     FutureProvider.family<List<PartPriceModel>, PartsSearchParams>(
         (ref, params) async {
-  final suppliersService = ref.read(suppliersServiceProvider);
+  final partsPriceService = ref.read(partsPriceServiceProvider);
 
   if (params.articleNumber.isEmpty) {
     return [];
   }
 
   // Получаем цены от всех доступных поставщиков
-  final results = await suppliersService.getPricesFromAllSuppliers(
+  final results = await partsPriceService.getPricesFromAllSuppliers(
     params.articleNumber,
     brand: params.brand,
   );

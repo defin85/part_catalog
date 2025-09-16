@@ -207,7 +207,7 @@ class _CarsScreenState extends ConsumerState<CarsScreen> {
           ];
 
           return DropdownButtonFormField<String?>(
-            value: currentFilterUuid, // Используем переданное значение
+            initialValue: currentFilterUuid, // Используем переданное значение
             decoration: InputDecoration(
               labelText: t.clients.client,
               border: const OutlineInputBorder(),
@@ -262,31 +262,22 @@ class _CarsScreenState extends ConsumerState<CarsScreen> {
         title: Text(t.core.filterByClient),
         content: SizedBox(
           width: double.maxFinite,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              ListTile(
-                title: Text(t.core.all),
-                leading: Radio<String?>(
+          child: RadioGroup<String?>(
+            groupValue: currentFilterUuid,
+            onChanged: (value) => Navigator.of(dialogContext).pop(value),
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                RadioListTile<String?>(
+                  title: Text(t.core.all),
                   value: null,
-                  groupValue:
-                      currentFilterUuid, // Используем переданное значение
-                  onChanged: (value) => Navigator.of(dialogContext).pop(value),
                 ),
-                onTap: () => Navigator.of(dialogContext).pop(null),
-              ),
-              ...clients.map((client) => ListTile(
-                    title: Text(client.displayName),
-                    leading: Radio<String?>(
+                ...clients.map((client) => RadioListTile<String?>(
+                      title: Text(client.displayName),
                       value: client.uuid,
-                      groupValue:
-                          currentFilterUuid, // Используем переданное значение
-                      onChanged: (value) =>
-                          Navigator.of(dialogContext).pop(value),
-                    ),
-                    onTap: () => Navigator.of(dialogContext).pop(client.uuid),
-                  )),
-            ],
+                    )),
+              ],
+            ),
           ),
         ),
         actions: [
@@ -919,7 +910,7 @@ class _CarsScreenState extends ConsumerState<CarsScreen> {
                             children: <Widget>[
                               // --- Выбор клиента ---
                               DropdownButtonFormField<ClientModelComposite>(
-                                value: selectedClient,
+                                initialValue: selectedClient,
                                 decoration: InputDecoration(
                                   labelText: t.clients.client,
                                   border: const OutlineInputBorder(),

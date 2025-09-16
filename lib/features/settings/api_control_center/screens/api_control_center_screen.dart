@@ -80,25 +80,25 @@ class ApiControlCenterScreen extends ConsumerWidget {
               t.settings.apiControlCenter.apiConnectionMode,
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            RadioListTile<ApiConnectionMode>(
-              title: Text(t.settings.apiControlCenter.directMode),
-              value: ApiConnectionMode.direct,
+            RadioGroup<ApiConnectionMode>(
               groupValue: state.apiMode,
               onChanged: (ApiConnectionMode? value) {
                 if (value != null) {
                   notifier.setApiConnectionMode(value);
                 }
               },
-            ),
-            RadioListTile<ApiConnectionMode>(
-              title: Text(t.settings.apiControlCenter.proxyMode),
-              value: ApiConnectionMode.proxy,
-              groupValue: state.apiMode,
-              onChanged: (ApiConnectionMode? value) {
-                if (value != null) {
-                  notifier.setApiConnectionMode(value);
-                }
-              },
+              child: Column(
+                children: [
+                  RadioListTile<ApiConnectionMode>(
+                    title: Text(t.settings.apiControlCenter.directMode),
+                    value: ApiConnectionMode.direct,
+                  ),
+                  RadioListTile<ApiConnectionMode>(
+                    title: Text(t.settings.apiControlCenter.proxyMode),
+                    value: ApiConnectionMode.proxy,
+                  ),
+                ],
+              ),
             ),
             if (state.apiMode == ApiConnectionMode.proxy)
               Padding(

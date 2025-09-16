@@ -12,7 +12,8 @@ import 'package:part_catalog/features/parts_catalog/api/api_client_parts_catalog
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
-import 'package:part_catalog/features/suppliers/services/suppliers_service.dart';
+import 'package:part_catalog/features/suppliers/services/parts_price_service.dart';
+import 'package:part_catalog/features/suppliers/services/supplier_service.dart';
 
 final locator = GetIt.instance;
 
@@ -49,10 +50,16 @@ void setupLocator(AppDatabase database) {
       () => OrderService(locator<AppDatabase>()));
   locator.registerLazySingleton(() => PdfService());
 
-  // Регистрация ApiClientManager и SuppliersService
+  // Регистрация ApiClientManager, PartsPriceService и SupplierService
   locator.registerLazySingleton<ApiClientManager>(() => ApiClientManager());
-  locator.registerLazySingleton<SuppliersService>(
-      () => SuppliersService(locator<ApiClientManager>()));
+  locator.registerLazySingleton<PartsPriceService>(
+      () => PartsPriceService(locator<ApiClientManager>()));
+  locator.registerLazySingleton<SupplierService>(
+      () => SupplierService(
+        locator<AppDatabase>().supplierSettingsDao,
+        locator<ApiClientManager>(),
+        locator<Dio>(),
+      ));
 
   // Регистрация GlobalApiSettingsService
   locator.registerLazySingleton<GlobalApiSettingsService>(

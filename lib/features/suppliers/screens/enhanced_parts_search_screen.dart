@@ -173,29 +173,28 @@ class _EnhancedPartsSearchScreenState
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: RadioListTile<bool>(
-                            title: const Text('Оптимизированная'),
-                            subtitle: const Text('С кешем и circuit breaker'),
-                            value: true,
-                            groupValue: _useOptimizedSystem,
-                            onChanged: (value) =>
-                                setState(() => _useOptimizedSystem = value!),
+                    RadioGroup<bool>(
+                      groupValue: _useOptimizedSystem,
+                      onChanged: (value) =>
+                          setState(() => _useOptimizedSystem = value!),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              title: const Text('Оптимизированная'),
+                              subtitle: const Text('С кешем и circuit breaker'),
+                              value: true,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: RadioListTile<bool>(
-                            title: const Text('Классическая'),
-                            subtitle: const Text('Без дополнительных функций'),
-                            value: false,
-                            groupValue: _useOptimizedSystem,
-                            onChanged: (value) =>
-                                setState(() => _useOptimizedSystem = value!),
+                          Expanded(
+                            child: RadioListTile<bool>(
+                              title: const Text('Классическая'),
+                              subtitle: const Text('Без дополнительных функций'),
+                              value: false,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const Divider(),
                   ],

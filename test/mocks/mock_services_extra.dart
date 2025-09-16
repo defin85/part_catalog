@@ -8,7 +8,8 @@ import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/features/documents/orders/services/order_service.dart';
 import 'package:part_catalog/features/references/clients/services/client_service.dart';
 import 'package:part_catalog/features/references/vehicles/services/car_service.dart';
-import 'package:part_catalog/features/suppliers/services/suppliers_service.dart';
+import 'package:part_catalog/features/suppliers/services/parts_price_service.dart';
+import 'package:part_catalog/features/suppliers/services/supplier_service.dart';
 
 // Генерируем моки с помощью mockito
 @GenerateNiceMocks([
@@ -19,7 +20,8 @@ import 'package:part_catalog/features/suppliers/services/suppliers_service.dart'
   MockSpec<ClientService>(),
   MockSpec<CarService>(),
   MockSpec<OrderService>(),
-  MockSpec<SuppliersService>(),
+  MockSpec<PartsPriceService>(),
+  MockSpec<SupplierService>(),
 ])
 void main() {} // Пустая функция main для генерации
 

@@ -1,36 +1,30 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/service_locator.dart';
-import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
-import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
+import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config_form_state.dart';
-import 'package:part_catalog/features/suppliers/services/supplier_config_service.dart';
+import 'package:part_catalog/features/suppliers/services/supplier_service.dart';
 
 part 'supplier_config_provider.g.dart';
 
-/// Провайдер для сервиса конфигурации поставщиков
+/// Провайдер для сервиса управления поставщиками
 @riverpod
-SupplierConfigService supplierConfigService(Ref ref) {
-  final database = locator<AppDatabase>();
-  return SupplierConfigService(database.supplierSettingsDao);
+SupplierService supplierService(Ref ref) {
+  return locator<SupplierService>();
 }
 
 /// Провайдер для списка всех конфигураций поставщиков
 @riverpod
 class SupplierConfigs extends _$SupplierConfigs {
-  late final SupplierConfigService _service;
+  late final SupplierService _service;
 
   @override
   Future<List<SupplierConfig>> build() async {
     // Делаем провайдер долгоживущим, чтобы не перезагружать конфиги при каждом входе в экран
     ref.keepAlive();
-    _service = ref.watch(supplierConfigServiceProvider);
+    _service = ref.watch(supplierServiceProvider);
 
     // Не перезагружаем из БД без необходимости: если кэш уже есть — используем его
     final cached = _service.getAllConfigs();
@@ -125,7 +119,7 @@ Map<String, dynamic> supplierUsageStats(
   Ref ref,
   String supplierCode,
 ) {
-  final service = ref.watch(supplierConfigServiceProvider);
+  final service = ref.watch(supplierServiceProvider);
   return service.getUsageStats(supplierCode);
 }
 
@@ -157,59 +151,30 @@ class SupplierConfigForm extends _$SupplierConfigForm {
 
   /// Обновить конфигурацию в форме
   void updateConfig(SupplierConfig config) {
-    print('=== updateConfig ВЫЗВАН ===');
-    print(
-        'Входящая config.businessConfig.brandList: ${config.businessConfig?.brandList?.length ?? 0}');
-    print(
-        'Входящая config.businessConfig.storeList: ${config.businessConfig?.storeList?.length ?? 0}');
-    print(
-        'Текущий state.config.businessConfig.brandList: ${state.config?.businessConfig?.brandList?.length ?? 0}');
-    print(
-        'Текущий state.config.businessConfig.storeList: ${state.config?.businessConfig?.storeList?.length ?? 0}');
-    print('STACK TRACE:');
-    print(StackTrace.current);
+    final logger = AppLoggers.suppliers;
+    logger.d('updateConfig called with config for: ${config.supplierCode}');
 
-    // ВАЖНО: Мержим данные вместо полной замены!
-    if (state.config != null) {
-      // Сохраняем загруженные бренды и склады из текущего состояния
-      final currentBusinessConfig = state.config!.businessConfig;
-      final incomingBusinessConfig = config.businessConfig;
+    // Мерж конфигурации с приоритетом incoming данных
+    final mergedConfig = state.config != null
+        ? config.copyWith(
+            businessConfig: _mergeBusinessConfigs(
+              state.config!.businessConfig,
+              config.businessConfig,
+            ),
+            // Сохраняем временные метки из current, если они не заданы в incoming
+            createdAt: config.createdAt ?? state.config!.createdAt,
+            lastSuccessfulCheckAt: config.lastSuccessfulCheckAt ??
+                                 state.config!.lastSuccessfulCheckAt,
+          )
+        : config;
 
-      SupplierBusinessConfig? mergedBusinessConfig;
-      if (currentBusinessConfig != null || incomingBusinessConfig != null) {
-        mergedBusinessConfig =
-            (incomingBusinessConfig ?? const SupplierBusinessConfig()).copyWith(
-          // Сохраняем загруженные данные из текущего состояния
-          brandList: currentBusinessConfig?.brandList ??
-              incomingBusinessConfig?.brandList,
-          storeList: currentBusinessConfig?.storeList ??
-              incomingBusinessConfig?.storeList,
-          additionalParams: currentBusinessConfig?.additionalParams ??
-              incomingBusinessConfig?.additionalParams,
-        );
-      }
+    logger.d('Config merged successfully: brands=${mergedConfig.businessConfig?.brandList?.length ?? 0}, '
+             'stores=${mergedConfig.businessConfig?.storeList?.length ?? 0}');
 
-      final mergedConfig = config.copyWith(
-        businessConfig: mergedBusinessConfig,
-      );
-
-      print(
-          'После мержинга в updateConfig: бренды=${mergedConfig.businessConfig?.brandList?.length ?? 0}, склады=${mergedConfig.businessConfig?.storeList?.length ?? 0}');
-
-      state = state.copyWith(
-        config: mergedConfig,
-        error: null,
-        // Явно сохраняем userInfo, чтобы оно не терялось
-      );
-
-      print(
-          'ФИНАЛЬНЫЙ STATE после updateConfig: бренды=${state.config?.businessConfig?.brandList?.length ?? 0}, склады=${state.config?.businessConfig?.storeList?.length ?? 0}');
-    } else {
-      state = state.copyWith(
-        config: config,
-        error: null,
-      );
-    }
+    state = state.copyWith(
+      config: mergedConfig,
+      error: null,
+    );
   }
 
   /// Валидировать конфигурацию
@@ -221,7 +186,7 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       return false;
     }
 
-    final service = ref.read(supplierConfigServiceProvider);
+    final service = ref.read(supplierServiceProvider);
     final errors = service.validateConfig(state.config!);
 
     state = state.copyWith(validationErrors: errors);
@@ -234,10 +199,8 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       return false;
     }
 
-    // Отладочный лог перед сохранением
-    print('=== ПЕРЕД save() ===');
-    print('state.config.businessConfig.additionalParams?.keys: ${state.config?.businessConfig?.additionalParams?.keys}');
-    print('hasUserInfo в additionalParams: ${state.config?.businessConfig?.additionalParams?.containsKey("userInfo") ?? false}');
+    final logger = AppLoggers.suppliers;
+    logger.d('Saving config for: ${state.config?.supplierCode}');
 
     state = state.copyWith(isLoading: true, error: null);
 
@@ -245,8 +208,10 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       await ref
           .read(supplierConfigsProvider.notifier)
           .saveConfig(state.config!);
+      logger.d('Config saved successfully');
       return true;
     } catch (e) {
+      logger.e('Failed to save config', error: e);
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -266,7 +231,7 @@ class SupplierConfigForm extends _$SupplierConfigForm {
     state = state.copyWith(isTesting: true, error: null);
 
     try {
-      final service = ref.read(supplierConfigServiceProvider);
+      final service = ref.read(supplierServiceProvider);
       final result = await service.testConnection(state.config!);
 
       if (result.success) {
@@ -292,7 +257,7 @@ class SupplierConfigForm extends _$SupplierConfigForm {
 
   /// Создать конфигурацию из шаблона
   void createFromTemplate(String templateCode) {
-    final service = ref.read(supplierConfigServiceProvider);
+    final service = ref.read(supplierServiceProvider);
     final config = service.createFromTemplate(templateCode);
 
     if (config != null) {
@@ -313,57 +278,16 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       return;
     }
 
-    // Проверяем минимально необходимые поля
-    final apiConfig = state.config!.apiConfig;
-    final credentials = apiConfig.credentials;
-
-    if (apiConfig.baseUrl.isEmpty) {
-      state = state.copyWith(
-        error: 'Введите URL API',
-      );
-      return;
-    }
-
-    if (credentials == null ||
-        (credentials.username?.isEmpty ?? true) ||
-        (credentials.password?.isEmpty ?? true)) {
-      state = state.copyWith(
-        error: 'Введите логин и пароль для подключения',
-      );
-      return;
-    }
-
     state = state.copyWith(isLoadingVkorgList: true, error: null);
 
     try {
-      // Создаем временный API клиент с текущими настройками
-      final dio = Dio();
-      final credentials = state.config!.apiConfig.credentials;
-
-      final apiClient = ArmtekApiClient(
-        dio,
-        baseUrl: state.config!.apiConfig.baseUrl,
-        username: credentials?.username,
-        password: credentials?.password,
+      // VKORG метод пока не реализован в новом сервисе
+      // Временно возвращаем пустой список
+      state = state.copyWith(
+        availableVkorgList: [],
+        isLoadingVkorgList: false,
+        error: 'VKORG loading not yet implemented in new service',
       );
-
-      final response = await apiClient.getUserVkorgList();
-
-      // ArmtekResponseWrapper имеет поле responseData, а не data
-      if (response.status == 200 && response.responseData != null) {
-        state = state.copyWith(
-          availableVkorgList: response.responseData!,
-          isLoadingVkorgList: false,
-        );
-      } else {
-        final errorMessage = response.messages?.isNotEmpty == true
-            ? response.messages!.first.text
-            : 'Не удалось получить список VKORG';
-        state = state.copyWith(
-          isLoadingVkorgList: false,
-          error: errorMessage,
-        );
-      }
     } catch (e) {
       state = state.copyWith(
         isLoadingVkorgList: false,
@@ -394,10 +318,6 @@ class SupplierConfigForm extends _$SupplierConfigForm {
 
   /// Загрузить список брендов для Armtek
   Future<void> loadBrandList() async {
-    File('debug_trace.log').writeAsStringSync(
-      '‼️ TRACE: loadBrandList called!\n${StackTrace.current}\n\n',
-      mode: FileMode.append,
-    );
     if (state.config == null) {
       state = state.copyWith(
         error: 'Сначала настройте базовые параметры подключения',
@@ -410,108 +330,34 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       return;
     }
 
-    final credentials = state.config!.apiConfig.credentials;
-    final vkorg = credentials?.additionalParams?['VKORG'];
-
-    if (vkorg == null || vkorg.isEmpty) {
-      state = state.copyWith(
-        error: 'Необходимо выбрать VKORG для загрузки списка брендов',
-      );
-      return;
-    }
-
-    if (state.config!.apiConfig.baseUrl.isEmpty) {
-      state = state.copyWith(
-        error: 'Введите URL API',
-      );
-      return;
-    }
-
-    if (credentials == null ||
-        (credentials.username?.isEmpty ?? true) ||
-        (credentials.password?.isEmpty ?? true)) {
-      state = state.copyWith(
-        error: 'Введите логин и пароль для подключения',
-      );
-      return;
-    }
-
     state = state.copyWith(isLoadingBrandList: true, error: null);
 
     try {
-      final dio = Dio();
+      // Используем единый сервис для загрузки данных Armtek
+      final service = ref.read(supplierServiceProvider);
+      final result = await service.loadBrandList(state.config!);
 
-      final apiClient = ArmtekApiClient(
-        dio,
-        baseUrl: state.config!.apiConfig.baseUrl,
-        username: credentials.username,
-        password: credentials.password,
-        vkorg: vkorg,
-      );
-
-      final response = await apiClient.getBrandList(vkorg);
-
-      if (response.status == 200 && response.responseData != null) {
-        // Мержим с существующими данными в памяти (сохраняем склады из текущего state)
-        final currentStateConfig = state.config!;
-        final currentStateBusinessConfig =
-            currentStateConfig.businessConfig ?? const SupplierBusinessConfig();
-
-        print('=== ДЕБАГ МЕРЖИНГА БРЕНДОВ ===');
-        print('currentStateConfig не null: ${currentStateConfig != null}');
-        print(
-            'currentStateBusinessConfig не null: ${currentStateBusinessConfig != null}');
-        print(
-            'currentStateBusinessConfig.brandList: ${currentStateBusinessConfig.brandList}');
-        print(
-            'currentStateBusinessConfig.storeList: ${currentStateBusinessConfig.storeList}');
-        print(
-            'Мержинг брендов: существующие склады=${currentStateBusinessConfig.storeList?.length ?? 0}, новые бренды=${response.responseData?.length ?? 0}');
-
-        final updatedConfig = currentStateConfig.copyWith(
-          businessConfig: currentStateBusinessConfig.copyWith(
-            brandList: response.responseData,
-            // Сохраняем существующие склады из текущего состояния
-            storeList: currentStateBusinessConfig.storeList,
+      if (result.success) {
+        final updatedConfig = state.config!.copyWith(
+          businessConfig: (state.config!.businessConfig ?? const SupplierBusinessConfig()).copyWith(
+            brandList: result.data!,
           ),
+          updatedAt: DateTime.now(),
         );
 
-        print(
-            'После мержинга: бренды=${updatedConfig.businessConfig?.brandList?.length ?? 0}, склады=${updatedConfig.businessConfig?.storeList?.length ?? 0}');
-
-        // Обновляем только состояние в памяти (БД не трогаем)
         state = state.copyWith(
           config: updatedConfig,
           isLoadingBrandList: false,
           error: null,
         );
 
-        print('=== ПОСЛЕ ОБНОВЛЕНИЯ STATE В loadBrandList ===');
-        print(
-            'state.config.businessConfig.brandList: ${state.config?.businessConfig?.brandList?.length ?? 0}');
-        print(
-            'state.config.businessConfig.storeList: ${state.config?.businessConfig?.storeList?.length ?? 0}');
-
-        // Автоматически сохраняем обновленную конфигурацию в БД
-        // НО делаем это через отдельный сервис, чтобы избежать циклической зависимости
-        Future.microtask(() async {
-          try {
-            final database = locator<AppDatabase>();
-            final service = SupplierConfigService(database.supplierSettingsDao);
-            await service.saveConfig(updatedConfig);
-            print('Бренды автоматически сохранены в БД');
-          } catch (e) {
-            print('Ошибка сохранения брендов в БД: $e');
-            // Не прерываем выполнение, данные остаются в памяти
-          }
-        });
+        // Автоматически сохраняем в БД
+        final service = ref.read(supplierServiceProvider);
+        await service.saveConfig(updatedConfig);
       } else {
-        final errorMessage = response.messages?.isNotEmpty == true
-            ? response.messages!.first.text
-            : 'Не удалось получить список брендов';
         state = state.copyWith(
           isLoadingBrandList: false,
-          error: errorMessage,
+          error: result.errorMessage,
         );
       }
     } catch (e) {
@@ -524,7 +370,6 @@ class SupplierConfigForm extends _$SupplierConfigForm {
 
   /// Загрузить список складов для Armtek
   Future<void> loadStoreList() async {
-    debugPrint('‼️ TRACE: loadStoreList called!\n${StackTrace.current}');
     if (state.config == null) {
       state = state.copyWith(
         error: 'Сначала настройте базовые параметры подключения',
@@ -537,76 +382,30 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       return;
     }
 
-    final credentials = state.config!.apiConfig.credentials;
-    final vkorg = credentials?.additionalParams?['VKORG'];
-
-    if (vkorg == null || vkorg.isEmpty) {
-      state = state.copyWith(
-        error: 'Необходимо выбрать VKORG для загрузки списка складов',
-      );
-      return;
-    }
-
-    if (state.config!.apiConfig.baseUrl.isEmpty) {
-      state = state.copyWith(
-        error: 'Введите URL API',
-      );
-      return;
-    }
-
-    if (credentials == null ||
-        (credentials.username?.isEmpty ?? true) ||
-        (credentials.password?.isEmpty ?? true)) {
-      state = state.copyWith(
-        error: 'Введите логин и пароль для подключения',
-      );
-      return;
-    }
-
     state = state.copyWith(isLoadingStoreList: true, error: null);
 
     try {
-      final dio = Dio();
+      // Используем единый сервис для загрузки данных Armtek
+      final service = ref.read(supplierServiceProvider);
+      final result = await service.loadStoreList(state.config!);
 
-      final apiClient = ArmtekApiClient(
-        dio,
-        baseUrl: state.config!.apiConfig.baseUrl,
-        username: credentials.username,
-        password: credentials.password,
-        vkorg: vkorg,
-      );
-
-      final response = await apiClient.getStoreList(vkorg);
-
-      // REST API результат не логируем чтобы не засорять терминал
-
-      if (response.status == 200 && response.responseData != null) {
-        // Мержим с существующими данными в памяти (сохраняем бренды из текущего state)
-        final currentStateConfig = state.config!;
-        final currentStateBusinessConfig =
-            currentStateConfig.businessConfig ?? const SupplierBusinessConfig();
-
-        final updatedConfig = currentStateConfig.copyWith(
-          businessConfig: currentStateBusinessConfig.copyWith(
-            storeList: response.responseData,
-            // Сохраняем существующие бренды из текущего состояния
-            brandList: currentStateBusinessConfig.brandList,
+      if (result.success) {
+        final updatedConfig = state.config!.copyWith(
+          businessConfig: (state.config!.businessConfig ?? const SupplierBusinessConfig()).copyWith(
+            storeList: result.data!,
           ),
+          updatedAt: DateTime.now(),
         );
 
-        // Обновляем только состояние в памяти (БД не трогаем)
         state = state.copyWith(
           config: updatedConfig,
           isLoadingStoreList: false,
           error: null,
         );
       } else {
-        final errorMessage = response.messages?.isNotEmpty == true
-            ? response.messages!.first.text
-            : 'Не удалось получить список складов';
         state = state.copyWith(
           isLoadingStoreList: false,
-          error: errorMessage,
+          error: result.errorMessage,
         );
       }
     } catch (e) {
@@ -626,91 +425,39 @@ class SupplierConfigForm extends _$SupplierConfigForm {
       return;
     }
 
-    final credentials = state.config!.apiConfig.credentials;
-    final vkorg = credentials?.additionalParams?['VKORG'];
-
-    if (vkorg == null || vkorg.isEmpty) {
-      state = state.copyWith(
-        error:
-            'Необходимо выбрать VKORG для загрузки информации о пользователе',
-      );
-      return;
-    }
-
-    if (state.config!.apiConfig.baseUrl.isEmpty) {
-      state = state.copyWith(
-        error: 'Введите URL API',
-      );
-      return;
-    }
-
-    if (credentials == null ||
-        (credentials.username?.isEmpty ?? true) ||
-        (credentials.password?.isEmpty ?? true)) {
-      state = state.copyWith(
-        error: 'Введите логин и пароль для подключения',
-      );
-      return;
-    }
-
     state = state.copyWith(isLoadingUserInfo: true, error: null);
 
     try {
-      // Создаем временный API клиент с текущими настройками
-      final dio = Dio();
+      // Используем единый сервис для загрузки данных Armtek
+      final service = ref.read(supplierServiceProvider);
+      final result = await service.loadUserInfo(state.config!);
 
-      final apiClient = ArmtekApiClient(
-        dio,
-        baseUrl: state.config!.apiConfig.baseUrl,
-        username: credentials.username,
-        password: credentials.password,
-        vkorg: vkorg,
-      );
-
-      final request = UserInfoRequest(
-        vkorg: vkorg,
-        structure: '1',
-        ftpData: '1',
-      );
-      final response = await apiClient.getUserInfo(request);
-
-      if (response.status == 200 && response.responseData != null) {
-        // Автоматически заполняем код клиента из KUNAG
-        final kunag = response.responseData!.structure?.kunag;
-
-        // Сохраняем полный ответ getUserInfo в additionalParams для будущего использования
+      if (result.success) {
         final currentBusinessConfig = state.config!.businessConfig ?? const SupplierBusinessConfig();
         final currentAdditionalParams = currentBusinessConfig.additionalParams ?? {};
 
         final updatedConfig = state.config!.copyWith(
           businessConfig: currentBusinessConfig.copyWith(
-            customerCode: kunag, // Основной KUNAG
+            customerCode: result.data!.structure?.kunag ?? currentBusinessConfig.customerCode,
             additionalParams: {
               ...currentAdditionalParams,
-              'userInfo': response.responseData!.toJson(), // Полный ответ getUserInfo
-              'lastUserInfoUpdateAt': DateTime.now().toIso8601String(), // Время последнего обновления
+              'userInfo': result.data!.toJson(),
+              'lastUserInfoUpdateAt': DateTime.now().toIso8601String(),
             },
           ),
+          updatedAt: DateTime.now(),
         );
 
         state = state.copyWith(
           config: updatedConfig,
-          userInfo: response.responseData,
+          userInfo: result.data,
           isLoadingUserInfo: false,
           error: null,
         );
-
-        // Отладочный лог
-        print('=== ПОСЛЕ loadUserInfo ===');
-        print('state.config.businessConfig.additionalParams?.keys: ${state.config?.businessConfig?.additionalParams?.keys}');
-        print('hasUserInfo в additionalParams: ${state.config?.businessConfig?.additionalParams?.containsKey("userInfo") ?? false}');
       } else {
-        final errorMessage = response.messages?.isNotEmpty == true
-            ? response.messages!.first.text
-            : 'Не удалось получить информацию о пользователе';
         state = state.copyWith(
           isLoadingUserInfo: false,
-          error: errorMessage,
+          error: result.errorMessage,
         );
       }
     } catch (e) {
@@ -719,5 +466,45 @@ class SupplierConfigForm extends _$SupplierConfigForm {
         error: 'Ошибка при загрузке информации о пользователе: ${e.toString()}',
       );
     }
+  }
+
+  /// Мерж двух SupplierBusinessConfig, сохраняя приоритет данных из incoming
+  SupplierBusinessConfig? _mergeBusinessConfigs(
+    SupplierBusinessConfig? current,
+    SupplierBusinessConfig? incoming,
+  ) {
+    if (current == null && incoming == null) {
+      return null;
+    }
+    if (current == null) return incoming!;
+    if (incoming == null) return current;
+
+    return incoming.copyWith(
+      // Для списков сохраняем существующие из current, если они есть
+      brandList: current.brandList ?? incoming.brandList,
+      storeList: current.storeList ?? incoming.storeList,
+
+      // Мержим additionalParams
+      additionalParams: _mergeAdditionalParams(
+        current.additionalParams,
+        incoming.additionalParams,
+      ),
+    );
+  }
+
+  /// Приватный метод для мержинга additionalParams
+  Map<String, dynamic>? _mergeAdditionalParams(
+    Map<String, dynamic>? current,
+    Map<String, dynamic>? incoming,
+  ) {
+    if (current == null && incoming == null) return null;
+    if (current == null) return Map<String, dynamic>.from(incoming!);
+    if (incoming == null) return Map<String, dynamic>.from(current);
+
+    // Мержим с приоритетом incoming, но сохраняем ключи из current, которых нет в incoming
+    return {
+      ...current,
+      ...incoming,
+    };
   }
 }

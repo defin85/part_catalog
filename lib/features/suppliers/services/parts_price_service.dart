@@ -3,11 +3,12 @@ import 'package:part_catalog/core/utils/logger_config.dart';
 import '../api/api_client_manager.dart';
 import '../models/base/part_price_response.dart'; // Предполагается, что эта модель будет создана
 
-class SuppliersService {
+/// Сервис для поиска и получения цен на запчасти от всех поставщиков
+class PartsPriceService {
   final ApiClientManager _apiClientManager;
   final _logger = AppLoggers.suppliers;
 
-  SuppliersService(this._apiClientManager);
+  PartsPriceService(this._apiClientManager);
 
   /// Получает цены от всех доступных поставщиков для указанного артикула.
   /// Алиас для getPricesFromAllSuppliers для обратной совместимости.

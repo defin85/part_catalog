@@ -575,7 +575,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   children: [
                     // --- Тип клиента ---
                     DropdownButtonFormField<ClientType>(
-                      value: selectedType,
+                      initialValue: selectedType,
                       decoration: InputDecoration(
                         labelText: t.clients.type,
                         prefixIcon: Icon(_getClientTypeIcon(selectedType),
