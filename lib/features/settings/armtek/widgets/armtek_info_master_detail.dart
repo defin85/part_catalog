@@ -52,27 +52,27 @@ class _ArmtekInfoMasterDetailState
               : null,
     ));
 
-    // Контакты
+    // Контакты (собираем из всех элементов RG_TAB)
+    final allContacts = widget.structure.rgTab?.expand((rg) => rg.contactTab ?? []).toList() ?? [];
     cards.add(InfoCardData(
       icon: Icons.contacts,
       title: 'Контакты',
-      count: widget.structure.contactTab?.length ?? 0,
+      count: allContacts.length,
       color: Colors.green,
-      onTap: widget.structure.contactTab != null &&
-              widget.structure.contactTab!.isNotEmpty
-          ? () => selectItem('root_contacts', widget.structure.contactTab)
+      onTap: allContacts.isNotEmpty
+          ? () => selectItem('root_contacts', allContacts)
           : null,
     ));
 
-    // Договоры
+    // Договоры (собираем из всех элементов RG_TAB)
+    final allContracts = widget.structure.rgTab?.expand((rg) => rg.dogovorTab ?? []).toList() ?? [];
     cards.add(InfoCardData(
       icon: Icons.description,
       title: 'Договоры',
-      count: widget.structure.dogovorTab?.length ?? 0,
+      count: allContracts.length,
       color: Colors.orange,
-      onTap: widget.structure.dogovorTab != null &&
-              widget.structure.dogovorTab!.isNotEmpty
-          ? () => selectItem('root_contracts', widget.structure.dogovorTab)
+      onTap: allContracts.isNotEmpty
+          ? () => selectItem('root_contracts', allContracts)
           : null,
     ));
 
@@ -234,6 +234,10 @@ class _ArmtekInfoMasterDetailState
   }
 
   Widget _buildNavigationTree(Translations t) {
+    // Собираем контакты и договоры из всех элементов RG_TAB
+    final allContacts = widget.structure.rgTab?.expand((rg) => rg.contactTab ?? []).toList() ?? [];
+    final allContracts = widget.structure.rgTab?.expand((rg) => rg.dogovorTab ?? []).toList() ?? [];
+
     return ListView(
       padding: const EdgeInsets.all(8.0),
       children: [
@@ -265,27 +269,25 @@ class _ArmtekInfoMasterDetailState
         ],
 
         // Контакты организации
-        if (widget.structure.contactTab != null &&
-            widget.structure.contactTab!.isNotEmpty)
+        if (allContacts.isNotEmpty)
           _buildTreeItem(
             icon: Icons.contacts,
             title: 'Контакты организации',
-            subtitle: '${widget.structure.contactTab!.length} контактов',
+            subtitle: '${allContacts.length} контактов',
             isSelected: selectedItemType == 'root_contacts',
             onTap: () =>
-                selectItem('root_contacts', widget.structure.contactTab),
+                selectItem('root_contacts', allContacts),
           ),
 
         // Договоры организации
-        if (widget.structure.dogovorTab != null &&
-            widget.structure.dogovorTab!.isNotEmpty)
+        if (allContracts.isNotEmpty)
           _buildTreeItem(
             icon: Icons.description,
             title: 'Договоры организации',
-            subtitle: '${widget.structure.dogovorTab!.length} договоров',
+            subtitle: '${allContracts.length} договоров',
             isSelected: selectedItemType == 'root_contracts',
             onTap: () =>
-                selectItem('root_contracts', widget.structure.dogovorTab),
+                selectItem('root_contracts', allContracts),
           ),
       ],
     );
@@ -942,6 +944,10 @@ class _ArmtekInfoMasterDetailState
   List<Widget> _getSummaryCards() {
     final cards = <Widget>[];
 
+    // Собираем контакты и договоры из всех элементов RG_TAB
+    final allContacts = widget.structure.rgTab?.expand((rg) => rg.contactTab ?? []).toList() ?? [];
+    final allContracts = widget.structure.rgTab?.expand((rg) => rg.dogovorTab ?? []).toList() ?? [];
+
     // Плательщики
     cards.add(_buildCompactInfoCard(
       icon: Icons.account_balance,
@@ -958,11 +964,10 @@ class _ArmtekInfoMasterDetailState
     cards.add(_buildCompactInfoCard(
       icon: Icons.contacts,
       title: 'Контакты',
-      count: widget.structure.contactTab?.length ?? 0,
+      count: allContacts.length,
       color: Colors.green,
-      onTap: widget.structure.contactTab != null &&
-              widget.structure.contactTab!.isNotEmpty
-          ? () => selectItem('root_contacts', widget.structure.contactTab)
+      onTap: allContacts.isNotEmpty
+          ? () => selectItem('root_contacts', allContacts)
           : null,
     ));
 
@@ -970,11 +975,10 @@ class _ArmtekInfoMasterDetailState
     cards.add(_buildCompactInfoCard(
       icon: Icons.description,
       title: 'Договоры',
-      count: widget.structure.dogovorTab?.length ?? 0,
+      count: allContracts.length,
       color: Colors.orange,
-      onTap: widget.structure.dogovorTab != null &&
-              widget.structure.dogovorTab!.isNotEmpty
-          ? () => selectItem('root_contracts', widget.structure.dogovorTab)
+      onTap: allContracts.isNotEmpty
+          ? () => selectItem('root_contracts', allContracts)
           : null,
     ));
 

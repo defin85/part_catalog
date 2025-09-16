@@ -196,7 +196,7 @@ class SupplierConfigService {
           additionalConfig['businessConfig'] as Map<String, dynamic>? ?? {};
 
       _logger.d('apiConfigData: $apiConfigData');
-      _logger.d('businessConfigData: $businessConfigData');
+      _logger.d('businessConfigData keys: ${businessConfigData.keys.toList()}, brandList length: ${(businessConfigData['brandList'] as List?)?.length ?? 0}, storeList length: ${(businessConfigData['storeList'] as List?)?.length ?? 0}');
 
       // Расшифровываем учетные данные
       _logger.d('Decrypting credentials...');
@@ -427,14 +427,17 @@ class SupplierConfigService {
   /// Сохранить или обновить конфигурацию
   Future<void> saveConfig(SupplierConfig config) async {
     _logger.i('Starting saveConfig for: ${config.supplierCode}');
-    _logger.d('Config data: ${config.toJson()}');
+    _logger.d('Config summary: enabled=${config.isEnabled}, '
+        'brands=${config.businessConfig?.brandList?.length ?? 0}, '
+        'stores=${config.businessConfig?.storeList?.length ?? 0}, '
+        'hasAdditionalParams=${config.businessConfig?.additionalParams?.isNotEmpty ?? false}');
 
     final updatedConfig = config.copyWith(
       updatedAt: DateTime.now(),
       createdAt: config.createdAt ?? DateTime.now(),
     );
 
-    _logger.d('Updated config with timestamps: ${updatedConfig.toJson()}');
+    _logger.d('Config updated with timestamps');
 
     try {
       // Сохраняем в БД

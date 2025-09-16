@@ -41,13 +41,9 @@ abstract class ArmtekRestInterface {
   });
 
   @POST("/ws_user/getUserInfo")
-  @FormUrlEncoded() // Armtek API может ожидать form-urlencoded для POST
-  Future<ArmtekResponseWrapper<UserInfoResponse>> getUserInfo({
-    @Field("VKORG") required String vkorg,
-    @Field("STRUCTURE") String? structure, // '0' or '1'
-    @Field("FTPDATA") String? ftpData, // '0' or '1'
-    @Query("format") String format = "json",
-  });
+  Future<ArmtekResponseWrapper<UserInfoResponse>> getUserInfo(
+    @Body() Map<String, dynamic> userInfoRequest,
+  );
 
   /// Добавляем метод getBrandList
   @GET("/ws_user/getBrandList")
@@ -64,62 +60,29 @@ abstract class ArmtekRestInterface {
 
   /// Получение статуса обработки прайса по ключу
   @POST("/ws_user/getPriceStatusByKey")
-  @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<PriceStatusResponse>> getPriceStatusByKey({
-    @Field("KEY") required String key,
-    @Field("format") String format = "json",
-  });
+  Future<ArmtekResponseWrapper<PriceStatusResponse>> getPriceStatusByKey(
+    @Body() Map<String, dynamic> statusRequest,
+  );
 
   // --- ServiceSearch ---
   /// Поиск запчастей по артикулу и бренду
   @POST("/ws_search/search")
-  @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<List<SearchResult>>> searchParts({
-    @Field("VKORG") required String vkorg,
-    @Field("PIN")
-    required String articleNumber, // Артикул (в API используется PIN)
-    @Field("BRAND") String? brand,
-    @Field("format") String format = "json",
-    @Field("KUNNR_RG") String? kunnrRg, // Код покупателя
-    @Field("KUNNR_ZA") String? kunnrZa, // Код адреса доставки
-    @Field("QUERY_TYPE") String? queryType, // Тип запроса
-    @Field("INCOTERMS") String? incoterms, // Условия доставки
-    @Field("VBELN") String? vbeln, // Номер договора
-  });
+  Future<ArmtekResponseWrapper<List<SearchResult>>> searchParts(
+    @Body() Map<String, dynamic> searchRequest,
+  );
 
   /// Получение цен и наличия для конкретной запчасти
   @POST("/ws_search/getPrice")
-  @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<List<SearchResult>>> getPrices({
-    @Field("VKORG") required String vkorg,
-    @Field("PIN")
-    required String articleNumber, // Артикул (в API используется PIN)
-    @Field("BRAND") String? brand,
-    @Field("format") String format = "json",
-    @Field("KUNNR_RG") String? kunnrRg, // Код покупателя
-    @Field("KUNNR_ZA") String? kunnrZa, // Код адреса доставки
-    @Field("INCOTERMS") String? incoterms, // Условия доставки
-    @Field("VBELN") String? vbeln, // Номер договора
-  });
+  Future<ArmtekResponseWrapper<List<SearchResult>>> getPrices(
+    @Body() Map<String, dynamic> priceRequest,
+  );
 
   // --- ServiceOrder ---
   /// Создание тестового заказа
   @POST("/ws_order/createTestOrder")
-  @FormUrlEncoded()
-  Future<ArmtekResponseWrapper<OrderResponse>> createTestOrder({
-    @Field("VKORG") required String vkorg,
-    @Field("KUNRG") required String kunnrRg, // Код покупателя (плательщика)
-    @Field("KUNWE") String? kunnrWe, // Код грузополучателя
-    @Field("KUNZA") String? kunnrZa, // Код адреса доставки
-    @Field("INCOTERMS") String? incoterms, // Условия доставки
-    @Field("PARNR") String? parnr, // Код контактного лица
-    @Field("VBELN") String? vbeln, // Номер договора
-    @Field("TEXT_ORD") String? textOrd, // Комментарий к заказу
-    @Field("TEXT_EXP") String? textExp, // Комментарий к отгрузке
-    @Field("DBTYP") String? dbtyp, // Тип базы данных
-    @Field("ITEMS") required String items, // JSON массив позиций заказа
-    @Field("format") String format = "json",
-  });
+  Future<ArmtekResponseWrapper<OrderResponse>> createTestOrder(
+    @Body() Map<String, dynamic> orderRequest,
+  );
 }
 
 class ArmtekApiClient implements BaseSupplierApiClient {
@@ -128,15 +91,18 @@ class ArmtekApiClient implements BaseSupplierApiClient {
   final _logger = AppLoggers.suppliers;
   final String _effectiveBaseUrl;
   final String? _vkorg; // Идентификатор организации
+  final String? _customerCode; // Код покупателя (KUNNR_RG)
 
   ArmtekApiClient(this._dio,
       {String? username,
       String? password,
       String? baseUrl,
       String? proxyAuthToken,
-      String? vkorg})
+      String? vkorg,
+      String? customerCode})
       : _effectiveBaseUrl = baseUrl ?? armtekBaseUrl,
         _vkorg = vkorg,
+        _customerCode = customerCode,
         _client = ArmtekRestInterface(_dio, baseUrl: baseUrl ?? armtekBaseUrl) {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
@@ -206,11 +172,12 @@ class ArmtekApiClient implements BaseSupplierApiClient {
 
     try {
       // Используем метод getPrices для получения цен
-      final response = await _client.getPrices(
-        vkorg: _vkorg,
-        articleNumber: articleNumber,
-        brand: brand,
-      );
+      final response = await _client.getPrices({
+        'VKORG': _vkorg,
+        'ARTICLE': articleNumber,
+        'BRAND': brand ?? '',
+        if (_customerCode?.isNotEmpty == true) 'KUNNR_RG': _customerCode,
+      });
 
       if (response.status != 200 || response.responseData == null) {
         _logger.w('Armtek API вернул пустой ответ для артикула $articleNumber');
@@ -316,11 +283,14 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     _logger.d('Current base URL: $_effectiveBaseUrl');
 
     try {
-      final response = await _client.getUserInfo(
-        vkorg: request.vkorg,
-        structure: request.structure,
-        ftpData: request.ftpData,
-      );
+      final userInfoRequest = <String, dynamic>{
+        'VKORG': request.vkorg,
+        'format': 'json',
+        if (request.structure != null) 'STRUCTURE': request.structure,
+        if (request.ftpData != null) 'FTPDATA': request.ftpData,
+      };
+
+      final response = await _client.getUserInfo(userInfoRequest);
 
       _logger.i('getUserInfo response status: ${response.status}');
       return response;
@@ -539,11 +509,15 @@ class ArmtekApiClient implements BaseSupplierApiClient {
     _logger.i('Поиск запчастей: $articleNumber (бренд: ${brand ?? "любой"})');
 
     try {
-      final response = await _client.searchParts(
-        vkorg: _vkorg,
-        articleNumber: articleNumber,
-        brand: brand,
-      );
+      final searchRequest = <String, dynamic>{
+        'VKORG': _vkorg,
+        'PIN': articleNumber,
+        'format': 'json',
+        if (brand != null && brand.isNotEmpty) 'BRAND': brand,
+        if (_customerCode != null) 'KUNNR_RG': _customerCode,
+      };
+
+      final response = await _client.searchParts(searchRequest);
 
       if (response.status != 200 || response.responseData == null) {
         _logger

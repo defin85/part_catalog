@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
+import 'package:part_catalog/features/suppliers/models/armtek/user_info_response.dart';
 
 part 'supplier_config.freezed.dart';
 part 'supplier_config.g.dart';
@@ -142,6 +143,32 @@ abstract class SupplierBusinessConfig with _$SupplierBusinessConfig {
 
   factory SupplierBusinessConfig.fromJson(Map<String, dynamic> json) =>
       _$SupplierBusinessConfigFromJson(json);
+
+  /// Получить полные данные getUserInfo из additionalParams (если сохранены)
+  UserInfoResponse? get savedUserInfo {
+    try {
+      final userInfoJson = additionalParams?['userInfo'] as Map<String, dynamic>?;
+      if (userInfoJson != null) {
+        return UserInfoResponse.fromJson(userInfoJson);
+      }
+    } catch (e) {
+      // Возвращаем null если не удалось десериализовать
+    }
+    return null;
+  }
+
+  /// Получить дату последнего обновления userInfo
+  DateTime? get lastUserInfoUpdateAt {
+    try {
+      final dateStr = additionalParams?['lastUserInfoUpdateAt'] as String?;
+      if (dateStr != null) {
+        return DateTime.parse(dateStr);
+      }
+    } catch (e) {
+      // Возвращаем null если не удалось парсить дату
+    }
+    return null;
+  }
 }
 
 /// Фабричные методы для создания конфигураций популярных поставщиков

@@ -1,7 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import 'contact_tab_item.dart';
-import 'dogovor_item.dart';
 import 'user_structure_item.dart';
 
 part 'user_structure_root.freezed.dart';
@@ -17,8 +15,7 @@ abstract class UserStructureRoot with _$UserStructureRoot {
     @JsonKey(name: 'ADRESS') String? adress, // В JSON "ADRESS"
     @JsonKey(name: 'PHONE') String? phone,
     @JsonKey(name: 'RG_TAB') List<UserStructureItem>? rgTab,
-    @JsonKey(name: 'CONTACT_TAB') List<ContactTabItem>? contactTab,
-    @JsonKey(name: 'DOGOVOR_TAB') List<DogovorItem>? dogovorTab,
+    // CONTACT_TAB и DOGOVOR_TAB находятся внутри каждого элемента RG_TAB, а не на корневом уровне
   }) = _UserStructureRoot;
 
   factory UserStructureRoot.fromJson(Map<String, dynamic> json) =>

@@ -10,10 +10,24 @@ import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/optimized_armtek_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
+import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/utils/user_friendly_exception.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
+import 'package:part_catalog/features/suppliers/utils/user_info_helper.dart';
 
 part 'optimized_api_providers.g.dart';
+
+/// Получить правильный KUNNR_RG для заданного VKORG
+String? _getKunnrRgForVkorg(SupplierConfig config) {
+  // Сначала пытаемся получить из сохраненной userInfo
+  final defaultPayer = UserInfoHelper.getDefaultPayer(config);
+  if (defaultPayer?.kunnr != null) {
+    return defaultPayer!.kunnr;
+  }
+
+  // Fallback: используем customerCode как KUNAG (если нет сохраненных данных)
+  return config.businessConfig?.customerCode;
+}
 
 /// Провайдер для проверки доступности оптимизированной системы
 @riverpod
@@ -51,7 +65,7 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
             username: config.apiConfig.credentials?.username,
             password: config.apiConfig.credentials?.password,
             vkorg: config.apiConfig.credentials?.additionalParams?['VKORG'],
-            kunnrRg: config.businessConfig?.customerCode,
+            kunnrRg: _getKunnrRgForVkorg(config),
             proxyUrl: config.apiConfig.proxyUrl,
             proxyAuthToken: config.apiConfig.proxyAuthToken,
             searchWithCross: config.businessConfig?.searchWithCross ?? true,

@@ -1,24 +1,160 @@
-# Part Catalog - Инструкции для GitHub Copilot
+# Part Catalog - GitHub Copilot Instructions
 
-> Это автоматически сгенерированный файл из документации проекта. Не редактируйте его напрямую.
+> Auto fleet management system for service stations using Flutter with hybrid 1C + DDD architecture
 
-## Содержание
+## Architecture Overview
 
-1. [Основной обзор проекта и навигация по документации](#основной-обзор-проекта-и-навигация-по-документации)
-2. [Общая архитектура приложения](#общая-архитектура-приложения)
-3. [Руководство по стилю кодирования](#руководство-по-стилю-кодирования)
-4. [Модуль клиентов](#модуль-клиентов)
-5. [Модуль поставщиков запчастей](#модуль-поставщиков-запчастей)
-6. [Структура БД и маппинги](#структура-бд-и-маппинги)
-7. [Стратегия и паттерны тестирования](#стратегия-и-паттерны-тестирования)
-8. [Модуль автомобилей](#модуль-автомобилей)
-9. [Интеграция с внешними API](#интеграция-с-внешними-api)
-10. [Стратегия обработки ошибок](#стратегия-обработки-ошибок)
-11. [Модуль заказ-нарядов](#модуль-заказ-нарядов)
-12. [Работа с асинхронным кодом](#работа-с-асинхронным-кодом)
-13. [Прямое подключение к API](#прямое-подключение-к-api)
-14. [Прокси-сервер для API поставщиков](#прокси-сервер-для-api-поставщиков)
-15. [Справочник по API проекта](#справочник-по-api-проекта)
+### Hybrid Architecture: 1C + DDD
+The application uses a unique hybrid approach combining:
+- **1C concepts**: Document-centric approach (orders), references (clients, vehicles), registers (inventory, finances)
+- **DDD patterns**: Bounded contexts, aggregates, composite models, repository pattern, domain services
+
+### Architectural Layers
+1. **Presentation Layer** (UI): Screens, widgets, UI state management
+2. **Application Layer**: Use cases, application services, DTOs
+3. **Domain Layer**: Business logic, composite models, domain services, interfaces
+4. **Infrastructure Layer**: Database access (DAOs), API clients, external integrations
+5. **Core Layer**: Shared utilities, constants, base classes
+
+### Core Structure
+- **Core Layer** (`lib/core/`): Shared infrastructure including database, i18n, navigation, service locator
+- **Features** (`lib/features/`): Business modules organized by domain (bounded contexts)
+- **Models** (`lib/models/`): Shared data models across features
+
+## Key Patterns
+
+### Composite Model Pattern
+**Critical Pattern**: Combines `EntityCoreData` + `SpecificData` into business models
+- Example: `OrderModelComposite` = `EntityCoreData` + `OrderSpecificData`
+- Implements interfaces like `IDocumentEntity`, `IOrderEntity`
+- Uses immutable `@freezed` data structures internally
+- Creates new instances with `with...` methods: `order.withStatus(newStatus)`
+
+### Model Structure
+- **Interfaces** define contracts (`IEntity`, `IDocumentEntity`)
+- **Composite classes** implement interfaces and encapsulate data/behavior
+- **`@freezed` models** for immutable data structures
+
+```dart
+// Example Composite Model
+class OrderModelComposite implements IDocumentEntity {
+  final EntityCoreData coreData;
+  final DocumentSpecificData docData;
+  final OrderSpecificData orderData;
+  
+  // Factory constructors
+  factory OrderModelComposite.create({...});
+  factory OrderModelComposite.fromData(...);
+  
+  // Immutable updates
+  OrderModelComposite withStatus(DocumentStatus status) { ... }
+}
+```
+
+## Development Workflow
+
+### Code Generation Commands
+```bash
+# Generate all code (run after model changes)
+dart run build_runner build -d
+
+# Watch mode for development
+dart run build_runner watch -d
+
+# Organize imports
+dart run scripts/organize_imports.dart
+```
+
+### Running the App
+```bash
+# Web development
+flutter run -d chrome
+
+# Desktop demo
+flutter run -d windows -t lib/main_desktop_demo.dart
+
+# Mobile development
+flutter run
+```
+
+### State Management & Navigation
+- **Riverpod** for global state with `@riverpod` annotations
+- **GoRouter** with shell routes for adaptive navigation
+- **Slang** for i18n with automatic generation from `lib/core/i18n/`
+
+```dart
+// Riverpod provider pattern
+@riverpod
+ClientService clientService(Ref ref) {
+  final db = locator<AppDatabase>();
+  return ClientService(db);
+}
+
+// GoRouter structure
+ShellRoute(
+  builder: (context, state, child) => HomeScreen(child: child),
+  routes: [
+    GoRoute(path: '/clients', builder: (context, state) => ClientsScreen()),
+  ],
+)
+```
+
+### Database Patterns
+- **Drift ORM** with reactive queries and DAO pattern
+- **Three-layer model mapping**: 
+  1. Table models (`ClientsItem`) from Drift
+  2. `@freezed` data models (`EntityCoreData`, `ClientSpecificData`)
+  3. Composite business models (`ClientModelComposite`)
+
+```dart
+// Service layer mapping pattern
+ClientModelComposite _mapDataToComposite(ClientFullData data) {
+  return ClientModelComposite.fromData(
+    data.coreData,
+    data.clientData,
+  );
+}
+```
+
+### Logging Conventions
+- Use category-specific loggers: `AppLoggers.clients`, `AppLoggers.database`
+- Never use `print()` - always use `logger.i()`, `logger.e()`, etc.
+- Include error and stackTrace in error logs
+
+```dart
+final _logger = AppLoggers.clients;
+_logger.e('Error message', error: e, stackTrace: stackTrace);
+```
+
+### API Client Management
+- **Adaptive API mode**: Switch between `direct`, `proxy`, or `hybrid` connection modes
+- **ApiClientManager** handles supplier API clients with runtime mode switching
+- Use `getOptimizedClient()` for production scenarios
+
+```dart
+// Switch API connection mode
+await apiClientManager.switchMode(ApiConnectionMode.proxy);
+
+// Get client with credentials
+final client = await apiClientManager.getClient(
+  supplierCode: 'armtek',
+  username: 'user',
+  password: 'pass',
+  vkorg: '1000',
+);
+```
+
+## Testing Strategy
+
+- **Unit tests**: Mock repositories/DAOs, test business logic
+- **Widget tests**: Use `ProviderScope` for Riverpod testing
+- **Integration tests**: Test complete user flows
+- Run tests: `flutter test` or `dart run test/run_all_tests.dart`
+
+## Language & Communication
+- Working language: **Russian** for documentation, comments, UI text
+- Code identifiers: **English** (classes, methods, variables)
+- Use feature-first organization under `lib/features/<domain>/`
 
 ---
 

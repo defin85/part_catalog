@@ -505,10 +505,16 @@ class OptimizedArmtekApiClient implements BaseSupplierApiClient {
         );
       }).toList();
     } catch (e, stackTrace) {
-      _logger.e(
-          'Ошибка при поиске запчастей Armtek для артикула $articleNumber',
-          error: e,
-          stackTrace: stackTrace);
+      if (e is UserFriendlyException) {
+        // Для пользовательских ошибок логируем только краткую информацию
+        _logger.w('Armtek search failed for $articleNumber: ${e.message}');
+      } else {
+        // Для системных ошибок - полное логирование
+        _logger.e(
+            'Ошибка при поиске запчастей Armtek для артикула $articleNumber',
+            error: e,
+            stackTrace: stackTrace);
+      }
       rethrow;
     }
   }

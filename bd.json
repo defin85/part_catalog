@@ -1,0 +1,27 @@
+{
+    "apiConfig": {
+        "authType": "basic",
+        "baseUrl": "http://ws.armtek.ru/api",
+        "connectionMode": null,
+        "proxyAuthToken": null,
+        "proxyUrl": null,
+        "retryAttempts": null,
+        "timeout": null
+    },
+    "businessConfig": {
+        "additionalParams": null,
+        "allowTestOrders": true,
+        "brandList": [],
+        "contractNumber": null,
+        "customerCode": "40258515",
+        "defaultWarehouse": null,
+        "deliveryAddressCode": null,
+        "deliveryTerms": null,
+        "exactSearch": false,
+        "organizationCode": "4000",
+        "searchWithCross": true,
+        "storeList": []
+    },
+    "description": null,
+    "displayName": "Армтек"
+}

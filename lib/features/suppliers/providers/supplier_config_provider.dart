@@ -53,9 +53,6 @@ class SupplierConfigs extends _$SupplierConfigs {
       await _service.reloadConfigs();
       // Затем обновляем состояние провайдера
       state = AsyncValue.data(_service.getAllConfigs());
-
-      // Также инвалидируем провайдер конкретной конфигурации
-      ref.invalidate(supplierConfigProvider(config.supplierCode));
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
@@ -138,19 +135,22 @@ class SupplierConfigForm extends _$SupplierConfigForm {
   @override
   SupplierConfigFormState build(String? supplierCode) {
     if (supplierCode != null) {
-      final asyncConfig = ref.read(supplierConfigProvider(supplierCode));
-      final config = asyncConfig.whenData((data) => data).value;
-
-      // Если конфигурация найдена, возвращаем её (бренды и склады уже загружены из БД)
-      if (config != null) {
-        return SupplierConfigFormState(
-          config: config,
-          // userInfo не сохраняется в БД, нужно загрузить заново через loadUserInfo()
-          userInfo: null,
-        );
-      }
-
-      return SupplierConfigFormState(config: config);
+      final asyncConfig = ref.watch(supplierConfigProvider(supplierCode));
+      return asyncConfig.when(
+        data: (config) {
+          if (config != null) {
+            return SupplierConfigFormState(
+              config: config,
+              userInfo: null,
+            );
+          }
+          return SupplierConfigFormState(config: config);
+        },
+        loading: () => const SupplierConfigFormState(),
+        error: (error, stackTrace) => SupplierConfigFormState(
+          error: error.toString(),
+        ),
+      );
     }
     return const SupplierConfigFormState();
   }
@@ -184,6 +184,8 @@ class SupplierConfigForm extends _$SupplierConfigForm {
               incomingBusinessConfig?.brandList,
           storeList: currentBusinessConfig?.storeList ??
               incomingBusinessConfig?.storeList,
+          additionalParams: currentBusinessConfig?.additionalParams ??
+              incomingBusinessConfig?.additionalParams,
         );
       }
 
@@ -231,6 +233,11 @@ class SupplierConfigForm extends _$SupplierConfigForm {
     if (!validate()) {
       return false;
     }
+
+    // Отладочный лог перед сохранением
+    print('=== ПЕРЕД save() ===');
+    print('state.config.businessConfig.additionalParams?.keys: ${state.config?.businessConfig?.additionalParams?.keys}');
+    print('hasUserInfo в additionalParams: ${state.config?.businessConfig?.additionalParams?.containsKey("userInfo") ?? false}');
 
     state = state.copyWith(isLoading: true, error: null);
 
@@ -486,14 +493,18 @@ class SupplierConfigForm extends _$SupplierConfigForm {
             'state.config.businessConfig.storeList: ${state.config?.businessConfig?.storeList?.length ?? 0}');
 
         // Автоматически сохраняем обновленную конфигурацию в БД
-        try {
-          final service = ref.read(supplierConfigServiceProvider);
-          await service.saveConfig(updatedConfig);
-          print('Бренды автоматически сохранены в БД');
-        } catch (e) {
-          print('Ошибка сохранения брендов в БД: $e');
-          // Не прерываем выполнение, данные остаются в памяти
-        }
+        // НО делаем это через отдельный сервис, чтобы избежать циклической зависимости
+        Future.microtask(() async {
+          try {
+            final database = locator<AppDatabase>();
+            final service = SupplierConfigService(database.supplierSettingsDao);
+            await service.saveConfig(updatedConfig);
+            print('Бренды автоматически сохранены в БД');
+          } catch (e) {
+            print('Ошибка сохранения брендов в БД: $e');
+            // Не прерываем выполнение, данные остаются в памяти
+          }
+        });
       } else {
         final errorMessage = response.messages?.isNotEmpty == true
             ? response.messages!.first.text
@@ -667,15 +678,20 @@ class SupplierConfigForm extends _$SupplierConfigForm {
         // Автоматически заполняем код клиента из KUNAG
         final kunag = response.responseData!.structure?.kunag;
 
-        final updatedConfig = kunag != null
-            ? state.config!.copyWith(
-                businessConfig: (state.config!.businessConfig ??
-                        const SupplierBusinessConfig())
-                    .copyWith(
-                  customerCode: kunag,
-                ),
-              )
-            : state.config!;
+        // Сохраняем полный ответ getUserInfo в additionalParams для будущего использования
+        final currentBusinessConfig = state.config!.businessConfig ?? const SupplierBusinessConfig();
+        final currentAdditionalParams = currentBusinessConfig.additionalParams ?? {};
+
+        final updatedConfig = state.config!.copyWith(
+          businessConfig: currentBusinessConfig.copyWith(
+            customerCode: kunag, // Основной KUNAG
+            additionalParams: {
+              ...currentAdditionalParams,
+              'userInfo': response.responseData!.toJson(), // Полный ответ getUserInfo
+              'lastUserInfoUpdateAt': DateTime.now().toIso8601String(), // Время последнего обновления
+            },
+          ),
+        );
 
         state = state.copyWith(
           config: updatedConfig,
@@ -683,6 +699,11 @@ class SupplierConfigForm extends _$SupplierConfigForm {
           isLoadingUserInfo: false,
           error: null,
         );
+
+        // Отладочный лог
+        print('=== ПОСЛЕ loadUserInfo ===');
+        print('state.config.businessConfig.additionalParams?.keys: ${state.config?.businessConfig?.additionalParams?.keys}');
+        print('hasUserInfo в additionalParams: ${state.config?.businessConfig?.additionalParams?.containsKey("userInfo") ?? false}');
       } else {
         final errorMessage = response.messages?.isNotEmpty == true
             ? response.messages!.first.text
