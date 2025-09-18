@@ -126,6 +126,9 @@ abstract class SupplierBusinessConfig with _$SupplierBusinessConfig {
     String? deliveryTerms, // Условия доставки (INCOTERMS)
     String? organizationCode, // Код организации (VKORG для Armtek)
 
+    // Настройки системы
+    @Default(true) bool useOptimizedSystem, // Использовать оптимизированную систему
+
     // Настройки поиска
     @Default(true) bool searchWithCross, // Искать с кроссами
     @Default(false) bool exactSearch, // Точный поиск

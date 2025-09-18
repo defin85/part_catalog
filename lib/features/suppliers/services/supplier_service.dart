@@ -1,9 +1,7 @@
-import 'package:dio/dio.dart';
-
 import 'package:part_catalog/core/database/daos/supplier_settings_dao.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
-import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
+import 'package:part_catalog/features/suppliers/api/implementations/optimized_armtek_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
@@ -64,7 +62,6 @@ class ArmtekDataLoadResult<T> {
 class SupplierService {
   final SupplierSettingsDao _supplierSettingsDao;
   final ApiClientManager _apiClientManager;
-  final Dio _dio;
   final _logger = AppLoggers.suppliers;
 
   // Кеш конфигураций в памяти
@@ -73,7 +70,6 @@ class SupplierService {
   SupplierService(
     this._supplierSettingsDao,
     this._apiClientManager,
-    this._dio,
   );
 
   // ========== КОНФИГУРАЦИЯ ПОСТАВЩИКОВ ==========
@@ -198,7 +194,11 @@ class SupplierService {
     _logger.d('loadBrandList called for Armtek');
 
     try {
-      final apiClient = _createArmtekApiClient(config);
+      final apiClient = await _createOptimizedArmtekApiClient(config);
+      if (apiClient == null) {
+        return ArmtekDataLoadResult.failure('Не удалось создать API клиент');
+      }
+
       final vkorg =
           config.apiConfig.credentials?.additionalParams?['VKORG'] ?? '';
       final response = await apiClient.getBrandList(vkorg);
@@ -219,7 +219,11 @@ class SupplierService {
     _logger.d('loadStoreList called for Armtek');
 
     try {
-      final apiClient = _createArmtekApiClient(config);
+      final apiClient = await _createOptimizedArmtekApiClient(config);
+      if (apiClient == null) {
+        return ArmtekDataLoadResult.failure('Не удалось создать API клиент');
+      }
+
       final vkorg =
           config.apiConfig.credentials?.additionalParams?['VKORG'] ?? '';
       final response = await apiClient.getStoreList(vkorg);
@@ -240,7 +244,11 @@ class SupplierService {
     _logger.d('loadUserInfo called for Armtek');
 
     try {
-      final apiClient = _createArmtekApiClient(config);
+      final apiClient = await _createOptimizedArmtekApiClient(config);
+      if (apiClient == null) {
+        return ArmtekDataLoadResult.failure('Не удалось создать API клиент');
+      }
+
       final vkorg = config.apiConfig.credentials?.additionalParams?['VKORG'] ?? '';
       final request = UserInfoRequest(vkorg: vkorg);
       final response = await apiClient.getUserInfo(request);
@@ -280,25 +288,41 @@ class SupplierService {
 
   // ========== ПРИВАТНЫЕ МЕТОДЫ ==========
 
-  /// Создать API клиент для Armtek из конфигурации
-  ArmtekApiClient _createArmtekApiClient(SupplierConfig config) {
+  /// Создать оптимизированный API клиент для Armtek из конфигурации
+  Future<OptimizedArmtekApiClient?> _createOptimizedArmtekApiClient(SupplierConfig config) async {
     final credentials = config.apiConfig.credentials;
-    return ArmtekApiClient(
-      _dio,
-      baseUrl: config.apiConfig.baseUrl,
-      username: credentials?.username,
-      password: credentials?.password,
-      vkorg: credentials?.additionalParams?['VKORG'] ?? '',
-      customerCode: credentials?.additionalParams?['CUSTOMER_CODE'],
-    );
+
+    try {
+      return await OptimizedArmtekApiClient.create(
+        connectionMode: _apiClientManager.currentMode,
+        username: credentials?.username,
+        password: credentials?.password,
+        vkorg: credentials?.additionalParams?['VKORG'] ?? '',
+        kunnrRg: credentials?.additionalParams?['CUSTOMER_CODE'],
+        proxyUrl: _apiClientManager.proxyUrl,
+      );
+    } catch (e) {
+      _logger.e('Error creating optimized Armtek client: $e');
+      return null;
+    }
   }
 
   /// Тестировать подключение к Armtek
   Future<ConnectionTestResult> _testArmtekConnection(
       SupplierConfig config) async {
-    final apiClient = _createArmtekApiClient(config);
+    final apiClient = await _createOptimizedArmtekApiClient(config);
+    if (apiClient == null) {
+      return ConnectionTestResult.failure('Не удалось создать API клиент');
+    }
 
     try {
+      // Используем performHealthCheck для быстрой проверки подключения
+      final isHealthy = await apiClient.performHealthCheck();
+      if (!isHealthy) {
+        return ConnectionTestResult.failure(
+            'Health check не прошел - API недоступно');
+      }
+
       final vkorg = config.apiConfig.credentials?.additionalParams?['VKORG'] ?? '';
       final request = UserInfoRequest(vkorg: vkorg);
       final response = await apiClient.getUserInfo(request);
@@ -312,9 +336,11 @@ class SupplierService {
             'Получен некорректный ответ от Armtek API');
       }
     } catch (e) {
-      // Пока без ConnectionErrorHandler - просто возвращаем базовую ошибку
       return ConnectionTestResult.failure(
-          'Ошибка подключения: ${e.toString()}');
+          ConnectionErrorHandler.getReadableErrorMessage(e));
+    } finally {
+      // Освобождаем ресурсы временного клиента
+      apiClient.dispose();
     }
   }
 

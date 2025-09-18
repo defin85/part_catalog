@@ -29,12 +29,6 @@ String? _getKunnrRgForVkorg(SupplierConfig config) {
   return config.businessConfig?.customerCode;
 }
 
-/// Провайдер для проверки доступности оптимизированной системы
-@riverpod
-Future<bool> isOptimizedSystemEnabled(Ref ref) async {
-  final settingsService = ref.watch(globalApiSettingsServiceProvider);
-  return settingsService.getUseOptimizedSystem();
-}
 
 /// Провайдер для оптимизированного API менеджера
 @riverpod
@@ -147,14 +141,6 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
       return [];
     }
 
-    final isOptimizedEnabled =
-        await ref.watch(isOptimizedSystemEnabledProvider.future);
-
-    if (!isOptimizedEnabled) {
-      _logger.w('Optimized system is disabled. Falling back to legacy search.');
-      return _searchWithLegacySystem(params);
-    }
-
     return _searchWithOptimizedSystem(params);
   }
 
@@ -222,19 +208,6 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
     return results;
   }
 
-  /// Fallback к старой системе поиска
-  Future<List<PartPriceModel>> _searchWithLegacySystem(
-    OptimizedPartsSearchParams params,
-  ) async {
-    _logger.d('Executing legacy search...');
-    // Используем существующий провайдер
-    final legacyParams = PartsSearchParams(
-      articleNumber: params.articleNumber,
-      brand: params.brand,
-    );
-
-    return ref.read(partsSearchProvider(legacyParams).future);
-  }
 
   /// Обновляет поиск с новыми параметрами
   void updateSearch(OptimizedPartsSearchParams newParams) {
@@ -298,10 +271,8 @@ class SystemDiagnostics extends _$SystemDiagnostics {
     diagnostics.addAll(factoryDiagnostics);
 
     // Добавляем информацию о статусе системы
-    final isOptimizedEnabled =
-        await ref.watch(isOptimizedSystemEnabledProvider.future);
     diagnostics['system_status'] = {
-      'optimized_enabled': isOptimizedEnabled,
+      'optimized_enabled': true, // Всегда используем оптимизированную систему
       'active_suppliers': ref.watch(enabledSupplierConfigsProvider).length,
       'timestamp': DateTime.now().toIso8601String(),
     };

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
 import 'package:part_catalog/features/suppliers/providers/optimized_api_providers.dart';
-import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 import 'package:part_catalog/features/suppliers/widgets/part_price_list_item.dart';
 
@@ -27,7 +26,6 @@ class _EnhancedPartsSearchScreenState
 
   late TabController _tabController;
 
-  bool _useOptimizedSystem = true;
   bool _useCache = true;
   final List<String> _selectedSuppliers = [];
 
@@ -52,32 +50,21 @@ class _EnhancedPartsSearchScreenState
           ? null
           : _brandController.text.trim();
 
-      if (_useOptimizedSystem) {
-        final optimizedParams = OptimizedPartsSearchParams(
-          articleNumber: articleNumber,
-          brand: brand,
-          supplierCodes: _selectedSuppliers.isEmpty ? null : _selectedSuppliers,
-          useCache: _useCache,
-        );
+      final optimizedParams = OptimizedPartsSearchParams(
+        articleNumber: articleNumber,
+        brand: brand,
+        supplierCodes: _selectedSuppliers.isEmpty ? null : _selectedSuppliers,
+        useCache: _useCache,
+      );
 
-        // Запускаем оптимизированный поиск
-        ref.read(optimizedPartsSearchProvider(optimizedParams));
-      } else {
-        // Используем старую систему
-        final params = PartsSearchParams(
-          articleNumber: articleNumber,
-          brand: brand,
-        );
-
-        ref.read(partsSearchStateProvider.notifier).state = params;
-      }
+      // Всегда используем оптимизированный поиск
+      ref.read(optimizedPartsSearchProvider(optimizedParams));
     }
   }
 
   void _clearSearch() {
     _articleController.clear();
     _brandController.clear();
-    ref.read(partsSearchStateProvider.notifier).state = null;
     setState(() {
       _selectedSuppliers.clear();
     });
@@ -86,31 +73,17 @@ class _EnhancedPartsSearchScreenState
   @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final isOptimizedEnabledAsync = ref.watch(isOptimizedSystemEnabledProvider);
     final enabledSuppliers = ref.watch(enabledSupplierConfigsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-                'Поиск запчастей'), // Упрощаем пока до исправления переводов
-            Consumer(
-              builder: (context, ref, child) {
-                return isOptimizedEnabledAsync.when(
-                  data: (isOptimizedEnabled) =>
-                      isOptimizedEnabled && _useOptimizedSystem
-                          ? const Text(
-                              '🚀 Оптимизированный поиск',
-                              style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.normal),
-                            )
-                          : const SizedBox.shrink(),
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                );
-              },
+            Text('Поиск запчастей'),
+            Text(
+              '🚀 Оптимизированный поиск',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
             ),
           ],
         ),
@@ -125,18 +98,7 @@ class _EnhancedPartsSearchScreenState
       body: TabBarView(
         controller: _tabController,
         children: [
-          Consumer(
-            builder: (context, ref, child) {
-              return isOptimizedEnabledAsync.when(
-                data: (isOptimizedEnabled) =>
-                    _buildSearchTab(t, isOptimizedEnabled, enabledSuppliers),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(
-                  child: Text('Ошибка: $error'),
-                ),
-              );
-            },
-          ),
+          _buildSearchTab(t, enabledSuppliers),
           _buildAnalyticsTab(),
         ],
       ),
@@ -145,7 +107,6 @@ class _EnhancedPartsSearchScreenState
 
   Widget _buildSearchTab(
     dynamic t, // Убираем типизацию пока
-    bool isOptimizedEnabled,
     List<dynamic> enabledSuppliers,
   ) {
     return Column(
@@ -160,45 +121,6 @@ class _EnhancedPartsSearchScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Переключатель оптимизированной системы
-                  if (isOptimizedEnabled) ...[
-                    const Row(
-                      children: [
-                        Icon(Icons.rocket_launch, color: Colors.orange),
-                        SizedBox(width: 8),
-                        Text(
-                          'Система поиска',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    RadioGroup<bool>(
-                      groupValue: _useOptimizedSystem,
-                      onChanged: (value) =>
-                          setState(() => _useOptimizedSystem = value!),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: RadioListTile<bool>(
-                              title: const Text('Оптимизированная'),
-                              subtitle: const Text('С кешем и circuit breaker'),
-                              value: true,
-                            ),
-                          ),
-                          Expanded(
-                            child: RadioListTile<bool>(
-                              title: const Text('Классическая'),
-                              subtitle: const Text('Без дополнительных функций'),
-                              value: false,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                  ],
-
                   // Основные поля поиска
                   TextFormField(
                     controller: _articleController,
@@ -230,59 +152,56 @@ class _EnhancedPartsSearchScreenState
                     onFieldSubmitted: (_) => _performSearch(),
                   ),
 
-                  // Дополнительные настройки для оптимизированной системы
-                  if (isOptimizedEnabled && _useOptimizedSystem) ...[
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 8),
-                    const Row(
-                      children: [
-                        Icon(Icons.tune),
-                        SizedBox(width: 8),
-                        Text(
-                          'Дополнительные настройки',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SwitchListTile(
-                      title: const Text('Использовать кеш'),
-                      subtitle: const Text('Ускоряет повторные запросы'),
-                      value: _useCache,
-                      onChanged: (value) => setState(() => _useCache = value),
-                    ),
-                    if (enabledSuppliers.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Фильтр по поставщикам:',
-                        style: TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: enabledSuppliers.map((supplier) {
-                          final supplierCode = supplier.supplierCode as String;
-                          final isSelected =
-                              _selectedSuppliers.contains(supplierCode);
-
-                          return FilterChip(
-                            label: Text(supplier.displayName as String),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setState(() {
-                                if (selected) {
-                                  _selectedSuppliers.add(supplierCode);
-                                } else {
-                                  _selectedSuppliers.remove(supplierCode);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
+                  // Дополнительные настройки оптимизированной системы
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const Row(
+                    children: [
+                      Icon(Icons.tune),
+                      SizedBox(width: 8),
+                      Text(
+                        'Дополнительные настройки',
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    title: const Text('Использовать кеш'),
+                    subtitle: const Text('Ускоряет повторные запросы'),
+                    value: _useCache,
+                    onChanged: (value) => setState(() => _useCache = value),
+                  ),
+                  if (enabledSuppliers.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Фильтр по поставщикам:',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: enabledSuppliers.map((supplier) {
+                        final supplierCode = supplier.supplierCode as String;
+                        final isSelected =
+                            _selectedSuppliers.contains(supplierCode);
+
+                        return FilterChip(
+                          label: Text(supplier.displayName as String),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedSuppliers.add(supplierCode);
+                              } else {
+                                _selectedSuppliers.remove(supplierCode);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
                   ],
 
                   const SizedBox(height: 24),
@@ -294,8 +213,7 @@ class _EnhancedPartsSearchScreenState
                         child: ElevatedButton.icon(
                           onPressed: _performSearch,
                           icon: const Icon(Icons.search),
-                          label: Text(
-                              _useOptimizedSystem ? 'Умный поиск' : 'Найти'),
+                          label: const Text('Умный поиск'),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -321,11 +239,7 @@ class _EnhancedPartsSearchScreenState
   }
 
   Widget _buildSearchResults(dynamic t) {
-    if (_useOptimizedSystem) {
-      return _buildOptimizedResults(t);
-    } else {
-      return _buildLegacyResults(t);
-    }
+    return _buildOptimizedResults(t);
   }
 
   Widget _buildOptimizedResults(dynamic t) {
@@ -360,7 +274,7 @@ class _EnhancedPartsSearchScreenState
     final searchResultsAsync = ref.watch(optimizedPartsSearchProvider(params));
 
     return searchResultsAsync.when(
-      data: (results) => _buildResultsList(results, t, isOptimized: true),
+      data: (results) => _buildResultsList(results, t),
       loading: () => const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -395,68 +309,11 @@ class _EnhancedPartsSearchScreenState
     );
   }
 
-  Widget _buildLegacyResults(dynamic t) {
-    final searchParams = ref.watch(partsSearchStateProvider);
-
-    if (searchParams == null) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.search_off, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'Введите номер запчасти для поиска',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final searchResultsAsync = ref.watch(partsSearchProvider(searchParams));
-
-    return searchResultsAsync.when(
-      data: (results) => _buildResultsList(results, t, isOptimized: false),
-      loading: () => const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Поиск запчастей...'),
-          ],
-        ),
-      ),
-      error: (error, stack) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Ошибка поиска: $error',
-              style: const TextStyle(color: Colors.red),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () =>
-                  ref.invalidate(partsSearchProvider(searchParams)),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Повторить'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildResultsList(
     List<PartPriceModel> results,
-    dynamic t, {
-    required bool isOptimized,
-  }) {
+    dynamic t,
+  ) {
     if (results.isEmpty) {
       return const Center(
         child: Column(
@@ -482,7 +339,7 @@ class _EnhancedPartsSearchScreenState
           child: Row(
             children: [
               Icon(
-                isOptimized ? Icons.rocket_launch : Icons.search,
+                Icons.rocket_launch,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -490,15 +347,13 @@ class _EnhancedPartsSearchScreenState
                 'Найдено: ${results.length}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              if (isOptimized) ...[
-                const Spacer(),
-                const Icon(Icons.cached, size: 16, color: Colors.green),
-                const SizedBox(width: 4),
-                const Text(
-                  'Кеш активен',
-                  style: TextStyle(fontSize: 12, color: Colors.green),
-                ),
-              ],
+              const Spacer(),
+              const Icon(Icons.cached, size: 16, color: Colors.green),
+              const SizedBox(width: 4),
+              const Text(
+                'Кеш активен',
+                style: TextStyle(fontSize: 12, color: Colors.green),
+              ),
             ],
           ),
         ),

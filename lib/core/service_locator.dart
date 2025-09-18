@@ -58,7 +58,6 @@ void setupLocator(AppDatabase database) {
       () => SupplierService(
         locator<AppDatabase>().supplierSettingsDao,
         locator<ApiClientManager>(),
-        locator<Dio>(),
       ));
 
   // Регистрация GlobalApiSettingsService

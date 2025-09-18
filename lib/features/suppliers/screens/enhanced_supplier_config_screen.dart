@@ -107,6 +107,7 @@ class _EnhancedSupplierConfigScreenState
         final businessConfig = config.businessConfig;
         if (businessConfig != null) {
           _customerCodeController.text = businessConfig.customerCode ?? '';
+          _useOptimizedSystem = businessConfig.useOptimizedSystem;
         }
 
         // Обновить форму провайдера
@@ -998,6 +999,7 @@ class _EnhancedSupplierConfigScreenState
             : null,
         organizationCode:
             _vkorgController.text.isNotEmpty ? _vkorgController.text : null,
+        useOptimizedSystem: _useOptimizedSystem,
       ),
     );
 

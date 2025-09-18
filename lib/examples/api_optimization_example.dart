@@ -166,20 +166,20 @@ class ApiClientManagerExample {
       );
       _logger.i('✅ ApiClientManager инициализирован в режиме direct');
 
-      // 3. Получение оптимизированного клиента
-      final optimizedClient = await manager.getOptimizedClient(
+      // 3. Получение клиента (теперь всегда оптимизированный)
+      final client = await manager.getClient(
         supplierCode: 'armtek',
         username: 'test_user',
         password: 'test_password',
         vkorg: '1000',
       );
 
-      if (optimizedClient != null) {
+      if (client != null) {
         _logger.i('✅ Получен оптимизированный клиент');
 
-        // 4. Использование клиента для запроса
-        final response = await optimizedClient.get('/ws_ping/index');
-        _logger.i('✅ Тестовый запрос выполнен: статус ${response.statusCode}');
+        // 4. Проверка подключения через клиент
+        final isConnected = await client.checkConnection();
+        _logger.i('✅ Проверка подключения: ${isConnected ? "успешно" : "неудачно"}');
       }
 
       // 5. Получение отчета о состоянии всех API
