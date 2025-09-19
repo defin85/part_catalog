@@ -6,6 +6,7 @@ import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config_form_state.dart';
 import 'package:part_catalog/features/suppliers/services/supplier_service.dart';
+import 'package:part_catalog/features/suppliers/services/armtek_data_loader.dart';
 
 part 'supplier_config_provider.g.dart';
 
@@ -281,13 +282,22 @@ class SupplierConfigForm extends _$SupplierConfigForm {
     state = state.copyWith(isLoadingVkorgList: true, error: null);
 
     try {
-      // VKORG метод пока не реализован в новом сервисе
-      // Временно возвращаем пустой список
-      state = state.copyWith(
-        availableVkorgList: [],
-        isLoadingVkorgList: false,
-        error: 'VKORG loading not yet implemented in new service',
-      );
+      // Используем ArmtekDataLoader для загрузки VKORG
+      final armtekDataLoader = locator<ArmtekDataLoader>();
+      final result = await armtekDataLoader.loadVkorgList(state.config!);
+
+      if (result.success && result.data != null) {
+        state = state.copyWith(
+          availableVkorgList: result.data!,
+          isLoadingVkorgList: false,
+          error: null,
+        );
+      } else {
+        state = state.copyWith(
+          isLoadingVkorgList: false,
+          error: result.errorMessage ?? 'Не удалось загрузить список VKORG',
+        );
+      }
     } catch (e) {
       state = state.copyWith(
         isLoadingVkorgList: false,

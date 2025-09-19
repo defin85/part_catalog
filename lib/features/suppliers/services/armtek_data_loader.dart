@@ -1,6 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
-import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
+import 'package:part_catalog/features/suppliers/api/implementations/optimized_armtek_api_client.dart';
+import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/brand_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/store_item.dart';
 import 'package:part_catalog/features/suppliers/models/armtek/user_info_request.dart';
@@ -32,16 +32,14 @@ class ArmtekDataLoadResult<T> {
 /// Сервис для загрузки данных специфичных для Armtek API
 class ArmtekDataLoader {
   final _logger = AppLoggers.suppliers;
-  final Dio _dio;
 
-  ArmtekDataLoader(this._dio);
+  ArmtekDataLoader();
 
   /// Создать API клиент из конфигурации
-  ArmtekApiClient _createApiClient(SupplierConfig config) {
+  Future<OptimizedArmtekApiClient> _createApiClient(SupplierConfig config) async {
     final credentials = config.apiConfig.credentials;
-    return ArmtekApiClient(
-      _dio,
-      baseUrl: config.apiConfig.baseUrl,
+    return await OptimizedArmtekApiClient.create(
+      connectionMode: config.apiConfig.connectionMode ?? ApiConnectionMode.direct,
       username: credentials?.username,
       password: credentials?.password,
       vkorg: credentials?.additionalParams?['VKORG'],
@@ -87,7 +85,7 @@ class ArmtekDataLoader {
     }
 
     try {
-      final apiClient = _createApiClient(config);
+      final apiClient = await _createApiClient(config);
       final response = await apiClient.getUserVkorgList();
 
       if (response.status == 200 && response.responseData != null) {
@@ -118,7 +116,7 @@ class ArmtekDataLoader {
     }
 
     try {
-      final apiClient = _createApiClient(config);
+      final apiClient = await _createApiClient(config);
       final vkorg = config.apiConfig.credentials!.additionalParams!['VKORG']!;
       final response = await apiClient.getBrandList(vkorg);
 
@@ -150,7 +148,7 @@ class ArmtekDataLoader {
     }
 
     try {
-      final apiClient = _createApiClient(config);
+      final apiClient = await _createApiClient(config);
       final vkorg = config.apiConfig.credentials!.additionalParams!['VKORG']!;
       final response = await apiClient.getStoreList(vkorg);
 
@@ -182,7 +180,7 @@ class ArmtekDataLoader {
     }
 
     try {
-      final apiClient = _createApiClient(config);
+      final apiClient = await _createApiClient(config);
       final vkorg = config.apiConfig.credentials!.additionalParams!['VKORG']!;
 
       final request = UserInfoRequest(
@@ -221,7 +219,7 @@ class ArmtekDataLoader {
     }
 
     try {
-      final apiClient = _createApiClient(config);
+      final apiClient = await _createApiClient(config);
       final response = await apiClient.pingService();
 
       if (response.status == 200) {

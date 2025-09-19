@@ -16,7 +16,6 @@ class GlobalApiSettingsService {
   final _logger = AppLoggers.core;
   static const String _apiModeKey = 'api_connection_mode';
   static const String _proxyUrlKey = 'proxy_url';
-  static const String _useOptimizedSystemKey = 'use_optimized_system';
   static const String _enableCachingKey = 'enable_caching';
   static const String _enableMetricsKey = 'enable_metrics';
   static const String _circuitBreakerEnabledKey = 'circuit_breaker_enabled';
@@ -73,28 +72,6 @@ class GlobalApiSettingsService {
 
   // === Настройки оптимизированной системы ===
 
-  /// Использовать оптимизированную систему API
-  Future<bool> getUseOptimizedSystem() async {
-    try {
-      final prefs = await _prefs;
-      return prefs.getBool(_useOptimizedSystemKey) ??
-          true; // По умолчанию включена
-    } catch (e, s) {
-      _logger.e('Error getting optimized system setting',
-          error: e, stackTrace: s);
-      return true;
-    }
-  }
-
-  Future<void> setUseOptimizedSystem(bool enabled) async {
-    try {
-      final prefs = await _prefs;
-      await prefs.setBool(_useOptimizedSystemKey, enabled);
-      _logger.i('Optimized system ${enabled ? 'enabled' : 'disabled'}');
-    } catch (e, s) {
-      _logger.e('Error setting optimized system', error: e, stackTrace: s);
-    }
-  }
 
   /// Включить кэширование
   Future<bool> getEnableCaching() async {
@@ -207,7 +184,6 @@ class GlobalApiSettingsService {
   /// Получить все настройки оптимизированной системы
   Future<Map<String, dynamic>> getOptimizedSystemSettings() async {
     return {
-      'useOptimizedSystem': await getUseOptimizedSystem(),
       'enableCaching': await getEnableCaching(),
       'enableMetrics': await getEnableMetrics(),
       'circuitBreakerEnabled': await getCircuitBreakerEnabled(),
@@ -220,7 +196,6 @@ class GlobalApiSettingsService {
   Future<void> resetOptimizedSystemSettings() async {
     try {
       final prefs = await _prefs;
-      await prefs.remove(_useOptimizedSystemKey);
       await prefs.remove(_enableCachingKey);
       await prefs.remove(_enableMetricsKey);
       await prefs.remove(_circuitBreakerEnabledKey);

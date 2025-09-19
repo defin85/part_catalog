@@ -2,7 +2,8 @@ import 'package:dio/dio.dart';
 
 import 'package:part_catalog/core/utils/logger_config.dart';
 import 'package:part_catalog/features/suppliers/api/base_supplier_api_client.dart';
-import 'package:part_catalog/features/suppliers/api/implementations/armtek_api_client.dart';
+import 'package:part_catalog/features/suppliers/api/implementations/optimized_armtek_api_client.dart';
+import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 
 /// Фабрика для создания API клиентов на основе конфигураций
@@ -10,11 +11,11 @@ class ApiClientFactory {
   static final _logger = AppLoggers.suppliers;
 
   /// Создать API клиент на основе конфигурации поставщика
-  static BaseSupplierApiClient? createClient(
+  static Future<BaseSupplierApiClient?> createClient(
     SupplierConfig config,
     Dio dio, {
     bool useProxy = false,
-  }) {
+  }) async {
     _logger.i('Creating API client for supplier: ${config.supplierCode}');
 
     final apiConfig = config.apiConfig;
@@ -24,7 +25,7 @@ class ApiClientFactory {
 
     switch (config.supplierCode.toLowerCase()) {
       case 'armtek':
-        return _createArmtekClient(config, dio, baseUrl, useProxy);
+        return await _createArmtekClient(config, dio, baseUrl, useProxy);
 
       case 'autotrade':
         // TODO: Реализовать AutotradeApiClient
@@ -43,12 +44,12 @@ class ApiClientFactory {
   }
 
   /// Создать клиент Armtek
-  static ArmtekApiClient? _createArmtekClient(
+  static Future<OptimizedArmtekApiClient?> _createArmtekClient(
     SupplierConfig config,
     Dio dio,
     String baseUrl,
     bool useProxy,
-  ) {
+  ) async {
     final creds = config.apiConfig.credentials;
 
     if (!useProxy && config.apiConfig.authType == AuthenticationType.basic) {
@@ -59,18 +60,16 @@ class ApiClientFactory {
         return null;
       }
 
-      return ArmtekApiClient(
-        dio,
-        baseUrl: baseUrl,
+      return await OptimizedArmtekApiClient.create(
+        connectionMode: ApiConnectionMode.direct,
         username: creds!.username,
         password: creds.password,
         vkorg: creds.additionalParams?['VKORG'],
       );
     } else if (useProxy) {
       // Подключение через прокси
-      return ArmtekApiClient(
-        dio,
-        baseUrl: baseUrl,
+      return await OptimizedArmtekApiClient.create(
+        connectionMode: ApiConnectionMode.proxy,
         vkorg: creds?.additionalParams?['VKORG'],
         proxyAuthToken: creds?.token, // Если прокси требует токен
       );

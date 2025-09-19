@@ -14,6 +14,7 @@ import 'package:part_catalog/features/references/vehicles/services/car_service.d
 import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
 import 'package:part_catalog/features/suppliers/services/parts_price_service.dart';
 import 'package:part_catalog/features/suppliers/services/supplier_service.dart';
+import 'package:part_catalog/features/suppliers/services/armtek_data_loader.dart';
 
 final locator = GetIt.instance;
 
@@ -59,6 +60,9 @@ void setupLocator(AppDatabase database) {
         locator<AppDatabase>().supplierSettingsDao,
         locator<ApiClientManager>(),
       ));
+
+  // Регистрация ArmtekDataLoader
+  locator.registerLazySingleton<ArmtekDataLoader>(() => ArmtekDataLoader());
 
   // Регистрация GlobalApiSettingsService
   locator.registerLazySingleton<GlobalApiSettingsService>(

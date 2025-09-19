@@ -8,7 +8,8 @@ import 'package:part_catalog/features/references/clients/screens/clients_screen.
 import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
 import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/enhanced_supplier_config_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/parts_search_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/supplier_config_wizard_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/enhanced_parts_search_screen.dart';
 import 'package:part_catalog/features/logs/screens/logs_screen.dart';
 
 import 'app_routes.dart';
@@ -60,7 +61,7 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.partsSearch,
           builder: (BuildContext context, GoRouterState state) {
-            return const PartsSearchScreen(); // Экран поиска запчастей
+            return const EnhancedPartsSearchScreen(); // Экран поиска запчастей
           },
         ),
         GoRoute(
@@ -90,6 +91,14 @@ final GoRouter router = GoRouter(
         final supplierCode = state.pathParameters['supplierCode'];
         // Используем улучшенный экран настроек поставщика с вкладками
         return EnhancedSupplierConfigScreen(supplierCode: supplierCode);
+      },
+    ),
+
+    // Маршрут для мастера настройки поставщиков
+    GoRoute(
+      path: AppRoutes.supplierWizard,
+      builder: (BuildContext context, GoRouterState state) {
+        return const SupplierConfigWizardScreen();
       },
     ),
   ],

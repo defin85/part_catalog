@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
-
 import 'package:part_catalog/core/database/daos/supplier_settings_dao.dart';
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
@@ -50,7 +48,7 @@ class SupplierConfigService {
 
   SupplierConfigService(this._supplierSettingsDao) {
     _logger.i('SupplierConfigService created, initializing...');
-    _armtekDataLoader = ArmtekDataLoader(Dio());
+    _armtekDataLoader = ArmtekDataLoader();
     _loadConfigs();
   }
 

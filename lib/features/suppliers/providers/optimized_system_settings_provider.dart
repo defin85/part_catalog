@@ -110,8 +110,6 @@ class OptimizedSystemSettingsNotifier
 
     try {
       // Сохраняем каждую настройку
-      await _settingsService
-          .setUseOptimizedSystem(newSettings.useOptimizedSystem);
       await _settingsService.setEnableCaching(newSettings.enableCaching);
       await _settingsService.setEnableMetrics(newSettings.enableMetrics);
       await _settingsService

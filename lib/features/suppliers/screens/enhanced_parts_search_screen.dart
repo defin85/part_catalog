@@ -50,7 +50,7 @@ class _EnhancedPartsSearchScreenState
           ? null
           : _brandController.text.trim();
 
-      final optimizedParams = OptimizedPartsSearchParams(
+      final optimizedParams = PartsSearchParams(
         articleNumber: articleNumber,
         brand: brand,
         supplierCodes: _selectedSuppliers.isEmpty ? null : _selectedSuppliers,
@@ -58,7 +58,7 @@ class _EnhancedPartsSearchScreenState
       );
 
       // Всегда используем оптимизированный поиск
-      ref.read(optimizedPartsSearchProvider(optimizedParams));
+      ref.read(partsSearchProvider(optimizedParams));
     }
   }
 
@@ -262,7 +262,7 @@ class _EnhancedPartsSearchScreenState
       );
     }
 
-    final params = OptimizedPartsSearchParams(
+    final params = PartsSearchParams(
       articleNumber: articleNumber,
       brand: _brandController.text.trim().isEmpty
           ? null
@@ -271,7 +271,7 @@ class _EnhancedPartsSearchScreenState
       useCache: _useCache,
     );
 
-    final searchResultsAsync = ref.watch(optimizedPartsSearchProvider(params));
+    final searchResultsAsync = ref.watch(partsSearchProvider(params));
 
     return searchResultsAsync.when(
       data: (results) => _buildResultsList(results, t),
@@ -299,7 +299,7 @@ class _EnhancedPartsSearchScreenState
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () =>
-                  ref.invalidate(optimizedPartsSearchProvider(params)),
+                  ref.invalidate(partsSearchProvider(params)),
               icon: const Icon(Icons.refresh),
               label: const Text('Повторить'),
             ),

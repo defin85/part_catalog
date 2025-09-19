@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:part_catalog/core/i18n/strings.g.dart';
-import 'package:part_catalog/features/suppliers/screens/parts_search_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/enhanced_parts_search_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/enhanced_supplier_config_screen.dart';
 
 void main() {
@@ -104,7 +104,7 @@ class WebDemoHomePage extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const PartsSearchScreen(),
+                          builder: (context) => const EnhancedPartsSearchScreen(),
                         ),
                       );
                     },

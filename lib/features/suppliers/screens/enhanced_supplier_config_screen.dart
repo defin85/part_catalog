@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:part_catalog/core/navigation/app_routes.dart';
+import 'package:part_catalog/core/widgets/adaptive_form_layout.dart';
 import 'package:part_catalog/core/widgets/custom_text_form_field.dart';
-import 'package:part_catalog/core/widgets/section_title.dart';
+import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
+import 'package:part_catalog/features/suppliers/models/supplier_config_form_state.dart';
 import 'package:part_catalog/features/suppliers/providers/optimized_api_providers.dart';
 import 'package:part_catalog/features/suppliers/widgets/supplier_info_widget_factory.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
@@ -32,7 +34,6 @@ class _EnhancedSupplierConfigScreenState
   late final TextEditingController _usernameController;
   late final TextEditingController _passwordController;
   late final TextEditingController _apiKeyController;
-  late final TextEditingController _vkorgController;
   late final TextEditingController _customerCodeController;
 
   late final TabController _tabController;
@@ -40,8 +41,8 @@ class _EnhancedSupplierConfigScreenState
   AuthenticationType _selectedAuthType = AuthenticationType.basic;
   bool _useProxy = false;
   bool _isEnabled = true;
-  bool _useOptimizedSystem = true;
   bool _hasChanges = false;
+  String? _selectedVkorg;
 
   @override
   void initState() {
@@ -53,7 +54,6 @@ class _EnhancedSupplierConfigScreenState
     _usernameController = TextEditingController();
     _passwordController = TextEditingController();
     _apiKeyController = TextEditingController();
-    _vkorgController = TextEditingController();
     _customerCodeController = TextEditingController();
 
     // Отслеживаем изменения в полях ввода
@@ -63,7 +63,6 @@ class _EnhancedSupplierConfigScreenState
       _usernameController,
       _passwordController,
       _apiKeyController,
-      _vkorgController,
       _customerCodeController,
     ]) {
       c.addListener(_markChanged);
@@ -101,13 +100,12 @@ class _EnhancedSupplierConfigScreenState
           _usernameController.text = creds.username ?? '';
           _passwordController.text = creds.password ?? '';
           _apiKeyController.text = creds.apiKey ?? '';
-          _vkorgController.text = creds.additionalParams?['VKORG'] ?? '';
+          _selectedVkorg = creds.additionalParams?['VKORG'];
         }
 
         final businessConfig = config.businessConfig;
         if (businessConfig != null) {
           _customerCodeController.text = businessConfig.customerCode ?? '';
-          _useOptimizedSystem = businessConfig.useOptimizedSystem;
         }
 
         // Обновить форму провайдера
@@ -132,7 +130,6 @@ class _EnhancedSupplierConfigScreenState
     _usernameController.dispose();
     _passwordController.dispose();
     _apiKeyController.dispose();
-    _vkorgController.dispose();
     _customerCodeController.dispose();
     super.dispose();
   }
@@ -141,7 +138,7 @@ class _EnhancedSupplierConfigScreenState
   Widget build(BuildContext context) {
     final formState =
         ref.watch(supplierConfigFormProvider(widget.supplierCode));
-    final isOptimizedEnabledAsync = ref.watch(isOptimizedSystemEnabledProvider);
+    const isOptimizedEnabledAsync = AsyncValue.data(true); // Оптимизированная система всегда включена
 
     return Scaffold(
       appBar: AppBar(
@@ -154,14 +151,11 @@ class _EnhancedSupplierConfigScreenState
             Consumer(
               builder: (context, ref, child) {
                 return isOptimizedEnabledAsync.when(
-                  data: (isOptimizedEnabled) =>
-                      isOptimizedEnabled && _useOptimizedSystem
-                          ? const Text(
+                  data: (isOptimizedEnabled) => const Text(
                               '🚀 Оптимизированная система',
                               style: TextStyle(
                                   fontSize: 12, fontWeight: FontWeight.normal),
-                            )
-                          : const SizedBox.shrink(),
+                            ),
                   loading: () => const SizedBox.shrink(),
                   error: (_, __) => const SizedBox.shrink(),
                 );
@@ -203,276 +197,490 @@ class _EnhancedSupplierConfigScreenState
   Widget _buildConfigTab(dynamic formState, bool isOptimizedEnabled) {
     return Form(
       key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Переключатель оптимизированной системы
-          if (isOptimizedEnabled) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.all(AdaptiveSpacing.padding(context)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Переключатель оптимизированной системы
+            if (isOptimizedEnabled) ...[
+              FullWidthField(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.rocket_launch, color: Colors.orange),
-                        const SizedBox(width: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.rocket_launch, color: Colors.orange),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Оптимизированная система API',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         const Text(
-                          'Оптимизированная система API',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          'Включает отказоустойчивость, кэширование, мониторинг и circuit breaker',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Включает отказоустойчивость, кэширование, мониторинг и circuit breaker',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ),
+              ),
+              SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
+            ],
+
+            // Основная информация
+            FormSection(
+              title: 'Основная информация',
+              children: [
+                AdaptiveFormLayout(
+                  fields: [
+                    CustomTextFormField(
+                      controller: _displayNameController,
+                      labelText: 'Название поставщика',
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Введите название' : null,
                     ),
-                    const SizedBox(height: 8),
-                    SwitchListTile(
-                      title:
-                          const Text('Использовать оптимизированную систему'),
-                      subtitle: const Text('Рекомендуется для продакшена'),
-                      value: _useOptimizedSystem,
-                      onChanged: (value) => setState(() {
-                        _useOptimizedSystem = value;
-                        _hasChanges = true;
-                      }),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SwitchListTile(
+                        title: const Text('Активен'),
+                        subtitle: const Text('Включить поставщика в поиск'),
+                        value: _isEnabled,
+                        onChanged: (value) => setState(() {
+                          _isEnabled = value;
+                          _hasChanges = true;
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
+
+            // Настройки API
+            FormSection(
+              title: 'Настройки API',
+              children: [
+                AdaptiveFormLayout(
+                  fields: [
+                    CustomTextFormField(
+                      controller: _baseUrlController,
+                      labelText: 'URL API',
+                      validator: (value) => value?.isEmpty ?? true ? 'Введите URL' : null,
+                    ),
+                    DropdownButtonFormField<AuthenticationType>(
+                      initialValue: _selectedAuthType,
+                      decoration: const InputDecoration(
+                        labelText: 'Тип аутентификации',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: AuthenticationType.values.map((type) {
+                        return DropdownMenuItem(
+                          value: type,
+                          child: Text(_getAuthTypeName(type)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedAuthType = value;
+                            _hasChanges = true;
+                          });
+                        }
+                      },
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SwitchListTile(
+                        title: const Text('Использовать прокси'),
+                        subtitle: const Text('Подключение через прокси-сервер'),
+                        value: _useProxy,
+                        onChanged: (value) => setState(() {
+                          _useProxy = value;
+                          _hasChanges = true;
+                        }),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: AdaptiveSpacing.fieldSpacing(context)),
+                // Поля аутентификации
+                AdaptiveFormLayout(
+                  fields: _buildAuthFields(),
+                ),
+              ],
+            ),
+
+            SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
+
+            // Параметры поставщика
+            if (widget.supplierCode == 'armtek') ...[
+              FormSection(
+                title: 'Параметры Armtek',
+                children: [
+                  AdaptiveFormLayout(
+                    fields: [
+                      _buildVkorgSelector(formState),
+                      CustomTextFormField(
+                        controller: _customerCodeController,
+                        labelText: 'Код клиента',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
+            ] else ...[
+              FormSection(
+                title: 'Дополнительные параметры',
+                children: [
+                  AdaptiveFormLayout(
+                    fields: [
+                      CustomTextFormField(
+                        controller: _customerCodeController,
+                        labelText: 'Код клиента',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
+            ],
+
+            // Действия Armtek
+            if (widget.supplierCode == 'armtek') ...[
+              FormSection(
+                title: 'Действия с данными',
+                children: [
+                  ResponsiveLayoutBuilder(
+                    small: (context, constraints) => Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadUserInfo();
+                            },
+                            icon: const Icon(Icons.person_search),
+                            label: const Text('Загрузить пользователя'),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadBrandList();
+                            },
+                            icon: const Icon(Icons.branding_watermark),
+                            label: const Text('Загрузить бренды'),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadStoreList();
+                            },
+                            icon: const Icon(Icons.warehouse),
+                            label: const Text('Загрузить склады'),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showDetailedSupplierInfo(context, formState),
+                            icon: const Icon(Icons.open_in_new),
+                            label: const Text('Показать детальную информацию'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    medium: (context, constraints) => Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        SizedBox(
+                          width: (constraints.maxWidth - 12) / 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadUserInfo();
+                            },
+                            icon: const Icon(Icons.person_search),
+                            label: const Text('Загрузить пользователя'),
+                          ),
+                        ),
+                        SizedBox(
+                          width: (constraints.maxWidth - 12) / 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadBrandList();
+                            },
+                            icon: const Icon(Icons.branding_watermark),
+                            label: const Text('Загрузить бренды'),
+                          ),
+                        ),
+                        SizedBox(
+                          width: (constraints.maxWidth - 12) / 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadStoreList();
+                            },
+                            icon: const Icon(Icons.warehouse),
+                            label: const Text('Загрузить склады'),
+                          ),
+                        ),
+                        SizedBox(
+                          width: (constraints.maxWidth - 12) / 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showDetailedSupplierInfo(context, formState),
+                            icon: const Icon(Icons.open_in_new),
+                            label: const Text('Показать детальную информацию'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    large: (context, constraints) => Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadUserInfo();
+                            },
+                            icon: const Icon(Icons.person_search),
+                            label: const Text('Загрузить пользователя'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadBrandList();
+                            },
+                            icon: const Icon(Icons.branding_watermark),
+                            label: const Text('Загрузить бренды'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _updateFormConfig();
+                              ref
+                                  .read(supplierConfigFormProvider(widget.supplierCode)
+                                      .notifier)
+                                  .loadStoreList();
+                            },
+                            icon: const Icon(Icons.warehouse),
+                            label: const Text('Загрузить склады'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showDetailedSupplierInfo(context, formState),
+                            icon: const Icon(Icons.open_in_new),
+                            label: const Text('Показать детальную информацию'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
+            ],
+
+            // Ошибки валидации
+            if (formState.validationErrors.isNotEmpty) ...[
+              FullWidthField(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: formState.validationErrors.map((error) {
+                      return Text(
+                        '• $error',
+                        style: TextStyle(color: Colors.red.shade700),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              SizedBox(height: AdaptiveSpacing.fieldSpacing(context)),
+            ],
+
+            // Кнопки действий
+            FullWidthField(
+              child: ResponsiveLayoutBuilder(
+                small: (context, constraints) => Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: formState.isTesting ? null : _testConnection,
+                        icon: formState.isTesting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.wifi_tethering),
+                        label: Text(formState.isTesting
+                            ? 'Проверка...'
+                            : 'Health Check'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: formState.isLoading ? null : _saveConfig,
+                        icon: formState.isLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.save),
+                        label: const Text('Сохранить'),
+                      ),
+                    ),
+                  ],
+                ),
+                medium: (context, constraints) => Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: formState.isTesting ? null : _testConnection,
+                        icon: formState.isTesting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.wifi_tethering),
+                        label: Text(formState.isTesting
+                            ? 'Проверка...'
+                            : 'Health Check'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: formState.isLoading ? null : _saveConfig,
+                        icon: formState.isLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.save),
+                        label: const Text('Сохранить'),
+                      ),
+                    ),
+                  ],
+                ),
+                large: (context, constraints) => Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: formState.isTesting ? null : _testConnection,
+                        icon: formState.isTesting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.wifi_tethering),
+                        label: Text(formState.isTesting
+                            ? 'Проверка...'
+                            : 'Health Check'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: formState.isLoading ? null : _saveConfig,
+                        icon: formState.isLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.save),
+                        label: const Text('Сохранить'),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-          ],
 
-          // Основная информация
-          SectionTitle(title: 'Основная информация'),
-          const SizedBox(height: 8),
-
-          CustomTextFormField(
-            controller: _displayNameController,
-            labelText: 'Название поставщика',
-            validator: (value) =>
-                value?.isEmpty ?? true ? 'Введите название' : null,
-          ),
-
-          const SizedBox(height: 16),
-
-          SwitchListTile(
-            title: const Text('Активен'),
-            subtitle: const Text('Включить поставщика в поиск'),
-            value: _isEnabled,
-            onChanged: (value) => setState(() {
-              _isEnabled = value;
-              _hasChanges = true;
-            }),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Настройки API
-          SectionTitle(title: 'Настройки API'),
-          const SizedBox(height: 8),
-
-          CustomTextFormField(
-            controller: _baseUrlController,
-            labelText: 'URL API',
-            validator: (value) => value?.isEmpty ?? true ? 'Введите URL' : null,
-          ),
-
-          const SizedBox(height: 16),
-
-          // Тип аутентификации
-          DropdownButtonFormField<AuthenticationType>(
-            initialValue: _selectedAuthType,
-            decoration: const InputDecoration(
-              labelText: 'Тип аутентификации',
-              border: OutlineInputBorder(),
-            ),
-            items: AuthenticationType.values.map((type) {
-              return DropdownMenuItem(
-                value: type,
-                child: Text(_getAuthTypeName(type)),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  _selectedAuthType = value;
-                  _hasChanges = true;
-                });
-              }
-            },
-          ),
-
-          const SizedBox(height: 16),
-
-          // Поля аутентификации в зависимости от типа
-          ..._buildAuthFields(),
-
-          const SizedBox(height: 16),
-
-          SwitchListTile(
-            title: const Text('Использовать прокси'),
-            subtitle: const Text('Подключение через прокси-сервер'),
-            value: _useProxy,
-            onChanged: (value) => setState(() {
-              _useProxy = value;
-              _hasChanges = true;
-            }),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Armtek: дополнительные действия и детали
-          if (widget.supplierCode == 'armtek') ...[
-            const SectionTitle(title: 'Armtek: данные и детали'),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _updateFormConfig();
-                      ref
-                          .read(supplierConfigFormProvider(widget.supplierCode)
-                              .notifier)
-                          .loadUserInfo();
-                    },
-                    icon: const Icon(Icons.person_search),
-                    label: const Text('Загрузить пользователя'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _updateFormConfig();
-                      ref
-                          .read(supplierConfigFormProvider(widget.supplierCode)
-                              .notifier)
-                          .loadBrandList();
-                    },
-                    icon: const Icon(Icons.branding_watermark),
-                    label: const Text('Загрузить бренды'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _updateFormConfig();
-                      ref
-                          .read(supplierConfigFormProvider(widget.supplierCode)
-                              .notifier)
-                          .loadStoreList();
-                    },
-                    icon: const Icon(Icons.warehouse),
-                    label: const Text('Загрузить склады'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ElevatedButton.icon(
-                onPressed: () => _showDetailedSupplierInfo(context, formState),
-                icon: const Icon(Icons.open_in_new),
-                label: const Text('Показать детальную информацию'),
-              ),
-            ),
-          ],
-
-          // Бизнес-параметры
-          if (widget.supplierCode == 'armtek') ...[
-            SectionTitle(title: 'Параметры Armtek'),
-            const SizedBox(height: 8),
-            CustomTextFormField(
-              controller: _vkorgController,
-              labelText: 'VKORG (Код организации)',
-              validator: (value) =>
-                  value?.isEmpty ?? true ? 'Введите VKORG' : null,
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          CustomTextFormField(
-            controller: _customerCodeController,
-            labelText: 'Код клиента',
-          ),
-
-          const SizedBox(height: 32),
-
-          // Ошибки валидации
-          if (formState.validationErrors.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: formState.validationErrors.map((error) {
-                  return Text(
-                    '• $error',
-                    style: TextStyle(color: Colors.red.shade700),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Кнопки действий
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: formState.isTesting ? null : _testConnection,
-                  icon: formState.isTesting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.wifi_tethering),
-                  label: Text(formState.isTesting
-                      ? 'Проверка...'
-                      : _useOptimizedSystem
-                          ? 'Health Check'
-                          : 'Проверить подключение'),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: formState.isLoading ? null : _saveConfig,
-                  icon: formState.isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save),
-                  label: const Text('Сохранить'),
+            // Сообщение об ошибке
+            if (formState.error != null) ...[
+              SizedBox(height: AdaptiveSpacing.fieldSpacing(context)),
+              FullWidthField(
+                child: Text(
+                  formState.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
             ],
-          ),
-
-          // Сообщение об ошибке
-          if (formState.error != null) ...[
-            const SizedBox(height: 16),
-            Text(
-              formState.error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -558,7 +766,7 @@ class _EnhancedSupplierConfigScreenState
   }
 
   Widget _buildMonitoringTab() {
-    if (widget.supplierCode == null || !_useOptimizedSystem) {
+    if (widget.supplierCode == null) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -566,7 +774,7 @@ class _EnhancedSupplierConfigScreenState
             Icon(Icons.monitor_heart_outlined, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'Мониторинг доступен только для\nоптимизированной системы',
+              'Мониторинг доступен только для\nсохраненных поставщиков',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
@@ -684,7 +892,7 @@ class _EnhancedSupplierConfigScreenState
   }
 
   Widget _buildStatsTab() {
-    if (widget.supplierCode == null || !_useOptimizedSystem) {
+    if (widget.supplierCode == null) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -692,7 +900,7 @@ class _EnhancedSupplierConfigScreenState
             Icon(Icons.analytics_outlined, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'Статистика доступна только для\nоптимизированной системы',
+              'Статистика доступна только для\nсохраненных поставщиков',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
@@ -985,8 +1193,8 @@ class _EnhancedSupplierConfigScreenState
               : null,
           apiKey:
               _apiKeyController.text.isNotEmpty ? _apiKeyController.text : null,
-          additionalParams: _vkorgController.text.isNotEmpty
-              ? {'VKORG': _vkorgController.text}
+          additionalParams: _selectedVkorg?.isNotEmpty == true
+              ? {'VKORG': _selectedVkorg!}
               : null,
         ),
         proxyUrl: _useProxy
@@ -998,8 +1206,7 @@ class _EnhancedSupplierConfigScreenState
             ? _customerCodeController.text
             : null,
         organizationCode:
-            _vkorgController.text.isNotEmpty ? _vkorgController.text : null,
-        useOptimizedSystem: _useOptimizedSystem,
+            _selectedVkorg?.isNotEmpty == true ? _selectedVkorg : null,
       ),
     );
 
@@ -1012,7 +1219,7 @@ class _EnhancedSupplierConfigScreenState
     if (_formKey.currentState?.validate() ?? false) {
       _updateFormConfig();
 
-      if (_useOptimizedSystem && widget.supplierCode != null) {
+      if (widget.supplierCode != null) {
         // Используем оптимизированную систему для тестирования
         try {
           final notifier = ref.read(
@@ -1061,9 +1268,7 @@ class _EnhancedSupplierConfigScreenState
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_useOptimizedSystem
-                ? '🚀 Конфигурация сохранена (оптимизированная система)'
-                : '✅ Конфигурация сохранена'),
+            content: const Text('🚀 Конфигурация сохранена (оптимизированная система)'),
           ),
         );
         context.go(AppRoutes.apiControlCenter);
@@ -1115,5 +1320,196 @@ class _EnhancedSupplierConfigScreenState
         );
       }
     }
+  }
+
+  /// Виджет для выбора VKORG
+  Widget _buildVkorgSelector(SupplierConfigFormState formState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'VKORG (Код организации)',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.help_outline, size: 20),
+              onPressed: () => _showVkorgHelp(),
+              tooltip: 'Справка по VKORG',
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        if (formState.availableVkorgList.isEmpty) ...[
+          // Кнопка загрузки VKORG
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.download_rounded,
+                  size: 48,
+                  color: Colors.grey.shade500,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Сначала введите логин и пароль,\nзатем загрузите список VKORG',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: formState.isLoadingVkorgList ||
+                          _usernameController.text.isEmpty ||
+                          _passwordController.text.isEmpty
+                      ? null
+                      : () => _loadVkorgList(),
+                  icon: formState.isLoadingVkorgList
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.download),
+                  label: Text(formState.isLoadingVkorgList
+                      ? 'Загружается...'
+                      : 'Загрузить список VKORG'),
+                ),
+              ],
+            ),
+          ),
+        ] else ...[
+          // Dropdown для выбора VKORG
+          DropdownButtonFormField<String>(
+            initialValue: _selectedVkorg,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: 'Выберите организацию',
+            ),
+            items: formState.availableVkorgList.map((vkorg) {
+              return DropdownMenuItem<String>(
+                value: vkorg.vkorg,
+                child: Text('${vkorg.vkorg} - ${vkorg.programName}'),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _selectedVkorg = value;
+                  _hasChanges = true;
+                });
+                // Обновляем конфигурацию в провайдере
+                ref
+                    .read(supplierConfigFormProvider(widget.supplierCode).notifier)
+                    .selectVkorg(value);
+              }
+            },
+            validator: (value) =>
+                value?.isEmpty ?? true ? 'Выберите VKORG' : null,
+          ),
+
+          const SizedBox(height: 8),
+
+          // Кнопка для перезагрузки списка
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: formState.isLoadingVkorgList
+                    ? null
+                    : () => _loadVkorgList(),
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Обновить список'),
+              ),
+              const Spacer(),
+              Text(
+                '${formState.availableVkorgList.length} организаций',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ],
+
+        // Ошибка загрузки
+        if (formState.error != null &&
+            formState.error!.contains('VKORG')) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              border: Border.all(color: Colors.red.shade200),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    formState.error!,
+                    style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  /// Загрузить список VKORG
+  Future<void> _loadVkorgList() async {
+    // Сначала обновляем текущую конфигурацию
+    _updateFormConfig();
+
+    // Затем загружаем VKORG
+    await ref
+        .read(supplierConfigFormProvider(widget.supplierCode).notifier)
+        .loadVkorgList();
+  }
+
+  /// Показать справку по VKORG
+  void _showVkorgHelp() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Справка: VKORG'),
+        content: const SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('VKORG (Sales Organization) - это код сбытовой организации в системе Армтек.'),
+              SizedBox(height: 12),
+              Text('Каждая организация имеет:'),
+              Text('• Свой уникальный 4-значный код'),
+              Text('• Название программы'),
+              Text('• Набор доступных операций'),
+              SizedBox(height: 12),
+              Text('Выберите организацию, к которой у вас есть доступ согласно договору с Армтек.'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Понятно'),
+          ),
+        ],
+      ),
+    );
   }
 }

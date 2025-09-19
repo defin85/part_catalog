@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:part_catalog/core/config/global_api_settings_service.dart';
 import 'package:part_catalog/core/api/optimized_api_client_factory.dart';
 import 'package:part_catalog/core/service_locator.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
@@ -9,7 +8,6 @@ import 'package:part_catalog/features/suppliers/api/api_client_manager.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/api/implementations/optimized_armtek_api_client.dart';
 import 'package:part_catalog/features/suppliers/models/base/part_price_response.dart';
-import 'package:part_catalog/features/suppliers/providers/parts_search_providers.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
 import 'package:part_catalog/features/suppliers/utils/user_friendly_exception.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
@@ -124,13 +122,13 @@ class OptimizedArmtekClient extends _$OptimizedArmtekClient {
   }
 }
 
-/// Провайдер для поиска запчастей с использованием оптимизированных клиентов
+/// Провайдер для поиска запчастей
 @riverpod
-class OptimizedPartsSearch extends _$OptimizedPartsSearch {
+class PartsSearch extends _$PartsSearch {
   final _logger = AppLoggers.suppliers;
 
   @override
-  Future<List<PartPriceModel>> build(OptimizedPartsSearchParams params) async {
+  Future<List<PartPriceModel>> build(PartsSearchParams params) async {
     // Сохраняем инстанс провайдера между переходами экранов,
     // чтобы при возврате не выполнять запрос заново
     ref.keepAlive();
@@ -141,12 +139,12 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
       return [];
     }
 
-    return _searchWithOptimizedSystem(params);
+    return _searchWithSuppliers(params);
   }
 
-  /// Поиск с использованием оптимизированной системы
-  Future<List<PartPriceModel>> _searchWithOptimizedSystem(
-    OptimizedPartsSearchParams params,
+  /// Поиск запчастей у поставщиков
+  Future<List<PartPriceModel>> _searchWithSuppliers(
+    PartsSearchParams params,
   ) async {
     // Дожидаемся загрузки конфигураций из БД и фильтруем включённых поставщиков
     final allConfigs = await ref.watch(supplierConfigsProvider.future);
@@ -210,19 +208,19 @@ class OptimizedPartsSearch extends _$OptimizedPartsSearch {
 
 
   /// Обновляет поиск с новыми параметрами
-  void updateSearch(OptimizedPartsSearchParams newParams) {
-    ref.invalidate(optimizedPartsSearchProvider(newParams));
+  void updateSearch(PartsSearchParams newParams) {
+    ref.invalidate(partsSearchProvider(newParams));
   }
 }
 
-/// Параметры для оптимизированного поиска запчастей
-class OptimizedPartsSearchParams {
+/// Параметры для поиска запчастей
+class PartsSearchParams {
   final String articleNumber;
   final String? brand;
   final List<String>? supplierCodes; // Фильтр по поставщикам
   final bool useCache; // Использовать кеш
 
-  const OptimizedPartsSearchParams({
+  const PartsSearchParams({
     required this.articleNumber,
     this.brand,
     this.supplierCodes,
@@ -232,7 +230,7 @@ class OptimizedPartsSearchParams {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is OptimizedPartsSearchParams &&
+      other is PartsSearchParams &&
           runtimeType == other.runtimeType &&
           articleNumber == other.articleNumber &&
           brand == other.brand &&
