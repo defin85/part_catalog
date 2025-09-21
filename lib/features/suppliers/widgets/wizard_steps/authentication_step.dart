@@ -95,15 +95,23 @@ class _AuthenticationStepState extends State<AuthenticationStep> {
         final isSelected = _selectedAuthType == type;
         return Card(
           color: isSelected
-              ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+              ? Theme.of(context)
+                  .colorScheme
+                  .primaryContainer
+                  .withValues(alpha: 0.3)
               : null,
-          child: RadioListTile<AuthenticationType>(
+          child: ListTile(
+            leading: Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_off,
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             title: Text(_getAuthTypeName(type)),
             subtitle: Text(_getAuthTypeDescription(type)),
-            value: type,
-            groupValue: _selectedAuthType,
-            onChanged: _updateAuthType,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            onTap: () => _updateAuthType(type),
           ),
         );
       }).toList(),
@@ -206,7 +214,10 @@ class _AuthenticationStepState extends State<AuthenticationStep> {
 
       case AuthenticationType.none:
         return Card(
-          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withValues(alpha: 0.3),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -230,8 +241,11 @@ class _AuthenticationStepState extends State<AuthenticationStep> {
   }
 
   Widget _buildAuthInfo() {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        return Card(
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withValues(alpha: 0.3),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -332,13 +346,11 @@ class _AuthenticationStepState extends State<AuthenticationStep> {
     }
   }
 
-  void _updateAuthType(AuthenticationType? type) {
-    if (type != null) {
-      setState(() {
-        _selectedAuthType = type;
-      });
-      _updateCredentials('');
-    }
+  void _updateAuthType(AuthenticationType type) {
+    setState(() {
+      _selectedAuthType = type;
+    });
+    _updateCredentials('');
   }
 
   void _updateCredentials(String _) {

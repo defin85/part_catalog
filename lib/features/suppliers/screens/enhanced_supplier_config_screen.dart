@@ -195,10 +195,18 @@ class _EnhancedSupplierConfigScreenState
   }
 
   Widget _buildConfigTab(dynamic formState, bool isOptimizedEnabled) {
+    return ResponsiveLayoutBuilder(
+      small: (context, constraints) => _buildFormLayout(formState, isOptimizedEnabled, isMobile: true),
+      medium: (context, constraints) => _buildFormLayout(formState, isOptimizedEnabled, isMobile: false),
+      large: (context, constraints) => _buildFormLayout(formState, isOptimizedEnabled, isMobile: false),
+    );
+  }
+
+  Widget _buildFormLayout(dynamic formState, bool isOptimizedEnabled, {required bool isMobile}) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
-        padding: EdgeInsets.all(AdaptiveSpacing.padding(context)),
+        padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -366,174 +374,7 @@ class _EnhancedSupplierConfigScreenState
               FormSection(
                 title: 'Действия с данными',
                 children: [
-                  ResponsiveLayoutBuilder(
-                    small: (context, constraints) => Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadUserInfo();
-                            },
-                            icon: const Icon(Icons.person_search),
-                            label: const Text('Загрузить пользователя'),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadBrandList();
-                            },
-                            icon: const Icon(Icons.branding_watermark),
-                            label: const Text('Загрузить бренды'),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadStoreList();
-                            },
-                            icon: const Icon(Icons.warehouse),
-                            label: const Text('Загрузить склады'),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showDetailedSupplierInfo(context, formState),
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Показать детальную информацию'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    medium: (context, constraints) => Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      children: [
-                        SizedBox(
-                          width: (constraints.maxWidth - 12) / 2,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadUserInfo();
-                            },
-                            icon: const Icon(Icons.person_search),
-                            label: const Text('Загрузить пользователя'),
-                          ),
-                        ),
-                        SizedBox(
-                          width: (constraints.maxWidth - 12) / 2,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadBrandList();
-                            },
-                            icon: const Icon(Icons.branding_watermark),
-                            label: const Text('Загрузить бренды'),
-                          ),
-                        ),
-                        SizedBox(
-                          width: (constraints.maxWidth - 12) / 2,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadStoreList();
-                            },
-                            icon: const Icon(Icons.warehouse),
-                            label: const Text('Загрузить склады'),
-                          ),
-                        ),
-                        SizedBox(
-                          width: (constraints.maxWidth - 12) / 2,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showDetailedSupplierInfo(context, formState),
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Показать детальную информацию'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    large: (context, constraints) => Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadUserInfo();
-                            },
-                            icon: const Icon(Icons.person_search),
-                            label: const Text('Загрузить пользователя'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadBrandList();
-                            },
-                            icon: const Icon(Icons.branding_watermark),
-                            label: const Text('Загрузить бренды'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _updateFormConfig();
-                              ref
-                                  .read(supplierConfigFormProvider(widget.supplierCode)
-                                      .notifier)
-                                  .loadStoreList();
-                            },
-                            icon: const Icon(Icons.warehouse),
-                            label: const Text('Загрузить склады'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showDetailedSupplierInfo(context, formState),
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Показать детальную информацию'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildArmtekActionButtons(formState, isMobile),
                 ],
               ),
               SizedBox(height: AdaptiveSpacing.sectionSpacing(context)),
@@ -1509,6 +1350,70 @@ class _EnhancedSupplierConfigScreenState
             child: const Text('Понятно'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildArmtekActionButtons(dynamic formState, bool isMobile) {
+    final actionButtons = [
+      _buildActionButton(
+        icon: Icons.person_search,
+        label: 'Загрузить пользователя',
+        onPressed: () {
+          _updateFormConfig();
+          ref.read(supplierConfigFormProvider(widget.supplierCode).notifier).loadUserInfo();
+        },
+      ),
+      _buildActionButton(
+        icon: Icons.branding_watermark,
+        label: 'Загрузить бренды',
+        onPressed: () {
+          _updateFormConfig();
+          ref.read(supplierConfigFormProvider(widget.supplierCode).notifier).loadBrandList();
+        },
+      ),
+      _buildActionButton(
+        icon: Icons.warehouse,
+        label: 'Загрузить склады',
+        onPressed: () {
+          _updateFormConfig();
+          ref.read(supplierConfigFormProvider(widget.supplierCode).notifier).loadStoreList();
+        },
+      ),
+      _buildActionButton(
+        icon: Icons.open_in_new,
+        label: 'Показать детальную информацию',
+        onPressed: () => _showDetailedSupplierInfo(context, formState),
+      ),
+    ];
+
+    if (isMobile) {
+      return Column(
+        children: actionButtons.map((button) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: SizedBox(width: double.infinity, child: button),
+        )).toList(),
+      );
+    } else {
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: actionButtons,
+      );
+    }
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon),
+      label: Text(label),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }

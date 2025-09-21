@@ -61,7 +61,8 @@ class ValidationFeedbackWidget extends StatelessWidget {
                   Text(
                     result!.suggestion!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: _getTextColor(context).withOpacity(0.8),
+                          color: _getTextColor(context)
+                              .withValues(alpha: 0.8),
                         ),
                   ),
                 ],
@@ -76,22 +77,28 @@ class ValidationFeedbackWidget extends StatelessWidget {
   Color _getBackgroundColor(BuildContext context) {
     switch (result!.level) {
       case ValidationLevel.success:
-        return Colors.green.withOpacity(0.1);
+        return Colors.green.withValues(alpha: 0.1);
       case ValidationLevel.warning:
-        return Colors.orange.withOpacity(0.1);
+        return Colors.orange.withValues(alpha: 0.1);
       case ValidationLevel.error:
-        return Theme.of(context).colorScheme.errorContainer.withOpacity(0.3);
+        return Theme.of(context)
+            .colorScheme
+            .errorContainer
+            .withValues(alpha: 0.3);
     }
   }
 
   Color _getBorderColor(BuildContext context) {
     switch (result!.level) {
       case ValidationLevel.success:
-        return Colors.green.withOpacity(0.3);
+        return Colors.green.withValues(alpha: 0.3);
       case ValidationLevel.warning:
-        return Colors.orange.withOpacity(0.3);
+        return Colors.orange.withValues(alpha: 0.3);
       case ValidationLevel.error:
-        return Theme.of(context).colorScheme.error.withOpacity(0.3);
+        return Theme.of(context)
+            .colorScheme
+            .error
+            .withValues(alpha: 0.3);
     }
   }
 

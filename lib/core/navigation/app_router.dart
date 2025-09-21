@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
 
-import 'package:part_catalog/features/documents/orders/screens/orders_screen.dart'; // Пример
+import 'package:part_catalog/features/documents/orders/screens/adaptive_orders_screen.dart';
 import 'package:part_catalog/features/home/screens/home_screen.dart';
 import 'package:part_catalog/features/references/clients/screens/clients_screen.dart'; // Пример
 import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
 import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/enhanced_supplier_config_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/supplier_config_wizard_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/enhanced_parts_search_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/adaptive_parts_search_screen.dart';
 import 'package:part_catalog/features/logs/screens/logs_screen.dart';
 
 import 'app_routes.dart';
@@ -55,13 +55,13 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.orders,
           builder: (BuildContext context, GoRouterState state) {
-            return const OrdersScreen(); // Экран списка заказов
+            return const AdaptiveOrdersScreen(); // Адаптивный экран списка заказов
           },
         ),
         GoRoute(
           path: AppRoutes.partsSearch,
           builder: (BuildContext context, GoRouterState state) {
-            return const EnhancedPartsSearchScreen(); // Экран поиска запчастей
+            return const AdaptivePartsSearchScreen(); // Адаптивный экран поиска запчастей
           },
         ),
         GoRoute(
@@ -97,9 +97,15 @@ final GoRouter router = GoRouter(
     // Маршрут для мастера настройки поставщиков
     GoRoute(
       path: AppRoutes.supplierWizard,
-      builder: (BuildContext context, GoRouterState state) {
-        return const SupplierConfigWizardScreen();
-      },
+      name: 'supplierWizardRoot',
+      builder: _buildSupplierWizard,
+      routes: [
+        GoRoute(
+          path: ':supplierCode',
+          name: 'supplierWizardWithCode',
+          builder: _buildSupplierWizard,
+        ),
+      ],
     ),
   ],
 
@@ -109,3 +115,12 @@ final GoRouter router = GoRouter(
     body: Center(child: Text('Страница не найдена: ${state.error}')),
   ),
 );
+
+Widget _buildSupplierWizard(BuildContext context, GoRouterState state) {
+  final extraCode = state.extra is String ? state.extra as String : null;
+  final pathCode = state.pathParameters['supplierCode'];
+  final queryCode = state.uri.queryParameters['code'];
+  final supplierCode = extraCode ?? pathCode ?? queryCode;
+
+  return SupplierConfigWizardScreen(supplierCode: supplierCode);
+}

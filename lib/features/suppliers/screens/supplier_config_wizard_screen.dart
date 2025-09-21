@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/core/widgets/adaptive_form_layout.dart';
 import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
@@ -83,12 +84,12 @@ class _SupplierConfigWizardScreenState
         title: const Text('Мастер настройки поставщика'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
+          onPressed: _handleClose,
         ),
         actions: [
           if (_currentStep > 0)
             TextButton(
-              onPressed: () => context.pop(),
+              onPressed: _handleClose,
               child: const Text('К обычной форме'),
             ),
         ],
@@ -101,6 +102,14 @@ class _SupplierConfigWizardScreenState
         largeBreakpoint: 1000,
       ),
     );
+  }
+
+  void _handleClose() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.apiControlCenter);
+    }
   }
 
   /// Мобильная компоновка - вертикальный layout
@@ -173,7 +182,8 @@ class _SupplierConfigWizardScreenState
             width: 100,
             child: LinearProgressIndicator(
               value: (_currentStep + 1) / _steps.length,
-              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
             ),
           ),
         ],
@@ -204,7 +214,9 @@ class _SupplierConfigWizardScreenState
                             ? Theme.of(context).colorScheme.primary
                             : isActive
                                 ? Theme.of(context).colorScheme.primaryContainer
-                                : Theme.of(context).colorScheme.surfaceVariant,
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
                         child: Icon(
                           isCompleted ? Icons.check : step.icon,
                           color: isCompleted || isActive
@@ -233,7 +245,9 @@ class _SupplierConfigWizardScreenState
                     width: 24,
                     color: isCompleted
                         ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.surfaceVariant,
+                        : Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                   ),
               ],
             ),
@@ -246,7 +260,10 @@ class _SupplierConfigWizardScreenState
   /// Десктопная боковая панель
   Widget _buildDesktopSidebar() {
     return Container(
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+      color: Theme.of(context)
+          .colorScheme
+          .surfaceContainerHighest
+          .withValues(alpha: 0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -272,7 +289,9 @@ class _SupplierConfigWizardScreenState
                         ? Theme.of(context).colorScheme.primary
                         : isActive
                             ? Theme.of(context).colorScheme.primaryContainer
-                            : Theme.of(context).colorScheme.surfaceVariant,
+                            : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                     child: Icon(
                       isCompleted ? Icons.check : step.icon,
                       color: isCompleted || isActive

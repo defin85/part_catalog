@@ -15,23 +15,24 @@ class ValidationResult {
     this.level = ValidationLevel.error,
   });
 
-  ValidationResult.success()
-      : isValid = true,
-        errorMessage = null,
-        suggestion = null,
-        level = ValidationLevel.success;
+  const ValidationResult.success()
+      : this(isValid: true, level: ValidationLevel.success);
 
-  ValidationResult.warning(String message, [String? suggestion])
-      : isValid = true,
-        errorMessage = message,
-        suggestion = suggestion,
-        level = ValidationLevel.warning;
+  const ValidationResult.warning(String message, [String? suggestion])
+      : this(
+          isValid: true,
+          errorMessage: message,
+          suggestion: suggestion,
+          level: ValidationLevel.warning,
+        );
 
-  ValidationResult.error(String message, [String? suggestion])
-      : isValid = false,
-        errorMessage = message,
-        suggestion = suggestion,
-        level = ValidationLevel.error;
+  const ValidationResult.error(String message, [String? suggestion])
+      : this(
+          isValid: false,
+          errorMessage: message,
+          suggestion: suggestion,
+          level: ValidationLevel.error,
+        );
 }
 
 enum ValidationLevel { success, warning, error }

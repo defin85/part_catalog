@@ -16,8 +16,11 @@ class TestConfig {
 
   /// Папки с тестами
   static const String unitTestsDir = 'test/unit';
-  static const String widgetTestsDir = 'test/widget';
+  static const String widgetTestsDir = 'test/widgets';
   static const String integrationTestsDir = 'test/integration';
+  static const String goldenTestsDir = 'test/golden';
+  static const String performanceTestsDir = 'test/performance';
+  static const String accessibilityTestsDir = 'test/accessibility';
 
   /// Настройки для golden тестов
   static const double goldenFileThreshold = 0.01;

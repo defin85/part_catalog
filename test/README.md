@@ -11,7 +11,10 @@ test/
 ├── integration/        # Интеграционные тесты
 ├── mocks/             # Моки и заглушки
 ├── unit/              # Unit тесты
-├── widget/            # Widget тесты
+├── widgets/           # Widget тесты
+├── performance/       # Performance тесты (заглушка)
+├── accessibility/     # Accessibility тесты (заглушка)
+├── golden/            # Golden тесты (заглушка)
 ├── test_config.dart   # Конфигурация тестов
 └── README.md          # Этот файл
 ```
@@ -30,7 +33,7 @@ flutter test test/unit/
 
 ### Widget тесты
 ```bash
-flutter test test/widget/
+flutter test test/widgets/
 ```
 
 ### Конкретный тест

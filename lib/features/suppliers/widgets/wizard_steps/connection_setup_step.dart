@@ -135,35 +135,14 @@ class _ConnectionSetupStepState extends State<ConnectionSetupStep> {
     );
   }
 
-  String _getUrlHelper() {
-    final supplierCode = widget.config?.supplierCode;
-    switch (supplierCode) {
-      case 'armtek':
-        return 'Для Армтек обычно: https://ws.armtek.ru или https://api2.autotrade.su';
-      case 'custom':
-        return 'Укажите полный URL до API вашего поставщика';
-      default:
-        return 'Базовый URL для подключения к API поставщика';
-    }
-  }
-
-  String _getUrlHint() {
-    final supplierCode = widget.config?.supplierCode;
-    switch (supplierCode) {
-      case 'armtek':
-        return 'https://ws.armtek.ru';
-      case 'custom':
-        return 'https://api.yourprovider.com';
-      default:
-        return 'https://api.supplier.com';
-    }
-  }
-
   Widget _buildConnectionModeInfo() {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        color: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest
+            .withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -201,7 +180,10 @@ class _ConnectionSetupStepState extends State<ConnectionSetupStep> {
 
   Widget _buildConnectionTips() {
     return Card(
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+      color: Theme.of(context)
+          .colorScheme
+          .surfaceContainerHighest
+          .withValues(alpha: 0.3),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

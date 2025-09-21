@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// Размеры экрана для адаптивности
+enum ScreenSize {
+  small,
+  medium,
+  large,
+}
+
 typedef ResponsiveWidgetBuilder = Widget Function(
     BuildContext context, BoxConstraints constraints);
 

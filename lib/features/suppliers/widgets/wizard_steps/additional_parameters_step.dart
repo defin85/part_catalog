@@ -32,7 +32,8 @@ class _AdditionalParametersStepState
     super.initState();
     _customerCodeController.text =
         widget.config?.businessConfig?.customerCode ?? '';
-    _selectedVkorg = widget.config?.apiConfig.credentials?.additionalParams?['VKORG'] as String?;
+    _selectedVkorg =
+        widget.config?.apiConfig.credentials?.additionalParams?['VKORG'];
   }
 
   @override
@@ -113,7 +114,7 @@ class _AdditionalParametersStepState
                             )
                           else
                             DropdownButtonFormField<String>(
-                              value: _selectedVkorg,
+                              initialValue: _selectedVkorg,
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(
@@ -200,7 +201,10 @@ class _AdditionalParametersStepState
       title: 'Дополнительные возможности',
       children: [
         Card(
-          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+          color: Theme.of(context)
+              .colorScheme
+              .surfaceContainerHighest
+              .withValues(alpha: 0.3),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -274,7 +278,9 @@ class _AdditionalParametersStepState
 
       final formState = ref.read(supplierConfigFormProvider(widget.config!.supplierCode));
       setState(() {
-        _availableVkorgList = (formState.availableVkorgList ?? []).cast<String>();
+        _availableVkorgList = formState.availableVkorgList
+            .map((vkorg) => vkorg.vkorg)
+            .toList();
         _isLoadingVkorg = false;
       });
     } catch (e) {

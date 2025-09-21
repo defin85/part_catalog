@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
 import 'package:part_catalog/core/navigation/app_routes.dart';
 import 'package:part_catalog/core/utils/logger_config.dart';
+import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
 import 'package:part_catalog/features/settings/api_control_center/notifiers/api_control_center_notifier.dart';
 import 'package:part_catalog/features/settings/api_control_center/state/api_control_center_state.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
@@ -21,18 +22,16 @@ class ApiControlCenterScreen extends ConsumerWidget {
     final t = Translations.of(context);
     final state = ref.watch(apiControlCenterNotifierProvider);
     final notifier = ref.read(apiControlCenterNotifierProvider.notifier);
-    final logger = appLogger(
-        'ApiControlCenterScreen'); // Логгер можно инициализировать здесь
 
-    final TextEditingController proxyUrlController =
-        TextEditingController(text: state.proxyUrl);
-    // Слушатель для обновления текста в контроллере, если он изменится извне
+    // Слушатель для обновления snackbar при ошибках
     ref.listen<ApiControlCenterState>(apiControlCenterNotifierProvider,
         (previous, next) {
-      if (previous?.proxyUrl != next.proxyUrl) {
-        proxyUrlController.text = next.proxyUrl;
-        proxyUrlController.selection = TextSelection.fromPosition(
-            TextPosition(offset: proxyUrlController.text.length));
+      if (next.error != null && previous?.error != next.error) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка: ${next.error}')),
+          );
+        });
       }
     });
 
@@ -46,13 +45,6 @@ class ApiControlCenterScreen extends ConsumerWidget {
       );
     }
 
-    if (state.error != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${state.error}')),
-        );
-      });
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -71,8 +63,32 @@ class ApiControlCenterScreen extends ConsumerWidget {
             )
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: ResponsiveLayoutBuilder(
+        small: (context, constraints) => _buildContent(context, ref, state, notifier, t, isTablet: false),
+        medium: (context, constraints) => _buildContent(context, ref, state, notifier, t, isTablet: true),
+        large: (context, constraints) => _buildContent(context, ref, state, notifier, t, isTablet: true),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, WidgetRef ref, ApiControlCenterState state, dynamic notifier, dynamic t, {required bool isTablet}) {
+    final logger = appLogger('ApiControlCenterScreen');
+    final TextEditingController proxyUrlController = TextEditingController(text: state.proxyUrl);
+
+    // Слушатель для обновления текста в контроллере
+    ref.listen<ApiControlCenterState>(apiControlCenterNotifierProvider,
+        (previous, next) {
+      if (previous?.proxyUrl != next.proxyUrl) {
+        proxyUrlController.text = next.proxyUrl;
+        proxyUrlController.selection = TextSelection.fromPosition(
+            TextPosition(offset: proxyUrlController.text.length));
+      }
+    });
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: isTablet ? 800 : double.infinity),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -134,25 +150,32 @@ class ApiControlCenterScreen extends ConsumerWidget {
               itemCount: state.suppliers.length,
               itemBuilder: (context, index) {
                 final supplierInfo = state.suppliers[index];
-                return _buildSupplierTile(context,
-                    // icon: supplierInfo.icon ?? Icons.business_center, // Используем иконку или дефолтную
-                    icon: Icons.business_center, // Заглушка иконки
-                    name: supplierInfo.displayName,
-                    status: supplierInfo.status,
-                    isConfigured: supplierInfo.isConfigured, onConfigure: () {
-                  logger.i(
-                      'Configure button pressed for ${supplierInfo.displayName}');
-                  // Открываем экран настроек поставщика
-                  context
-                      .go('${AppRoutes.supplierConfig}/${supplierInfo.code}');
-                },
-                    // Тестовая кнопка для имитации сохранения настроек
-                    onTestToggleConfigured: () {
-                  final sc = SupplierCode.values
-                      .firstWhere((e) => e.code == supplierInfo.code);
-                  notifier.addOrUpdateTestSupplierSetting(
-                      sc, !supplierInfo.isConfigured);
-                });
+                return _buildSupplierTile(
+                  context,
+                  icon: Icons.business_center,
+                  name: supplierInfo.displayName,
+                  status: supplierInfo.status,
+                  isConfigured: supplierInfo.isConfigured,
+                  onConfigure: () {
+                    logger.i(
+                        'Configure button pressed for ${supplierInfo.displayName}');
+                    context
+                        .go('${AppRoutes.supplierConfig}/${supplierInfo.code}');
+                  },
+                  onConfigureWithWizard: () {
+                    logger.i(
+                        'Wizard configure pressed for ${supplierInfo.displayName}');
+                    final encoded =
+                        Uri.encodeComponent(supplierInfo.code);
+                    context.push('${AppRoutes.supplierWizard}?code=$encoded');
+                  },
+                  onTestToggleConfigured: () {
+                    final sc = SupplierCode.values
+                        .firstWhere((e) => e.code == supplierInfo.code);
+                    notifier.addOrUpdateTestSupplierSetting(
+                        sc, !supplierInfo.isConfigured);
+                  },
+                );
               },
             ),
           ],
@@ -168,34 +191,83 @@ class ApiControlCenterScreen extends ConsumerWidget {
     required String status,
     required bool isConfigured,
     required VoidCallback onConfigure,
-    required VoidCallback onTestToggleConfigured, // Тестовый коллбэк
+    required VoidCallback onConfigureWithWizard,
+    required VoidCallback onTestToggleConfigured,
   }) {
     final t = Translations.of(context);
+    final statusColor = isConfigured ? Colors.green : Colors.orange;
+
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4.0),
-      child: ListTile(
-        leading: Icon(icon,
-            size: 40, color: isConfigured ? Colors.green : Colors.grey),
-        title: Text(name),
-        subtitle: Text(status),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Тестовая кнопка для переключения статуса isConfigured
-            IconButton(
-              icon: Icon(
-                isConfigured ? Icons.toggle_on : Icons.toggle_off,
-                color: isConfigured ? Colors.green : Colors.grey,
-                size: 30,
-              ),
-              tooltip:
-                  'Тест: ${isConfigured ? "Сделать не настроенным" : "Сделать настроенным"}',
-              onPressed: onTestToggleConfigured,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest,
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        status,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: statusColor),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    isConfigured ? Icons.toggle_on : Icons.toggle_off,
+                    color: statusColor,
+                    size: 30,
+                  ),
+                  tooltip:
+                      'Тест: ${isConfigured ? "Сделать не настроенным" : "Сделать настроенным"}',
+                  onPressed: onTestToggleConfigured,
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: onConfigure,
-              child: Text(t.settings.apiControlCenter.configureButton),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                FilledButton.icon(
+                  onPressed: onConfigure,
+                  icon: const Icon(Icons.settings),
+                  label: Text(t.settings.apiControlCenter.configureButton),
+                ),
+                OutlinedButton.icon(
+                  onPressed: onConfigureWithWizard,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Через мастер'),
+                ),
+              ],
             ),
           ],
         ),

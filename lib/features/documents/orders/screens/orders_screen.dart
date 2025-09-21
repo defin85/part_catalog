@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/i18n/strings.g.dart';
+import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
 import 'package:part_catalog/features/documents/orders/providers/orders_pagination_provider.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_details_screen.dart';
 import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
@@ -58,24 +59,78 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
         title: Text(t.orders.screenTitle),
         // TODO: Адаптировать фильтрацию и поиск для пагинации
       ),
-      body: ordersState.when(
-        data: (state) {
-          if (state.orders.isEmpty) {
-            return Center(
-              child: Text(
-                t.orders.noOrdersFound,
-                style: Theme.of(context).textTheme.titleMedium,
+      body: ResponsiveLayoutBuilder(
+        small: (context, constraints) => _buildOrdersList(context, ordersState, t, isTablet: false),
+        medium: (context, constraints) => _buildOrdersList(context, ordersState, t, isTablet: true),
+        large: (context, constraints) => _buildOrdersList(context, ordersState, t, isTablet: true),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: t.orders.add,
+        onPressed: _createNewOrder,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildOrdersList(BuildContext context, dynamic ordersState, dynamic t, {required bool isTablet}) {
+    return ordersState.when(
+      data: (state) {
+        if (state.orders.isEmpty) {
+          return Center(
+            child: Text(
+              t.orders.noOrdersFound,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          );
+        }
+
+        if (isTablet) {
+          // Для планшетов - сетка с отступами
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GridView.builder(
+              controller: _scrollController,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 3.5,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
               ),
-            );
-          }
+              itemCount: state.hasReachedMax
+                  ? state.orders.length
+                  : state.orders.length + 1,
+              itemBuilder: (context, index) {
+                if (index >= state.orders.length) {
+                  return const Card(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                final orderHeader = state.orders[index];
+                return Card(
+                  child: OrderListItem(
+                    orderHeader: orderHeader,
+                    onTap: () => _openOrderDetails(orderHeader),
+                  ),
+                );
+              },
+            ),
+          );
+        } else {
+          // Для мобильных - обычный список
           return ListView.builder(
             controller: _scrollController,
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: state.hasReachedMax
                 ? state.orders.length
                 : state.orders.length + 1,
             itemBuilder: (context, index) {
               if (index >= state.orders.length) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
               }
               final orderHeader = state.orders[index];
               return OrderListItem(
@@ -84,19 +139,18 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               );
             },
           );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
+        }
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Text(
             '${t.errors.dataLoadingError}: $error',
             style: const TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: t.orders.add,
-        onPressed: _createNewOrder,
-        child: const Icon(Icons.add),
       ),
     );
   }

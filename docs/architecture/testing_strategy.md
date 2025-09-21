@@ -69,9 +69,9 @@ test/
 │   ├── api/
 │   ├── database/
 │   └── flows/
-├── performance/               # ⚡ Performance тесты
-├── accessibility/             # ♿ Accessibility тесты
-├── golden/                    # 🖼️ Golden тесты
+├── performance/               # ⚡ Performance тесты (placeholder)
+├── accessibility/             # ♿ Accessibility тесты (placeholder)
+├── golden/                    # 🖼️ Golden тесты (placeholder)
 └── run_all_tests.dart        # 🚀 Runner script
 ```
 

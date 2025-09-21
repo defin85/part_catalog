@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/widgets/adaptive_form_layout.dart';
 import 'package:part_catalog/features/suppliers/models/supplier_config.dart';
-import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 import 'package:part_catalog/features/suppliers/api/api_connection_mode.dart';
 import 'package:part_catalog/features/suppliers/services/smart_validation_service.dart';
+import 'package:part_catalog/features/suppliers/services/multi_level_testing_service.dart';
 import 'package:part_catalog/features/suppliers/widgets/validation_feedback_widget.dart';
 
 /// Шаг 5: Завершение настройки
@@ -28,6 +28,8 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
   bool _testPassed = false;
   String? _testError;
   List<ValidationResult> _validationResults = [];
+  MultiLevelTestResult? _testResult;
+  TestLevel? _currentTestLevel;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +59,10 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primaryContainer
+                    .withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -236,62 +241,106 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
   Widget _buildConnectionTest() {
     return Card(
       color: _testPassed
-          ? Colors.green.withOpacity(0.1)
+          ? Colors.green.withValues(alpha: 0.1)
           : _testError != null
-              ? Theme.of(context).colorScheme.errorContainer.withOpacity(0.3)
+              ? Theme.of(context)
+                  .colorScheme
+                  .errorContainer
+                  .withValues(alpha: 0.3)
               : null,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            if (_testPassed)
-              Row(
+            if (_testResult != null && _testResult!.overallSuccess)
+              Column(
                 children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Подключение успешно проверено!',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.green.shade800,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
-                ],
-              )
-            else if (_testError != null)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.error,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Ошибка подключения:',
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Многоуровневое тестирование пройдено успешно!',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.error,
+                                color: Colors.green.shade800,
                                 fontWeight: FontWeight.w600,
                               ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _testError!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.error,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTestLevelsResults(),
+                ],
+              )
+            else if (_testResult != null && !_testResult!.overallSuccess)
+              Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.warning,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Тестирование завершено с ошибками',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            if (_testResult!.failedAtLevel != null)
+                              Text(
+                                'Остановлено на: ${_testResult!.failedAtLevel!.description}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.error,
+                                    ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTestLevelsResults(),
+                  const SizedBox(height: 12),
+                  _buildDiagnosticSuggestions(),
+                ],
+              )
+            else if (_isTesting && _currentTestLevel != null)
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Выполняется: ${_currentTestLevel!.description}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
                               ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  LinearProgressIndicator(
+                    value: (_currentTestLevel!.level - 1) / TestLevel.values.length,
                   ),
                 ],
               )
@@ -305,7 +354,7 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Рекомендуется проверить подключение перед сохранением',
+                      'Рекомендуется выполнить многоуровневое тестирование перед сохранением',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
@@ -315,19 +364,133 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: _isTesting ? null : _testConnection,
+                onPressed: _isTesting ? null : _performMultiLevelTest,
                 icon: _isTesting
                     ? const SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.wifi_tethering),
-                label: Text(_isTesting ? 'Проверка...' : 'Проверить подключение'),
+                    : const Icon(Icons.speed),
+                label: Text(_isTesting ? 'Тестирование...' : 'Многоуровневое тестирование'),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTestLevelsResults() {
+    if (_testResult == null) return const SizedBox.shrink();
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: _testResult!.results.map((result) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              border: result != _testResult!.results.last
+                  ? Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+                      ),
+                    )
+                  : null,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  result.passed ? Icons.check_circle : Icons.cancel,
+                  size: 16,
+                  color: result.passed ? Colors.green : Colors.red,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    result.level.description,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                Text(
+                  '${result.duration.inMilliseconds}ms',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDiagnosticSuggestions() {
+    if (_testResult == null) return const SizedBox.shrink();
+
+    final suggestions = MultiLevelTestingService.getDiagnosticSuggestions(_testResult!);
+    if (suggestions.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.lightbulb_outline,
+                size: 16,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Рекомендации по устранению проблем:',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...suggestions.map((suggestion) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '• ',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        suggestion,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+        ],
       ),
     );
   }
@@ -337,7 +500,10 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
       children: [
         if (!_testPassed && _testError == null)
           Card(
-            color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+      color: Theme.of(context)
+          .colorScheme
+          .surfaceContainerHighest
+          .withValues(alpha: 0.3),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -401,37 +567,49 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
     }
   }
 
-  Future<void> _testConnection() async {
+  Future<void> _performMultiLevelTest() async {
     if (widget.config == null) return;
 
     setState(() {
       _isTesting = true;
       _testError = null;
       _testPassed = false;
+      _testResult = null;
+      _currentTestLevel = null;
     });
 
     try {
-      final service = ref.read(supplierServiceProvider);
-      final result = await service.testConnection(widget.config!);
+      final result = await MultiLevelTestingService.performMultiLevelTest(
+        widget.config!,
+        stopOnFirstFailure: false,
+        onProgress: (level, status) {
+          setState(() {
+            _currentTestLevel = level;
+          });
+        },
+      );
 
       setState(() {
         _isTesting = false;
-        if (result.success) {
-          _testPassed = true;
-          _testError = null;
-        } else {
-          _testPassed = false;
-          _testError = result.errorMessage ?? 'Неизвестная ошибка';
+        _testResult = result;
+        _testPassed = result.overallSuccess;
+        _currentTestLevel = null;
+
+        if (!result.overallSuccess) {
+          _testError = 'Тестирование завершено с ошибками на уровне: ${result.failedAtLevel?.description}';
         }
       });
     } catch (e) {
       setState(() {
         _isTesting = false;
         _testPassed = false;
-        _testError = e.toString();
+        _testError = 'Ошибка при выполнении тестирования: $e';
+        _testResult = null;
+        _currentTestLevel = null;
       });
     }
   }
+
 
   Future<void> _saveConfiguration() async {
     setState(() {
@@ -480,7 +658,7 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
   Widget _buildValidationResults() {
     if (_validationResults.isEmpty) {
       return Card(
-        color: Colors.green.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -515,7 +693,10 @@ class _CompletionStepState extends ConsumerState<CompletionStep> {
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Card(
-              color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .errorContainer
+                  .withValues(alpha: 0.3),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(

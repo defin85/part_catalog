@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:part_catalog/core/widgets/section_title.dart';
+import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
 import 'package:part_catalog/features/debug/debug_database_screen.dart';
 import 'package:part_catalog/features/suppliers/providers/optimized_system_settings_provider.dart';
 
@@ -99,10 +100,21 @@ class _OptimizedSystemSettingsScreenState
           ),
         ],
       ),
-      body: settingsAsync.when(
-        data: (settings) => _buildSettingsForm(settings),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
+      body: ResponsiveLayoutBuilder(
+        small: (context, constraints) => _buildResponsiveContent(settingsAsync, isTablet: false),
+        medium: (context, constraints) => _buildResponsiveContent(settingsAsync, isTablet: true),
+        large: (context, constraints) => _buildResponsiveContent(settingsAsync, isTablet: true),
+      ),
+    );
+  }
+
+  Widget _buildResponsiveContent(dynamic settingsAsync, {required bool isTablet}) {
+    return settingsAsync.when(
+      data: (settings) => _buildSettingsForm(settings, isTablet: isTablet),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Padding(
+          padding: EdgeInsets.all(isTablet ? 32.0 : 16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -115,8 +127,7 @@ class _OptimizedSystemSettingsScreenState
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () =>
-                    ref.invalidate(optimizedSystemSettingsNotifierProvider),
+                onPressed: () => ref.invalidate(optimizedSystemSettingsNotifierProvider),
                 icon: const Icon(Icons.refresh),
                 label: const Text('Повторить'),
               ),
@@ -127,19 +138,19 @@ class _OptimizedSystemSettingsScreenState
     );
   }
 
-  Widget _buildSettingsForm(OptimizedSystemSettings settings) {
+  Widget _buildSettingsForm(OptimizedSystemSettings settings, {required bool isTablet}) {
     // Обновляем контроллеры при изменении настроек
     _retryAttemptsController.text = settings.retryAttempts.toString();
     _requestTimeoutController.text =
         (settings.requestTimeout / 1000).round().toString();
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    Widget content = ListView(
+      padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
       children: [
         // Основные настройки
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -219,7 +230,7 @@ class _OptimizedSystemSettingsScreenState
         // Дополнительные параметры
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -344,6 +355,17 @@ class _OptimizedSystemSettingsScreenState
         const SizedBox(height: 32),
       ],
     );
+
+    if (isTablet) {
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: content,
+        ),
+      );
+    }
+
+    return content;
   }
 
   void _toggleOptimizedSystem(bool enabled) {

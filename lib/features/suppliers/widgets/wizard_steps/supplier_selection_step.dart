@@ -132,7 +132,10 @@ class _SupplierSelectionStepState extends State<SupplierSelectionStep> {
     return Card(
       elevation: isSelected ? 8 : 2,
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+          ? Theme.of(context)
+              .colorScheme
+              .primaryContainer
+              .withValues(alpha: 0.3)
           : null,
       child: InkWell(
         onTap: () => _selectTemplate(template),
@@ -192,7 +195,9 @@ class _SupplierSelectionStepState extends State<SupplierSelectionStep> {
                   ),
                   backgroundColor: isSelected
                       ? Theme.of(context).colorScheme.primaryContainer
-                      : Theme.of(context).colorScheme.surfaceVariant,
+                      : Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
                 )).toList(),
               ),
             ],
@@ -243,7 +248,10 @@ class _SupplierSelectionStepState extends State<SupplierSelectionStep> {
       margin: const EdgeInsets.only(bottom: 8),
       elevation: isSelected ? 4 : 1,
       color: isSelected
-          ? Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3)
+          ? Theme.of(context)
+              .colorScheme
+              .primaryContainer
+              .withValues(alpha: 0.3)
           : null,
       child: ListTile(
         leading: CircleAvatar(
@@ -277,14 +285,18 @@ class _SupplierSelectionStepState extends State<SupplierSelectionStep> {
                     profile.authType.name.toUpperCase(),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest,
                 ),
                 Chip(
                   label: Text(
                     profile.connectionMode.name,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest,
                 ),
               ],
             ),
