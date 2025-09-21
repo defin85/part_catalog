@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:part_catalog/features/documents/orders/screens/adaptive_orders_screen.dart';
 import 'package:part_catalog/features/home/screens/home_screen.dart';
-import 'package:part_catalog/features/references/clients/screens/clients_screen.dart'; // Пример
+import 'package:part_catalog/features/references/clients/screens/adaptive_clients_screen.dart';
 import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
 import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/enhanced_supplier_config_screen.dart';
@@ -33,7 +33,7 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.clients,
           builder: (BuildContext context, GoRouterState state) {
-            return const ClientsScreen(); // Экран списка клиентов
+            return const AdaptiveClientsScreen(); // Адаптивный экран списка клиентов
           },
           // Можно добавить вложенные маршруты для деталей клиента и т.д.
           // routes: <RouteBase>[

@@ -99,6 +99,7 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
         ],
       ),
       body: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Поиск и фильтры
           AdaptiveCard(
@@ -146,6 +147,7 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
           Expanded(
             flex: 2,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 AdaptiveCard(
                   context: AdaptiveCardContext.list,
@@ -204,6 +206,7 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
           // Левая панель - поиск, фильтры и список заказов
           AdaptiveContainer.sidebar(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildSearchAndFilters(ScreenSize.large, t),
                 Expanded(
@@ -237,6 +240,7 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
     return AdaptiveContainer(
       padding: EdgeInsets.all(_getSpacing(screenSize)),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (screenSize == ScreenSize.large) ...[

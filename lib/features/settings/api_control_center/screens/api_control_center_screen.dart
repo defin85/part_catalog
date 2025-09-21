@@ -24,16 +24,20 @@ class ApiControlCenterScreen extends ConsumerWidget {
     final notifier = ref.read(apiControlCenterNotifierProvider.notifier);
 
     // Слушатель для обновления snackbar при ошибках
-    ref.listen<ApiControlCenterState>(apiControlCenterNotifierProvider,
-        (previous, next) {
-      if (next.error != null && previous?.error != next.error) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ошибка: ${next.error}')),
-          );
-        });
-      }
-    });
+    ref.listen<ApiControlCenterState>(
+      apiControlCenterNotifierProvider,
+      (previous, next) {
+        if (next.error != null && previous?.error != next.error) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Ошибка: ${next.error}')),
+              );
+            }
+          });
+        }
+      },
+    );
 
     if (state.isLoading && state.suppliers.isEmpty) {
       // Показываем загрузку только при первой загрузке
