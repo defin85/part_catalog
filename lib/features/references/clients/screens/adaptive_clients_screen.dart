@@ -167,7 +167,7 @@ class _AdaptiveClientsScreenState extends ConsumerState<AdaptiveClientsScreen> {
       body: Row(
         children: [
           // Левая панель - список клиентов с поиском и фильтрами
-          AdaptiveContainer.sidebar(
+          _DryLayoutSafeSidebar(
             child: Column(
               children: [
                 _buildSearchAndFilters(ScreenSize.large),
@@ -250,23 +250,11 @@ class _AdaptiveClientsScreenState extends ConsumerState<AdaptiveClientsScreen> {
 
           Column(
             children: [
-              FilterChip(
-                label: 'Активные'.asAdaptiveCaption(),
-                selected: true,
-                onSelected: (selected) {},
-              ),
+              _buildFilterChip('Активные', true, () {}),
               const SizedBox(height: 4),
-              FilterChip(
-                label: 'Физ. лица'.asAdaptiveCaption(),
-                selected: false,
-                onSelected: (selected) {},
-              ),
+              _buildFilterChip('Физ. лица', false, () {}),
               const SizedBox(height: 4),
-              FilterChip(
-                label: 'Юр. лица'.asAdaptiveCaption(),
-                selected: false,
-                onSelected: (selected) {},
-              ),
+              _buildFilterChip('Юр. лица', false, () {}),
             ],
           ),
         ],
@@ -708,6 +696,33 @@ class _AdaptiveClientsScreenState extends ConsumerState<AdaptiveClientsScreen> {
     // TODO: Реализовать статистику
   }
 
+  Widget _buildFilterChip(String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Theme.of(context).colorScheme.primary : null,
+          border: Border.all(
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+
   double _getSpacing(ScreenSize screenSize) {
     switch (screenSize) {
       case ScreenSize.small:
@@ -717,5 +732,20 @@ class _AdaptiveClientsScreenState extends ConsumerState<AdaptiveClientsScreen> {
       case ScreenSize.large:
         return 20.0;
     }
+  }
+}
+
+/// Безопасная альтернатива AdaptiveContainer.sidebar с защитой от dry layout ошибок
+class _DryLayoutSafeSidebar extends StatelessWidget {
+  final Widget child;
+
+  const _DryLayoutSafeSidebar({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 360, // Фиксированная ширина как у AdaptiveContainer.sidebar
+      child: child,
+    );
   }
 }

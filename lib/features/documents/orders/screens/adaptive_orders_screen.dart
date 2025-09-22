@@ -204,9 +204,8 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
       body: Row(
         children: [
           // Левая панель - поиск, фильтры и список заказов
-          AdaptiveContainer.sidebar(
+          _DryLayoutSafeSidebar(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildSearchAndFilters(ScreenSize.large, t),
                 Expanded(
@@ -223,12 +222,8 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
           ),
           const VerticalDivider(width: 1),
           // Правая панель - действия и статистика
-          AdaptiveContainer(
-            sizeConfig: const AdaptiveSizeConfig(
-              desktopWidth: 300,
-              minWidth: 250,
-              maxWidth: 400,
-            ),
+          SizedBox(
+            width: 300, // Фиксированная ширина для desktop
             child: _buildActionsPanel(ScreenSize.large, t),
           ),
         ],
@@ -275,45 +270,40 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
             'Статус заказа'.asAdaptiveBodySecondary(fontWeight: FontWeight.w600),
             SizedBox(height: _getSpacing(screenSize) * 0.5),
 
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            // Заменяем Wrap на Column + Row для избежания dry layout ошибок
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                FilterChip(
-                  label: 'Все'.asAdaptiveCaption(),
-                  selected: _statusFilter.isEmpty,
-                  onSelected: (selected) {
-                    setState(() {
-                      _statusFilter = '';
-                    });
-                  },
+                Row(
+                  children: [
+                    _buildFilterChip('Все', _statusFilter.isEmpty, () {
+                      setState(() {
+                        _statusFilter = '';
+                      });
+                    }),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('В работе', _statusFilter == 'in_progress', () {
+                      setState(() {
+                        _statusFilter = _statusFilter == 'in_progress' ? '' : 'in_progress';
+                      });
+                    }),
+                  ],
                 ),
-                FilterChip(
-                  label: 'В работе'.asAdaptiveCaption(),
-                  selected: _statusFilter == 'in_progress',
-                  onSelected: (selected) {
-                    setState(() {
-                      _statusFilter = selected ? 'in_progress' : '';
-                    });
-                  },
-                ),
-                FilterChip(
-                  label: 'Завершенные'.asAdaptiveCaption(),
-                  selected: _statusFilter == 'completed',
-                  onSelected: (selected) {
-                    setState(() {
-                      _statusFilter = selected ? 'completed' : '';
-                    });
-                  },
-                ),
-                FilterChip(
-                  label: 'Отмененные'.asAdaptiveCaption(),
-                  selected: _statusFilter == 'cancelled',
-                  onSelected: (selected) {
-                    setState(() {
-                      _statusFilter = selected ? 'cancelled' : '';
-                    });
-                  },
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _buildFilterChip('Завершенные', _statusFilter == 'completed', () {
+                      setState(() {
+                        _statusFilter = _statusFilter == 'completed' ? '' : 'completed';
+                      });
+                    }),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Отмененные', _statusFilter == 'cancelled', () {
+                      setState(() {
+                        _statusFilter = _statusFilter == 'cancelled' ? '' : 'cancelled';
+                      });
+                    }),
+                  ],
                 ),
               ],
             ),
@@ -824,5 +814,47 @@ class _AdaptiveOrdersScreenState extends ConsumerState<AdaptiveOrdersScreen> {
 
   void _showImportExportDialog() {
     // TODO: Реализовать импорт/экспорт заказов
+  }
+
+  Widget _buildFilterChip(String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? Theme.of(context).colorScheme.primary : null,
+          border: Border.all(
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
+            fontSize: 12,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Безопасная альтернатива AdaptiveContainer.sidebar с защитой от dry layout ошибок
+class _DryLayoutSafeSidebar extends StatelessWidget {
+  final Widget child;
+
+  const _DryLayoutSafeSidebar({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 360, // Фиксированная ширина как у AdaptiveContainer.sidebar
+      child: child,
+    );
   }
 }

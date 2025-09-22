@@ -77,17 +77,6 @@ class ApiControlCenterScreen extends ConsumerWidget {
 
   Widget _buildContent(BuildContext context, WidgetRef ref, ApiControlCenterState state, dynamic notifier, dynamic t, {required bool isTablet}) {
     final logger = appLogger('ApiControlCenterScreen');
-    final TextEditingController proxyUrlController = TextEditingController(text: state.proxyUrl);
-
-    // Слушатель для обновления текста в контроллере
-    ref.listen<ApiControlCenterState>(apiControlCenterNotifierProvider,
-        (previous, next) {
-      if (previous?.proxyUrl != next.proxyUrl) {
-        proxyUrlController.text = next.proxyUrl;
-        proxyUrlController.selection = TextSelection.fromPosition(
-            TextPosition(offset: proxyUrlController.text.length));
-      }
-    });
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(isTablet ? 24.0 : 16.0),
@@ -125,14 +114,17 @@ class ApiControlCenterScreen extends ConsumerWidget {
                 padding:
                     const EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
                 child: TextFormField(
-                  controller: proxyUrlController,
+                  key: const ValueKey('proxyUrl'), // Для сохранения состояния
+                  initialValue: state.proxyUrl,
                   decoration: InputDecoration(
                     labelText: t.settings.apiControlCenter.proxyUrlLabel,
                     hintText: t.settings.apiControlCenter.proxyUrlHint,
                     border: const OutlineInputBorder(),
                   ),
+                  onChanged: (value) {
+                    notifier.setProxyUrl(value);
+                  },
                   onEditingComplete: () {
-                    notifier.setProxyUrl(proxyUrlController.text);
                     FocusScope.of(context).unfocus(); // Скрыть клавиатуру
                   },
                 ),

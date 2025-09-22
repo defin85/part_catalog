@@ -269,7 +269,11 @@ class AdaptiveContainer extends StatelessWidget {
 
     // ИСПРАВЛЕНИЕ: Проверяем на бесконечную высоту
     final safeHeight = constraints.maxHeight.isInfinite ? null : constraints.maxHeight;
-    return Size(width ?? constraints.maxWidth, height ?? safeHeight);
+
+    // Если высота равна 0 (не задана), используем null для автоматического размера
+    final finalHeight = height == 0 ? null : height;
+
+    return Size(width ?? constraints.maxWidth, finalHeight ?? (safeHeight ?? 0));
   }
 
   Size _getFixedSize(ScreenSize screenSize) {
@@ -277,17 +281,17 @@ class AdaptiveContainer extends StatelessWidget {
       case ScreenSize.small:
         return Size(
           sizeConfig.mobileWidth ?? double.infinity,
-          sizeConfig.mobileHeight ?? double.infinity,
+          sizeConfig.mobileHeight ?? 0,
         );
       case ScreenSize.medium:
         return Size(
           sizeConfig.tabletWidth ?? sizeConfig.mobileWidth ?? double.infinity,
-          sizeConfig.tabletHeight ?? sizeConfig.mobileHeight ?? double.infinity,
+          sizeConfig.tabletHeight ?? sizeConfig.mobileHeight ?? 0,
         );
       case ScreenSize.large:
         return Size(
           sizeConfig.desktopWidth ?? sizeConfig.tabletWidth ?? sizeConfig.mobileWidth ?? double.infinity,
-          sizeConfig.desktopHeight ?? sizeConfig.tabletHeight ?? sizeConfig.mobileHeight ?? double.infinity,
+          sizeConfig.desktopHeight ?? sizeConfig.tabletHeight ?? sizeConfig.mobileHeight ?? 0,
         );
     }
   }

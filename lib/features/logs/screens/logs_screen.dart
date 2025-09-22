@@ -161,7 +161,7 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
         maxLines: isTablet ? 2 : 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Text('${_formatTime(r.time)} • ${r.level.name}'),
+      subtitle: Text('${_formatTime(r.time)} • ${_levelToString(r.level)}'),
       childrenPadding: EdgeInsets.fromLTRB(isTablet ? 24 : 16, 0, isTablet ? 24 : 16, 12),
       children: [
         const Text('Сообщение:', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -215,7 +215,7 @@ class _LogsScreenState extends ConsumerState<LogsScreen> {
       case Level.error:
         return 'Error';
       default:
-        return level.name;
+        return _levelToString(level);
     }
   }
 }
@@ -230,6 +230,21 @@ String _formatTime(DateTime time) {
   // Быстрое форматирование HH:MM:SS
   final hhmmss = t.split('T').last.split('.').first;
   return hhmmss;
+}
+
+String _levelToString(Level level) {
+  switch (level) {
+    case Level.error:
+      return 'ERROR';
+    case Level.warning:
+      return 'WARNING';
+    case Level.info:
+      return 'INFO';
+    case Level.debug:
+      return 'DEBUG';
+    default:
+      return 'UNKNOWN';
+  }
 }
 
 Color _colorFor(Level level) {
@@ -266,7 +281,7 @@ IconData _iconFor(Level level) {
 
 String _composeFullText(LogRecord r) {
   final b = StringBuffer()
-    ..writeln('[${r.level.name}] ${r.time.toIso8601String()}')
+    ..writeln('[${_levelToString(r.level)}] ${r.time.toIso8601String()}')
     ..writeln(r.message);
   if (r.error != null) {
     b
