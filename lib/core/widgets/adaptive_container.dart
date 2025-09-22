@@ -267,7 +267,9 @@ class AdaptiveContainer extends StatelessWidget {
         break;
     }
 
-    return Size(width ?? constraints.maxWidth, height ?? constraints.maxHeight);
+    // ИСПРАВЛЕНИЕ: Проверяем на бесконечную высоту
+    final safeHeight = constraints.maxHeight.isInfinite ? null : constraints.maxHeight;
+    return Size(width ?? constraints.maxWidth, height ?? safeHeight);
   }
 
   Size _getFixedSize(ScreenSize screenSize) {
