@@ -94,7 +94,7 @@ class AdaptiveAppBar extends StatelessWidget implements PreferredSizeWidget {
       child: Column(
         children: [
           Container(
-            height: 72, // Увеличенная высота для desktop
+            height: 70, // Исправленная высота для предотвращения overflow
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [

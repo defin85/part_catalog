@@ -70,6 +70,10 @@ class ClientModelComposite implements IReferenceEntity {
     );
     final specific = ClientSpecificData(
       type: type,
+      displayName: displayName,
+      phone: null, // Будем парсить из contactInfo позже
+      email: null, // Будем парсить из contactInfo позже
+      isIndividual: type == ClientType.physical,
       contactInfo: contactInfo,
       additionalInfo: additionalInfo,
     );

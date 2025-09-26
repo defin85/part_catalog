@@ -16,6 +16,18 @@ abstract class ClientSpecificData with _$ClientSpecificData {
     /// Тип клиента (physical, legal, individualEntrepreneur, other).
     @JsonKey(name: 'type') required ClientType type,
 
+    /// Отображаемое имя клиента
+    @JsonKey(name: 'displayName') required String displayName,
+
+    /// Телефон клиента
+    @JsonKey(name: 'phone') String? phone,
+
+    /// Email клиента
+    @JsonKey(name: 'email') String? email,
+
+    /// Является ли клиент физическим лицом
+    @JsonKey(name: 'isIndividual') required bool isIndividual,
+
     /// Контактная информация (телефон, email, адрес).
     /// Может быть строкой или отдельной моделью Value Object.
     @JsonKey(name: 'contactInfo') required String contactInfo,
@@ -23,12 +35,18 @@ abstract class ClientSpecificData with _$ClientSpecificData {
     /// Дополнительная информация.
     @JsonKey(name: 'additionalInfo') String? additionalInfo,
 
-    // Другие специфичные поля для клиента, если нужны
-    // Например:
-    // String? inn;
-    // String? kpp;
-    // String? legalAddress;
-    // String? actualAddress;
+    // Другие специфичные поля для клиента
+    /// ИНН (для юридических лиц)
+    @JsonKey(name: 'inn') String? inn,
+
+    /// КПП (для юридических лиц)
+    @JsonKey(name: 'kpp') String? kpp,
+
+    /// Юридический адрес
+    @JsonKey(name: 'legalAddress') String? legalAddress,
+
+    /// Фактический адрес
+    @JsonKey(name: 'actualAddress') String? actualAddress,
   }) = _ClientSpecificData;
 
   /// Преобразование JSON в объект `ClientSpecificData`.

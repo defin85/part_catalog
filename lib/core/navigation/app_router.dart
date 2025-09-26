@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
 
-import 'package:part_catalog/features/documents/orders/screens/adaptive_orders_screen.dart';
+import 'package:part_catalog/features/documents/orders/screens/refactored_orders_screen.dart';
 import 'package:part_catalog/features/home/screens/home_screen.dart';
-import 'package:part_catalog/features/references/clients/screens/adaptive_clients_screen.dart';
-import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart'; // Пример
-import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/enhanced_supplier_config_screen.dart';
+import 'package:part_catalog/features/references/clients/screens/refactored_clients_screen.dart';
+import 'package:part_catalog/features/references/vehicles/screens/refactored_cars_screen.dart';
+import 'package:part_catalog/features/settings/api_control_center/screens/refactored_api_control_center_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/improved_supplier_config_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/supplier_config_wizard_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/adaptive_parts_search_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/refactored_parts_search_screen.dart';
 import 'package:part_catalog/features/logs/screens/logs_screen.dart';
 
 import 'app_routes.dart';
@@ -33,7 +33,7 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.clients,
           builder: (BuildContext context, GoRouterState state) {
-            return const AdaptiveClientsScreen(); // Адаптивный экран списка клиентов
+            return const RefactoredClientsScreen(); // Рефакторенный экран списка клиентов с новой архитектурой
           },
           // Можно добавить вложенные маршруты для деталей клиента и т.д.
           // routes: <RouteBase>[
@@ -49,25 +49,25 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.vehicles,
           builder: (BuildContext context, GoRouterState state) {
-            return const CarsScreen(); // Экран списка автомобилей
+            return const RefactoredCarsScreen(); // Рефакторенный экран списка автомобилей
           },
         ),
         GoRoute(
           path: AppRoutes.orders,
           builder: (BuildContext context, GoRouterState state) {
-            return const AdaptiveOrdersScreen(); // Адаптивный экран списка заказов
+            return const RefactoredOrdersScreen(); // Рефакторенный экран заказов с новой архитектурой
           },
         ),
         GoRoute(
           path: AppRoutes.partsSearch,
           builder: (BuildContext context, GoRouterState state) {
-            return const AdaptivePartsSearchScreen(); // Адаптивный экран поиска запчастей
+            return const RefactoredPartsSearchScreen(); // Рефакторенный экран поиска запчастей
           },
         ),
         GoRoute(
           path: AppRoutes.apiControlCenter,
           builder: (BuildContext context, GoRouterState state) {
-            return const ApiControlCenterScreen();
+            return const RefactoredApiControlCenterScreen();
           },
           routes: const <RouteBase>[
             // Вложенные маршруты для ApiControlCenterScreen
@@ -84,13 +84,14 @@ final GoRouter router = GoRouter(
       ],
     ),
 
-    // Маршрут для настройки поставщиков
+
+    // Маршрут для улучшенного экрана настройки поставщиков
     GoRoute(
-      path: '${AppRoutes.supplierConfig}/:supplierCode',
+      path: '${AppRoutes.supplierConfigImproved}/:supplierCode',
       builder: (BuildContext context, GoRouterState state) {
         final supplierCode = state.pathParameters['supplierCode'];
-        // Используем улучшенный экран настроек поставщика с вкладками
-        return EnhancedSupplierConfigScreen(supplierCode: supplierCode);
+        // Новый улучшенный экран с лучшей организацией интерфейса
+        return ImprovedSupplierConfigScreen(supplierCode: supplierCode);
       },
     ),
 

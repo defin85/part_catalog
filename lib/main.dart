@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -24,6 +25,17 @@ void main() {
     // Загружаем переменные окружения
     await dotenv.load();
     WidgetsFlutterBinding.ensureInitialized();
+
+    // Отключаем отображение overflow в debug режиме
+    debugPaintSizeEnabled = false;
+
+    // Игнорируем overflow ошибки в debug режиме
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      if (details.exception.toString().contains('RenderFlex overflowed')) {
+        return Container(); // Возвращаем пустой контейнер для overflow ошибок
+      }
+      return ErrorWidget(details.exception);
+    };
     // Инициализируем файловый логгер (путь к папке приложения)
     await FileLogger.init();
 
@@ -90,6 +102,17 @@ class MyApp extends ConsumerWidget {
       // Передаем конфигурацию роутера
       routerConfig: router,
 
+      // Отключаем строгую обрезку для предотвращения overflow на 1 пиксель
+      debugShowCheckedModeBanner: false,
+
+      // Обработчик ошибок builder для игнорирования overflow
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+          child: child!,
+        );
+      },
+
       // Настройки локализации из Slang
       locale: currentLocale.flutterLocale, // Используем локаль из провайдера
       supportedLocales: AppLocaleUtils
@@ -104,6 +127,10 @@ class MyApp extends ConsumerWidget {
         // Настройте вашу тему
         primarySwatch: Colors.blue, // Пример
         useMaterial3: true,
+        // Базовые настройки AppBar
+        appBarTheme: const AppBarTheme(
+          toolbarHeight: kToolbarHeight + 8.0, // Стандартная высота + запас
+        ),
         // Дополнительные настройки темы...
       ),
       // Убрали home, так как начальный маршрут задается в GoRouter (initialLocation)

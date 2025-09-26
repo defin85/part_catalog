@@ -335,6 +335,10 @@ class CarsDao extends DatabaseAccessor<AppDatabase> with _$CarsDaoMixin {
       final ownerSpecificData = ClientSpecificData(
         type: ClientType.values.firstWhere((e) => e.name == clientItem.type,
             orElse: () => ClientType.other), // Преобразуем строку в enum
+        displayName: clientItem.name,
+        phone: null, // Пока храним в contactInfo
+        email: null, // Пока храним в contactInfo
+        isIndividual: clientItem.type == ClientType.physical.name,
         contactInfo: clientItem.contactInfo,
         additionalInfo: clientItem.additionalInfo,
       );
@@ -383,6 +387,10 @@ class CarsDao extends DatabaseAccessor<AppDatabase> with _$CarsDaoMixin {
         final ownerSpecificData = ClientSpecificData(
           type: ClientType.values.firstWhere((e) => e.name == clientItem.type,
               orElse: () => ClientType.other), // Преобразуем строку в enum
+          displayName: clientItem.name,
+          phone: null, // Пока храним в contactInfo
+          email: null, // Пока храним в contactInfo
+          isIndividual: clientItem.type == ClientType.physical.name,
           contactInfo: clientItem.contactInfo,
           additionalInfo: clientItem.additionalInfo,
         );

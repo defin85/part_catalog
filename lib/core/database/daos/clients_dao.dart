@@ -52,6 +52,10 @@ class ClientsDao extends DatabaseAccessor<AppDatabase> with _$ClientsDaoMixin {
     return ClientSpecificData(
       type: ClientType.values.firstWhere((e) => e.name == item.type,
           orElse: () => ClientType.other), // Преобразуем строку в enum
+      displayName: item.name,
+      phone: null, // Пока храним в contactInfo
+      email: null, // Пока храним в contactInfo
+      isIndividual: item.type == ClientType.physical.name,
       contactInfo: item.contactInfo,
       additionalInfo: item.additionalInfo,
     );
