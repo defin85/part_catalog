@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:part_catalog/core/ui/templates/scaffolds/tabbed_screen_scaffold.dart';
+import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 import 'package:part_catalog/features/suppliers/screens/tabs/basic_settings_tab.dart';
 import 'package:part_catalog/features/suppliers/screens/tabs/connection_settings_tab.dart';
 import 'package:part_catalog/features/suppliers/screens/tabs/parameters_tab.dart';
@@ -130,20 +131,39 @@ class ImprovedSupplierConfigScreen extends ConsumerWidget {
 
   Future<void> _saveConfig(BuildContext context, WidgetRef ref) async {
     try {
-      // TODO: Реализовать сохранение после создания провайдера
+      final formProvider = ref.read(supplierConfigFormProvider(supplierCode).notifier);
+      final success = await formProvider.save();
+
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Настройки сохранены успешно'),
-              ],
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('Настройки сохранены успешно'),
+                ],
+              ),
+              backgroundColor: Colors.green,
             ),
-            backgroundColor: Colors.green,
-          ),
-        );
+          );
+        } else {
+          final formState = ref.read(supplierConfigFormProvider(supplierCode));
+          final errorMessage = formState.error ?? 'Проверьте правильность заполнения полей';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('Ошибка сохранения: $errorMessage')),
+                ],
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (context.mounted) {

@@ -41,7 +41,10 @@
       "Bash(del check_supplier_settings.dart)",
       "Bash(winget install:*)",
       "Bash(del \"C:\\FlutterProject\\part_catalog\\test_db_conversion.dart\")",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(while read f)",
+      "Bash(done)",
+      "Bash(xargs basename:*)"
     ],
     "deny": []
   }

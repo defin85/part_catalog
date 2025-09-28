@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
 
-import 'package:part_catalog/features/documents/orders/screens/refactored_orders_screen.dart';
+import 'package:part_catalog/features/documents/orders/screens/orders_screen.dart';
 import 'package:part_catalog/features/home/screens/home_screen.dart';
-import 'package:part_catalog/features/references/clients/screens/refactored_clients_screen.dart';
-import 'package:part_catalog/features/references/vehicles/screens/refactored_cars_screen.dart';
-import 'package:part_catalog/features/settings/api_control_center/screens/refactored_api_control_center_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/improved_supplier_config_screen.dart';
+import 'package:part_catalog/features/references/clients/screens/clients_screen.dart';
+import 'package:part_catalog/features/references/vehicles/screens/cars_screen.dart';
+import 'package:part_catalog/features/settings/api_control_center/screens/api_control_center_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/deprecated_supplier_config_screen.dart';
 import 'package:part_catalog/features/suppliers/screens/supplier_config_wizard_screen.dart';
-import 'package:part_catalog/features/suppliers/screens/refactored_parts_search_screen.dart';
+import 'package:part_catalog/features/suppliers/screens/parts_search_screen.dart';
 import 'package:part_catalog/features/logs/screens/logs_screen.dart';
 
 import 'app_routes.dart';
@@ -33,7 +33,7 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.clients,
           builder: (BuildContext context, GoRouterState state) {
-            return const RefactoredClientsScreen(); // Рефакторенный экран списка клиентов с новой архитектурой
+            return const ClientsScreen(); // Рефакторенный экран списка клиентов с новой архитектурой
           },
           // Можно добавить вложенные маршруты для деталей клиента и т.д.
           // routes: <RouteBase>[
@@ -49,25 +49,25 @@ final GoRouter router = GoRouter(
         GoRoute(
           path: AppRoutes.vehicles,
           builder: (BuildContext context, GoRouterState state) {
-            return const RefactoredCarsScreen(); // Рефакторенный экран списка автомобилей
+            return const CarsScreen(); // Экран списка автомобилей
           },
         ),
         GoRoute(
           path: AppRoutes.orders,
           builder: (BuildContext context, GoRouterState state) {
-            return const RefactoredOrdersScreen(); // Рефакторенный экран заказов с новой архитектурой
+            return const OrdersScreen(); // Экран заказов с новой архитектурой
           },
         ),
         GoRoute(
           path: AppRoutes.partsSearch,
           builder: (BuildContext context, GoRouterState state) {
-            return const RefactoredPartsSearchScreen(); // Рефакторенный экран поиска запчастей
+            return const PartsSearchScreen(); // Экран поиска запчастей
           },
         ),
         GoRoute(
           path: AppRoutes.apiControlCenter,
           builder: (BuildContext context, GoRouterState state) {
-            return const RefactoredApiControlCenterScreen();
+            return const ApiControlCenterScreen();
           },
           routes: const <RouteBase>[
             // Вложенные маршруты для ApiControlCenterScreen

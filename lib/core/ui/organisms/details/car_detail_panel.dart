@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 
 import 'package:part_catalog/features/references/vehicles/models/car_model_composite.dart';
 import 'package:part_catalog/features/references/clients/models/client_model_composite.dart';
@@ -6,7 +7,6 @@ import 'package:part_catalog/core/ui/atoms/typography/index.dart';
 import 'package:part_catalog/core/ui/molecules/empty_state_message.dart';
 import 'package:part_catalog/core/ui/organisms/cards/info_card.dart';
 import 'package:part_catalog/core/ui/organisms/forms/form_actions_bar.dart';
-import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 
 /// Панель деталей автомобиля для MasterDetail интерфейса
 class CarDetailPanel extends StatelessWidget {

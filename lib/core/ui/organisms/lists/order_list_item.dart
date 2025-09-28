@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
 import 'package:part_catalog/core/ui/atoms/typography/index.dart';
 import 'package:part_catalog/core/ui/molecules/status_indicator.dart';
-import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 
 /// Компонент для отображения заказа в списке
 class OrderListItem extends StatelessWidget {

@@ -26,8 +26,8 @@ import 'package:part_catalog/features/suppliers/config/supported_suppliers.dart'
 /// - FormSection для группировки настроек
 /// - SupplierApiCard для унификации карточек поставщиков
 /// - ValidationField для полей ввода
-class RefactoredApiControlCenterScreen extends ConsumerWidget {
-  const RefactoredApiControlCenterScreen({super.key});
+class ApiControlCenterScreen extends ConsumerWidget {
+  const ApiControlCenterScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -150,13 +150,13 @@ class RefactoredApiControlCenterScreen extends ConsumerWidget {
   }
 
   void _navigateToConfig(BuildContext context, String supplierCode) {
-    final logger = appLogger('RefactoredApiControlCenterScreen');
+    final logger = appLogger('ApiControlCenterScreen');
     logger.i('Configure button pressed for $supplierCode');
     context.go('${AppRoutes.supplierConfigImproved}/$supplierCode');
   }
 
   void _navigateToWizard(BuildContext context, String supplierCode) {
-    final logger = appLogger('RefactoredApiControlCenterScreen');
+    final logger = appLogger('ApiControlCenterScreen');
     logger.i('Wizard configure pressed for $supplierCode');
     final encoded = Uri.encodeComponent(supplierCode);
     context.push('${AppRoutes.supplierWizard}?code=$encoded');

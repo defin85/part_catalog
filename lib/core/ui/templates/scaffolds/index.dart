@@ -1,4 +1,5 @@
 
+export 'adaptive_navigation_scaffold.dart';
 export 'list_screen_scaffold.dart';
 export 'form_screen_scaffold.dart';
 export 'tabbed_screen_scaffold.dart';

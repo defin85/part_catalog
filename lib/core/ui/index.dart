@@ -11,9 +11,8 @@ export 'organisms/index.dart';
 // Templates - шаблоны экранов
 export 'templates/index.dart';
 
+// Mixins - переиспользуемая логика
+export 'mixins/index.dart';
+
 // Themes - система дизайна
-export 'themes/app_colors.dart';
-export 'themes/app_typography.dart';
-export 'themes/app_spacing.dart' hide AppSpacing;
-export 'themes/app_breakpoints.dart' hide AppBreakpoints, DeviceType;
-export 'themes/app_constants.dart';
+export 'themes/index.dart';

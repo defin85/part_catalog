@@ -282,4 +282,19 @@ class AppSpacing {
       child: child,
     );
   }
+
+  /// Адаптивные отступы в зависимости от размера экрана
+  static double adaptive(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1440) return xl; // desktop
+    if (width >= 600) return lg; // tablet
+    return md; // mobile
+  }
+
+  static double smallAdaptive(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width >= 1440) return lg; // desktop
+    if (width >= 600) return md; // tablet
+    return sm; // mobile
+  }
 }

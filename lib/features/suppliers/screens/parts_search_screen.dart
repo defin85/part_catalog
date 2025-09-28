@@ -6,15 +6,15 @@ import 'package:part_catalog/features/suppliers/models/base/part_price_response.
 import 'package:part_catalog/features/suppliers/providers/optimized_api_providers.dart';
 import 'package:part_catalog/features/suppliers/providers/supplier_config_provider.dart';
 
-/// Рефакторенный экран поиска запчастей с использованием новых UI компонентов
-class RefactoredPartsSearchScreen extends ConsumerStatefulWidget {
-  const RefactoredPartsSearchScreen({super.key});
+/// Экран поиска запчастей с использованием новых UI компонентов
+class PartsSearchScreen extends ConsumerStatefulWidget {
+  const PartsSearchScreen({super.key});
 
   @override
-  ConsumerState<RefactoredPartsSearchScreen> createState() => _RefactoredPartsSearchScreenState();
+  ConsumerState<PartsSearchScreen> createState() => _PartsSearchScreenState();
 }
 
-class _RefactoredPartsSearchScreenState extends ConsumerState<RefactoredPartsSearchScreen> {
+class _PartsSearchScreenState extends ConsumerState<PartsSearchScreen> with NotificationsMixin {
   final TextEditingController _articleController = TextEditingController();
   final TextEditingController _brandController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -240,11 +240,7 @@ class _RefactoredPartsSearchScreenState extends ConsumerState<RefactoredPartsSea
                 ),
               ],
             ),
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Выбрана запчасть ${part.article}')),
-              );
-            },
+            onTap: () => showInfoMessage(context, 'Выбрана запчасть ${part.article}'),
           ),
         );
       },
@@ -254,15 +250,11 @@ class _RefactoredPartsSearchScreenState extends ConsumerState<RefactoredPartsSea
 
   // Действия
   void _addToCart(PartPriceModel part) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${part.article} добавлен в корзину')),
-    );
+    showSuccessMessage(context, '${part.article} добавлен в корзину');
   }
 
   void _addToCompare(PartPriceModel part) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${part.article} добавлен к сравнению')),
-    );
+    showInfoMessage(context, '${part.article} добавлен к сравнению');
   }
 }
 

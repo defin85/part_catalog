@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:part_catalog/core/database/database.dart';
 import 'package:part_catalog/core/service_locator.dart';
+import 'package:part_catalog/core/ui/index.dart';
 
 /// Debug экран для проверки содержимого базы данных
 class DebugDatabaseScreen extends ConsumerStatefulWidget {
@@ -155,58 +155,94 @@ class _DebugDatabaseScreenState extends ConsumerState<DebugDatabaseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Debug: База данных'),
-        backgroundColor: Colors.orange,
+    return FormScreenScaffold(
+      title: 'Debug: База данных',
+      additionalActions: [
+        FormAction.primary(
+          text: _isLoading ? 'Проверяем...' : 'Проверить БД',
+          onPressed: _isLoading ? null : _checkDatabase,
+          icon: const Icon(Icons.refresh),
+        ),
+        FormAction.secondary(
+          text: 'Очистить',
+          onPressed: () {
+            setState(() {
+              _output = 'Лог очищен';
+            });
+          },
+          icon: const Icon(Icons.clear),
+        ),
+      ],
+      children: [
+        _DebugConsoleWidget(
+          output: _output,
+          isLoading: _isLoading,
+        ),
+      ],
+    );
+  }
+}
+
+/// Виджет консоли для отображения результатов отладки
+class _DebugConsoleWidget extends StatelessWidget {
+  final String output;
+  final bool isLoading;
+
+  const _DebugConsoleWidget({
+    required this.output,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.black87,
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: Colors.grey),
       ),
-      body: Column(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _checkDatabase,
-                  icon: _isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh),
-                  label: Text(_isLoading ? 'Проверяем...' : 'Проверить БД'),
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _output = 'Лог очищен';
-                    });
-                  },
-                  icon: const Icon(Icons.clear),
-                  label: const Text('Очистить'),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(16.0),
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.black87,
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: Colors.grey),
+          Row(
+            children: [
+              const Icon(
+                Icons.terminal,
+                color: Colors.greenAccent,
+                size: 16,
               ),
-              child: SingleChildScrollView(
-                child: SelectableText(
-                  _output,
-                  style: const TextStyle(
-                    color: Colors.greenAccent,
-                    fontFamily: 'monospace',
-                    fontSize: 12,
+              const SizedBox(width: 8),
+              Text(
+                'Debug Console',
+                style: TextStyle(
+                  color: Colors.greenAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const Spacer(),
+              if (isLoading)
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.greenAccent),
                   ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: SingleChildScrollView(
+              child: SelectableText(
+                output,
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontFamily: 'monospace',
+                  fontSize: 12,
                 ),
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/core/ui/themes/app_constants.dart';
+import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 
 /// Индикатор статуса с различными вариантами отображения
 class StatusIndicator extends StatelessWidget {

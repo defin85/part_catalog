@@ -21,28 +21,6 @@ class AppBreakpoints {
   }
 }
 
-/// Отступы для адаптивного дизайна
-class AppSpacing {
-  static const double xs = 4.0;
-  static const double sm = 8.0;
-  static const double md = 16.0;
-  static const double lg = 24.0;
-  static const double xl = 32.0;
-  static const double xxl = 48.0;
-
-  /// Адаптивные отступы в зависимости от размера экрана
-  static double adaptive(BuildContext context) {
-    if (AppBreakpoints.isDesktop(context)) return xl;
-    if (AppBreakpoints.isTablet(context)) return lg;
-    return md;
-  }
-
-  static double smallAdaptive(BuildContext context) {
-    if (AppBreakpoints.isDesktop(context)) return lg;
-    if (AppBreakpoints.isTablet(context)) return md;
-    return sm;
-  }
-}
 
 /// Радиусы скругления
 class AppRadius {

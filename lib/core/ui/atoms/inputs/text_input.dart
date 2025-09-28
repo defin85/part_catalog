@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:part_catalog/core/ui/themes/app_constants.dart';
+import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 
 /// Базовое текстовое поле ввода
 /// Стандартизированное поле с поддержкой различных состояний и валидации

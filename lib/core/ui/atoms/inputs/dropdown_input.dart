@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/core/ui/themes/app_constants.dart';
+import 'package:part_catalog/core/ui/themes/app_spacing.dart';
 import 'package:part_catalog/core/ui/atoms/inputs/text_input.dart';
 
 /// Выпадающий список (dropdown) с унифицированным дизайном

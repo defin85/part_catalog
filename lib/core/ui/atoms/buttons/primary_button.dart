@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:part_catalog/core/ui/themes/app_constants.dart';
+import 'package:part_catalog/core/ui/themes/app_spacing.dart';
+
+/// Размеры кнопок
+enum ButtonSize {
+  small,
+  medium,
+  large,
+}
 
 /// Основная кнопка приложения
 /// Используется для главных действий (сохранить, создать, подтвердить)
@@ -143,8 +151,3 @@ class PrimaryButton extends StatelessWidget {
 }
 
 /// Размеры кнопок
-enum ButtonSize {
-  small,
-  medium,
-  large,
-}

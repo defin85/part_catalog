@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:part_catalog/core/database/daos/orders_dao.dart';
-import 'package:part_catalog/core/i18n/strings.g.dart';
-import 'package:part_catalog/core/widgets/responsive_layout_builder.dart';
+import 'package:part_catalog/core/ui/index.dart';
+import 'package:part_catalog/core/ui/organisms/filters/order_filters_panel.dart';
+import 'package:part_catalog/core/ui/organisms/lists/orders_list_view.dart';
+import 'package:part_catalog/features/documents/orders/mixins/order_actions_mixin.dart';
 import 'package:part_catalog/features/documents/orders/providers/orders_pagination_provider.dart';
-import 'package:part_catalog/features/documents/orders/screens/order_details_screen.dart';
-import 'package:part_catalog/features/documents/orders/screens/order_form_screen.dart';
-import 'package:part_catalog/features/documents/orders/widgets/order_list_item.dart';
 
-// Преобразуем в ConsumerStatefulWidget
+/// Экран заказов с использованием новых UI компонентов
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
 
@@ -18,9 +16,11 @@ class OrdersScreen extends ConsumerStatefulWidget {
   ConsumerState<OrdersScreen> createState() => _OrdersScreenState();
 }
 
-// Преобразуем State в ConsumerState
-class _OrdersScreenState extends ConsumerState<OrdersScreen> {
+class _OrdersScreenState extends ConsumerState<OrdersScreen> with OrderActionsMixin {
   final _scrollController = ScrollController();
+  OrderHeaderData? _selectedOrder;
+  String _searchQuery = '';
+  String _statusFilter = '';
 
   @override
   void initState() {
@@ -49,133 +49,113 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
     return currentScroll >= (maxScroll * 0.9);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final t = context.t;
-    final ordersState = ref.watch(ordersPaginationNotifierProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(t.orders.screenTitle),
-        // TODO: Адаптировать фильтрацию и поиск для пагинации
-      ),
-      body: ResponsiveLayoutBuilder(
-        small: (context, constraints) => _buildOrdersList(context, ordersState, t, isTablet: false),
-        medium: (context, constraints) => _buildOrdersList(context, ordersState, t, isTablet: true),
-        large: (context, constraints) => _buildOrdersList(context, ordersState, t, isTablet: true),
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: t.orders.add,
-        onPressed: _createNewOrder,
-        child: const Icon(Icons.add),
-      ),
-    );
+  void _selectOrder(OrderHeaderData? order) {
+    setState(() {
+      _selectedOrder = order;
+    });
   }
 
-  Widget _buildOrdersList(BuildContext context, dynamic ordersState, dynamic t, {required bool isTablet}) {
-    return ordersState.when(
-      data: (state) {
-        if (state.orders.isEmpty) {
-          return Center(
-            child: Text(
-              t.orders.noOrdersFound,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          );
-        }
+  List<OrderHeaderData> _filterOrders(List<OrderHeaderData> orders) {
+    var filtered = orders;
 
-        if (isTablet) {
-          // Для планшетов - сетка с отступами
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: GridView.builder(
-              controller: _scrollController,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 3.5,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
+    // Поиск по тексту
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((order) {
+        return order.coreData.uuid.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    // Фильтр по статусу
+    if (_statusFilter.isNotEmpty) {
+      filtered = filtered.where((order) {
+        return order.docData.status.name == _statusFilter;
+      }).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ordersAsync = ref.watch(ordersPaginationNotifierProvider);
+
+    return MasterDetailScaffold(
+      title: 'Заказы',
+      masterPanel: ordersAsync.when(
+        data: (state) => _buildMasterPanel(state),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64),
+              const SizedBox(height: 16),
+              const Text('Ошибка загрузки'),
+              const SizedBox(height: 8),
+              Text(error.toString()),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.refresh(ordersPaginationNotifierProvider),
+                child: const Text('Повторить'),
               ),
-              itemCount: state.hasReachedMax
-                  ? state.orders.length
-                  : state.orders.length + 1,
-              itemBuilder: (context, index) {
-                if (index >= state.orders.length) {
-                  return const Card(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                final orderHeader = state.orders[index];
-                return Card(
-                  child: OrderListItem(
-                    orderHeader: orderHeader,
-                    onTap: () => _openOrderDetails(orderHeader),
-                  ),
-                );
-              },
-            ),
-          );
-        } else {
-          // Для мобильных - обычный список
-          return ListView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: state.hasReachedMax
-                ? state.orders.length
-                : state.orders.length + 1,
-            itemBuilder: (context, index) {
-              if (index >= state.orders.length) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-              final orderHeader = state.orders[index];
-              return OrderListItem(
-                orderHeader: orderHeader,
-                onTap: () => _openOrderDetails(orderHeader),
-              );
-            },
-          );
-        }
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            '${t.errors.dataLoadingError}: $error',
-            style: const TextStyle(color: Colors.red),
-            textAlign: TextAlign.center,
+            ],
           ),
         ),
       ),
-    );
-  }
-
-  void _createNewOrder() async {
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const OrderFormScreen(),
-      ),
-    );
-
-    if (mounted && result == true) {
-      ref.invalidate(ordersPaginationNotifierProvider);
-    }
-  }
-
-  void _openOrderDetails(OrderHeaderData orderHeader) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => OrderDetailsScreen(
-          orderUuid: orderHeader.coreData.uuid,
+      detailPanel: _selectedOrder != null ? OrderDetailPanel(
+        order: _selectedOrder!,
+        onEdit: () => editOrder(_selectedOrder!),
+        onDelete: () => deleteOrder(_selectedOrder!),
+        onOpen: () => openOrderDetails(_selectedOrder!),
+        onDuplicate: () => duplicateOrder(_selectedOrder!),
+      ) : null,
+      showDetailPanel: _selectedOrder != null,
+      onCloseDetail: () => _selectOrder(null),
+      // FAB для создания нового заказа
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => createNewOrder(
+          onSuccess: () => ref.invalidate(ordersPaginationNotifierProvider),
         ),
+        icon: const Icon(Icons.add),
+        label: const Text('Создать заказ'),
       ),
     );
   }
+
+  Widget _buildMasterPanel(dynamic state) {
+    final filteredOrders = _filterOrders(state.orders);
+
+    return Column(
+      children: [
+        // Поиск и фильтры
+        OrderFiltersPanel(
+          searchQuery: _searchQuery,
+          statusFilter: _statusFilter,
+          onSearchChanged: (value) {
+            setState(() {
+              _searchQuery = value;
+            });
+          },
+          onStatusFilterChanged: (value) {
+            setState(() {
+              _statusFilter = value;
+            });
+          },
+        ),
+        const Divider(height: 1),
+        // Список заказов
+        Expanded(
+          child: OrdersListView(
+            orders: filteredOrders,
+            selectedOrder: _selectedOrder,
+            onOrderSelected: _selectOrder,
+            scrollController: _scrollController,
+            hasReachedMax: state.hasReachedMax,
+            isEmpty: filteredOrders.isEmpty,
+          ),
+        ),
+      ],
+    );
+  }
+
 }
